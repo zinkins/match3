@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="Match3.Android/Match3.Android.csproj" />
+  <Project Path="Match3.Core/Match3.Core.csproj" />
+  <Project Path="Match3.DesktopGL/Match3.DesktopGL.csproj" />
+  <Project Path="Match3.iOS/Match3.iOS.csproj" />
+</Solution>
