@@ -1,130 +1,104 @@
-# Game Design Document
+# Документ дизайна игры
 
-## Match-3 Mobile Game
+## Игра в жанре Match-3
 
-**Version:** 1.0  
-**Platform:** Mobile (iOS/Android)  
-**Engine:** MonoGame  
-**Language:** C#
-
----
-
-## 1. Project Overview
-
-A Match-3 puzzle game built with C# and MonoGame for mobile platforms. Players match 3 or more identical gems to clear them and earn points.
+**Версия:** 1.1  
+**Язык:** C#  
+**Движок:** MonoGame  
+**Платформы:** DesktopGL, Android, iOS
 
 ---
 
-## 2. Game Screens
+## 1. Общее описание
 
-### 2.1 Main Menu
-- Single screen with "Play" button
-- Pressing "Play" starts the game level
-
-### 2.2 Game Screen
-- 8x8 game grid
-- Score display
-- Timer: 60 seconds per level
-- 60 FPS performance target
-
-### 2.3 Game Over Screen
-- Displayed when no valid moves remain or timer is out
-- "Game Over" message with "Ok" button
-- "Ok" returns to main menu
+Проект представляет собой игру в жанре Match-3, разработанную на языке C# с использованием MonoGame. Игрок меняет местами соседние элементы на поле 8x8, собирает комбинации, получает очки и играет в рамках таймера 60 секунд.
 
 ---
 
-## 3. Core Mechanics
+## 2. Игровой цикл
 
-### 3.1 Game Board
-- Grid: 8x8 cells
-- Gem types: 5 unique gems
+### 2.1 Главное меню
+- Игра запускается с Главного Меню.
+- В меню есть единственная кнопка `Play`.
+- При нажатии `Play` открывается Игровой Экран.
 
-### 3.2 Matching Rules
-- Match 3+ identical gems in a row/column to clear
-- Invalid moves (no match) are rejected
+### 2.2 Игровой экран
+- Игровой Экран содержит поле 8x8 из квадратных клеток.
+- В каждой клетке находится ровно один элемент.
+- На экране отображается текущий счёт.
+- На экране отображается оставшееся время.
 
-### 3.3 Timer
-- Level time limit: 60 seconds
-- No per-move timer
-- Game ends when timer reaches zero
-
-### 3.4 Scoring System
-- Points awarded for each cleared gem
-- Score formula based on destroyed elements (basic, Line, Bomb)
-
-### 3.5 Gravity & Refill
-- Gems fall smoothly (no instant movement)
-- New gems spawn from top to fill empty cells
-
-### 3.6 No Initial Bonuses
-- Bonuses cannot appear in initial board generation
-- Bonuses only spawn during player moves
+### 2.3 Завершение игры
+- Игра заканчивается, когда таймер достигает нуля.
+- После завершения отображается сообщение `Game Over` и одна кнопка `Ok`.
+- При нажатии `Ok` игрок возвращается в Главное Меню.
 
 ---
 
-## 4. Bonus System
+## 3. Поле и элементы
 
-### 4.1 Line Bonus
-**Creation:** Match 5 gems in a row  
-**Activation:** When matched  
-**Effect:** Clears entire row OR column  
-**Behavior:**
-- Single Line: clears one direction (horizontal or vertical)
-- Cannot be upgraded further
-
-### 4.2 Bomb Bonus
-**Creation:** Match 5 gems in L or T shape  
-**Activation:** When matched  
-**Effect:** 
-- Destroys 3x3 area around the bomb (250ms delay for visual effect)
-- Explodes regardless of proximity to the matched gems
-
-**Behavior:**
-- When part of a match, triggers chain reaction
-- If Bomb is matched with regular gems, it explodes
+- Размер поля составляет 8x8 клеток.
+- В игре используется 5 типов элементов.
+- Элементы представлены цветными геометрическими фигурами.
+- Элементы размещаются на поле случайным образом.
+- Если 3 или более одинаковых элемента выстроены по горизонтали или вертикали, они уничтожаются.
+- Элементы, находящиеся выше пустых клеток, опускаются вниз.
+- Если над пустой клеткой элементов нет, в ней появляется новый элемент.
 
 ---
 
-## 5. Bonus Combination Rules
+## 4. Взаимодействие игрока
 
-| Combination | Result |
-|-------------|--------|
-| Bonus + Regular gem | Bonus activates |
-
----
-
-## 6. Performance Requirements
-
-- **Target FPS:** 60
-- **Animation:** Smooth, no stuttering
-- **Consistent performance:** No FPS drops during gameplay
+- Первым кликом мыши игрок выбирает элемент.
+- Выбранный элемент должен визуально отличаться от остальных, например за счёт свечения, смены цвета, подпрыгивания или вращения.
+- Вторым кликом мыши игрок выбирает второй элемент.
+- Если второй элемент соседний по горизонтали или вертикали, элементы меняются местами.
+- Если второй элемент не является соседним, выделение сбрасывается.
+- Если после обмена не образуется комбинация, элементы меняются местами обратно.
+- Все перемещения элементов должны быть анимированы.
 
 ---
 
-## 7. Visual Effects
+## 5. Очки и таймер
 
-| Trigger | Effect |
-|---------|--------|
-| Line bonus activated | Clears entire row OR column with destruction animation |
-| Two intersecting Lines | Clears both row AND column (cross pattern) |
-| Bomb activated | 250ms delay, then explodes 3x3 area |
-
----
-
-## 8. Technical Stack
-
-- **Language:** C#
-- **Framework:** MonoGame
-- **Target Platforms:** iOS, Android (mobile)
+- Игрок получает очки за каждый уничтоженный элемент.
+- Количество очков должно быть постоянно видно во время игры.
+- Одна игровая сессия длится 60 секунд.
+- Оставшееся время должно быть постоянно видно во время игры.
 
 ---
 
-## 9. Out of Scope
+## 6. Правила бонусов
 
-- Sound/audio
-- Animations (basic visual effects only)
-- High scores/persistence
-- Multiple levels
-- In-app purchases
-- Social features
+### 6.1 Бонус Line
+- Комбинация из 4 элементов в ряд создаёт бонус `Line`.
+- Бонус `Line` появляется на месте элемента, который был перемещён последним.
+- Бонус `Line` имеет тот же цвет, что и элементы, участвовавшие в комбинации.
+- Бонус `Line` может иметь вертикальное или горизонтальное направление.
+- Если бонус `Line` участвует в комбинации, он активируется.
+- При активации бонус уничтожается и выпускает двух Разрушителей в противоположных направлениях в соответствии со своей ориентацией.
+- Каждый Разрушитель летит по прямой до края игрового поля.
+- Любой элемент, над которым пролетает Разрушитель, уничтожается.
+- Если Разрушитель пролетает над другим бонусом, этот бонус активируется.
+- Все перемещения Разрушителей должны быть анимированы.
+
+### 6.2 Бонус Bomb
+- Комбинация из 5 или более элементов в ряд создаёт бонус `Bomb`.
+- Пересечение горизонтальной и вертикальной комбинаций из 3 или более элементов создаёт бонус `Bomb` в точке пересечения.
+- Бонус `Bomb` появляется на месте элемента, который был перемещён последним, если он создан обычной комбинацией.
+- Если бонус создаётся пересечением комбинаций, он появляется в точке пересечения.
+- Бонус `Bomb` имеет тот же цвет, что и элементы, участвовавшие в комбинации.
+- Если бонус `Bomb` участвует в комбинации, он активируется.
+- При активации бонус уничтожается.
+- Через 250 мс после активации уничтожаются все элементы в квадрате 3x3 вокруг точки взрыва.
+- Если в области взрыва находится другой бонус, он также активируется.
+
+---
+
+## 7. Визуальные и технические требования
+
+- Все обмены элементов, падения, появления новых элементов и активации бонусов должны быть визуально понятными.
+- Игра должна обеспечивать плавную анимацию и отзывчивое управление.
+- Игра реализуется на языке C#.
+- Разрешено использовать сторонние библиотеки и фреймворки, кроме Unity.
+- Использование MonoGame допускается.
