@@ -11,13 +11,16 @@
   <ItemGroup>
     <MonoGameContentReference Include="..\Match3.Core\Content\Match3.mgcb">
       <Link>Content\Match3.mgcb</Link>
+      <OutputFolder>Match3.DesktopGL</OutputFolder>
+      <ContentIntermediateOutputDir>$(MSBuildProjectDirectory)\..\..\Temp\MonoGameContent\DesktopGL\net9.0\Match3.DesktopGL</ContentIntermediateOutputDir>
     </MonoGameContentReference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Match3.Core\Match3.Core.csproj" />
+    <ProjectReference Include="..\Match3.Presentation\Match3.Presentation.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.*" />
-    <PackageReference Include="MonoGame.Content.Builder.Task" Version="3.8.*" />
+    <PackageReference Include="MonoGame.Content.Builder.Task" Version="3.8.5-preview.3" />
   </ItemGroup>
 </Project>

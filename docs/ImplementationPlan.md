@@ -15,19 +15,19 @@
 
 ## Фаза 1. Подготовка solution и test infrastructure
 
-T001 [ ] Создать проект `Match3.Presentation`.
-T002 [ ] Создать проект `Match3.Tests`.
-T003 [ ] Добавить `Match3.Presentation` в `Match3.sln`.
-T004 [ ] Добавить `Match3.Tests` в `Match3.sln`.
-T005 [ ] Настроить reference `Match3.Presentation -> Match3.Core`.
-T006 [ ] Настроить reference `Match3.DesktopGL -> Match3.Presentation`.
-T007 [ ] Настроить reference `Match3.Android -> Match3.Presentation`.
-T008 [ ] Настроить reference `Match3.iOS -> Match3.Presentation`.
-T009 [ ] Настроить reference `Match3.Tests -> Match3.Core`.
-T010 [ ] Подключить test framework в `Match3.Tests`.
-T011 [ ] Подключить test runner packages в `Match3.Tests`.
+T001 [x] Создать проект `Match3.Presentation`.
+T002 [x] Создать проект `Match3.Tests`.
+T003 [x] Добавить `Match3.Presentation` в `Match3.sln`.
+T004 [x] Добавить `Match3.Tests` в `Match3.sln`.
+T005 [x] Настроить reference `Match3.Presentation -> Match3.Core`.
+T006 [x] Настроить reference `Match3.DesktopGL -> Match3.Presentation`.
+T007 [x] Настроить reference `Match3.Android -> Match3.Presentation`.
+T008 [x] Настроить reference `Match3.iOS -> Match3.Presentation`.
+T009 [x] Настроить reference `Match3.Tests -> Match3.Core`.
+T010 [x] Подключить test framework в `Match3.Tests`.
+T011 [x] Подключить test runner packages в `Match3.Tests`.
 T012 [ ] [P] Добавить базовый smoke test `Tests_Project_BuildsAndRuns`.
-T013 [ ] [P] Проверить, что `Match3.Tests` не зависит от `MonoGame`.
+T013 [x] [P] Проверить, что `Match3.Tests` не зависит от `MonoGame`.
 T014 [ ] Прогнать весь test suite и убедиться, что инфраструктура работает.
 
 ---

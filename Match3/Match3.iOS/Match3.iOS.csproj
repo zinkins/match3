@@ -8,13 +8,16 @@
   <ItemGroup>
     <MonoGameContentReference Include="..\Match3.Core\Content\Match3.mgcb">
       <Link>Content\Match3.mgcb</Link>
+      <OutputFolder>Match3.iOS</OutputFolder>
+      <ContentIntermediateOutputDir>$(MSBuildProjectDirectory)\..\..\Temp\MonoGameContent\iOS\net9.0-ios\Match3.iOS</ContentIntermediateOutputDir>
     </MonoGameContentReference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Match3.Core\Match3.Core.csproj" />
+    <ProjectReference Include="..\Match3.Presentation\Match3.Presentation.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="MonoGame.Content.Builder.Task" Version="3.8.*" />
+    <PackageReference Include="MonoGame.Content.Builder.Task" Version="3.8.5-preview.3" />
     <PackageReference Include="MonoGame.Framework.iOS" Version="3.8.*" />
   </ItemGroup>
 </Project>
