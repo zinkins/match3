@@ -157,16 +157,16 @@ T113 [x] Прогнать tests.
 
 ## Фаза 6. Swap и rollback
 
-T114 [ ] Написать test `TurnProcessor_PerformsSwap_WhenMatchExists`.
-T115 [ ] Создать `TurnProcessor`.
-T116 [ ] Реализовать базовый swap.
-T117 [ ] Прогнать tests.
-T118 [ ] Написать test `TurnProcessor_RevertsSwap_WhenNoMatchExists`.
-T119 [ ] Реализовать rollback swap.
-T120 [ ] Прогнать tests.
-T121 [ ] Написать test на сохранение корректного состояния поля после rollback.
-T122 [ ] Дополнить `TurnProcessor`.
-T123 [ ] Прогнать tests.
+T114 [x] Написать test `TurnProcessor_PerformsSwap_WhenMatchExists`.
+T115 [x] Создать `TurnProcessor`.
+T116 [x] Реализовать базовый swap.
+T117 [x] Прогнать tests.
+T118 [x] Написать test `TurnProcessor_RevertsSwap_WhenNoMatchExists`.
+T119 [x] Реализовать rollback swap.
+T120 [x] Прогнать tests.
+T121 [x] Написать test на сохранение корректного состояния поля после rollback.
+T122 [x] Дополнить `TurnProcessor`.
+T123 [x] Прогнать tests.
 
 ---
 
