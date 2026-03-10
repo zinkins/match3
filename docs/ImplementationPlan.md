@@ -191,23 +191,23 @@ T137 [x] Прогнать tests.
 
 ## Фаза 8. Score и timer
 
-T138 [ ] Написать test `ScoreCalculator_AddsPointsPerDestroyedPiece`.
-T139 [ ] Создать `ScoreCalculator`.
-T140 [ ] Реализовать начисление очков за уничтоженные фишки.
-T141 [ ] Прогнать tests.
-T142 [ ] Написать test на инициализацию timer в `GameSession`.
-T143 [ ] Создать `GameSession`.
-T144 [ ] Реализовать стартовое значение timer = 60 секунд.
-T145 [ ] Прогнать tests.
-T146 [ ] Написать test на уменьшение timer.
-T147 [ ] Реализовать обновление timer.
-T148 [ ] Прогнать tests.
-T149 [ ] Написать test на условие `GameOver` по timer.
-T150 [ ] Реализовать проверку конца игры по timer.
-T151 [ ] Прогнать tests.
-T152 [ ] Написать test `GameSession_BlocksNewInput_AfterTimerExpires`.
-T153 [ ] Реализовать блокировку нового input после истечения timer.
-T154 [ ] Прогнать tests.
+T138 [x] Написать test `ScoreCalculator_AddsPointsPerDestroyedPiece`.
+T139 [x] Создать `ScoreCalculator`.
+T140 [x] Реализовать начисление очков за уничтоженные фишки.
+T141 [x] Прогнать tests.
+T142 [x] Написать test на инициализацию timer в `GameSession`.
+T143 [x] Создать `GameSession`.
+T144 [x] Реализовать стартовое значение timer = 60 секунд.
+T145 [x] Прогнать tests.
+T146 [x] Написать test на уменьшение timer.
+T147 [x] Реализовать обновление timer.
+T148 [x] Прогнать tests.
+T149 [x] Написать test на условие `GameOver` по timer.
+T150 [x] Реализовать проверку конца игры по timer.
+T151 [x] Прогнать tests.
+T152 [x] Написать test `GameSession_BlocksNewInput_AfterTimerExpires`.
+T153 [x] Реализовать блокировку нового input после истечения timer.
+T154 [x] Прогнать tests.
 
 ---
 
