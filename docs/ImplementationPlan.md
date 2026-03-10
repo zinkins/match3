@@ -213,49 +213,49 @@ T154 [x] Прогнать tests.
 
 ## Фаза 9. State machine и pipeline хода
 
-T155 [ ] Написать test `GameplayStateMachine_StartsInIdle`.
-T156 [ ] Создать `GameplayStateMachine`.
-T157 [ ] Реализовать состояние `Idle`.
-T158 [ ] Прогнать tests.
-T159 [ ] Написать test перехода `Idle -> Selecting`.
-T160 [ ] Реализовать переход в `Selecting`.
-T161 [ ] Прогнать tests.
-T162 [ ] Написать test перехода `Selecting -> Swapping`.
-T163 [ ] Реализовать переход в `Swapping`.
-T164 [ ] Прогнать tests.
-T165 [ ] Написать test перехода `Swapping -> Resolving`.
-T166 [ ] Реализовать переход в `Resolving`.
-T167 [ ] Прогнать tests.
-T168 [ ] Написать test перехода `Resolving -> ApplyingGravity`.
-T169 [ ] Реализовать переход в `ApplyingGravity`.
-T170 [ ] Прогнать tests.
-T171 [ ] Написать test перехода `ApplyingGravity -> Refilling`.
-T172 [ ] Реализовать переход в `Refilling`.
-T173 [ ] Прогнать tests.
-T174 [ ] Написать test перехода `Refilling -> CheckingEndGame`.
-T175 [ ] Реализовать переход в `CheckingEndGame`.
-T176 [ ] Прогнать tests.
-T177 [ ] Написать test перехода `CheckingEndGame -> GameOver`.
-T178 [ ] Реализовать переход в `GameOver`.
-T179 [ ] Прогнать tests.
-T180 [ ] Написать test `GameplayStateMachine_TransitionsToCheckingEndGame_WhenTimerExpiresDuringSwapping`.
-T181 [ ] Реализовать проверку timer после фазы `Swapping`.
-T182 [ ] Прогнать tests.
-T183 [ ] Написать test `GameplayStateMachine_TransitionsToCheckingEndGame_WhenTimerExpiresDuringResolving`.
-T184 [ ] Реализовать проверку timer после фазы `Resolving`.
-T185 [ ] Прогнать tests.
-T186 [ ] Написать test `GameplayStateMachine_TransitionsToCheckingEndGame_WhenTimerExpiresDuringApplyingGravity`.
-T187 [ ] Реализовать проверку timer после фазы `ApplyingGravity`.
-T188 [ ] Прогнать tests.
-T189 [ ] Написать test `GameplayStateMachine_TransitionsToCheckingEndGame_WhenTimerExpiresDuringRefilling`.
-T190 [ ] Реализовать проверку timer после фазы `Refilling`.
-T191 [ ] Прогнать tests.
-T192 [ ] Написать test `TurnProcessor_FinishesCurrentAtomicResolution_BeforeGameOver`.
-T193 [ ] Реализовать policy завершения текущего atomic step перед `GameOver`.
-T194 [ ] Прогнать tests.
-T195 [ ] Написать test на полный pipeline одного хода.
-T196 [ ] Связать `TurnProcessor`, state machine, gravity и refill в единый pipeline.
-T197 [ ] Прогнать tests.
+T155 [x] Написать test `GameplayStateMachine_StartsInIdle`.
+T156 [x] Создать `GameplayStateMachine`.
+T157 [x] Реализовать состояние `Idle`.
+T158 [x] Прогнать tests.
+T159 [x] Написать test перехода `Idle -> Selecting`.
+T160 [x] Реализовать переход в `Selecting`.
+T161 [x] Прогнать tests.
+T162 [x] Написать test перехода `Selecting -> Swapping`.
+T163 [x] Реализовать переход в `Swapping`.
+T164 [x] Прогнать tests.
+T165 [x] Написать test перехода `Swapping -> Resolving`.
+T166 [x] Реализовать переход в `Resolving`.
+T167 [x] Прогнать tests.
+T168 [x] Написать test перехода `Resolving -> ApplyingGravity`.
+T169 [x] Реализовать переход в `ApplyingGravity`.
+T170 [x] Прогнать tests.
+T171 [x] Написать test перехода `ApplyingGravity -> Refilling`.
+T172 [x] Реализовать переход в `Refilling`.
+T173 [x] Прогнать tests.
+T174 [x] Написать test перехода `Refilling -> CheckingEndGame`.
+T175 [x] Реализовать переход в `CheckingEndGame`.
+T176 [x] Прогнать tests.
+T177 [x] Написать test перехода `CheckingEndGame -> GameOver`.
+T178 [x] Реализовать переход в `GameOver`.
+T179 [x] Прогнать tests.
+T180 [x] Написать test `GameplayStateMachine_TransitionsToCheckingEndGame_WhenTimerExpiresDuringSwapping`.
+T181 [x] Реализовать проверку timer после фазы `Swapping`.
+T182 [x] Прогнать tests.
+T183 [x] Написать test `GameplayStateMachine_TransitionsToCheckingEndGame_WhenTimerExpiresDuringResolving`.
+T184 [x] Реализовать проверку timer после фазы `Resolving`.
+T185 [x] Прогнать tests.
+T186 [x] Написать test `GameplayStateMachine_TransitionsToCheckingEndGame_WhenTimerExpiresDuringApplyingGravity`.
+T187 [x] Реализовать проверку timer после фазы `ApplyingGravity`.
+T188 [x] Прогнать tests.
+T189 [x] Написать test `GameplayStateMachine_TransitionsToCheckingEndGame_WhenTimerExpiresDuringRefilling`.
+T190 [x] Реализовать проверку timer после фазы `Refilling`.
+T191 [x] Прогнать tests.
+T192 [x] Написать test `TurnProcessor_FinishesCurrentAtomicResolution_BeforeGameOver`.
+T193 [x] Реализовать policy завершения текущего atomic step перед `GameOver`.
+T194 [x] Прогнать tests.
+T195 [x] Написать test на полный pipeline одного хода.
+T196 [x] Связать `TurnProcessor`, state machine, gravity и refill в единый pipeline.
+T197 [x] Прогнать tests.
 
 ---
 
