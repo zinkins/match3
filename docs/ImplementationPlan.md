@@ -172,20 +172,20 @@ T123 [x] Прогнать tests.
 
 ## Фаза 7. Gravity, refill и cascade
 
-T124 [ ] Написать test `GravityResolver_DropsPieceIntoEmptyCell`.
-T125 [ ] Создать `GravityResolver`.
-T126 [ ] Реализовать падение одной фишки вниз.
-T127 [ ] Прогнать tests.
-T128 [ ] Написать test на падение нескольких фишек в колонке.
-T129 [ ] Дополнить `GravityResolver`.
-T130 [ ] Прогнать tests.
-T131 [ ] Написать test `RefillResolver_FillsTopEmptyCells`.
-T132 [ ] Создать `RefillResolver`.
-T133 [ ] Реализовать заполнение верхних пустых клеток.
-T134 [ ] Прогнать tests.
-T135 [ ] Написать test на повторную проверку board после gravity и refill.
-T136 [ ] Добавить базовый cascade recheck.
-T137 [ ] Прогнать tests.
+T124 [x] Написать test `GravityResolver_DropsPieceIntoEmptyCell`.
+T125 [x] Создать `GravityResolver`.
+T126 [x] Реализовать падение одной фишки вниз.
+T127 [x] Прогнать tests.
+T128 [x] Написать test на падение нескольких фишек в колонке.
+T129 [x] Дополнить `GravityResolver`.
+T130 [x] Прогнать tests.
+T131 [x] Написать test `RefillResolver_FillsTopEmptyCells`.
+T132 [x] Создать `RefillResolver`.
+T133 [x] Реализовать заполнение верхних пустых клеток.
+T134 [x] Прогнать tests.
+T135 [x] Написать test на повторную проверку board после gravity и refill.
+T136 [x] Добавить базовый cascade recheck.
+T137 [x] Прогнать tests.
 
 ---
 
