@@ -1,6 +1,6 @@
 namespace Match3.Core.GameCore.Pieces;
 
-public enum PieceColor
+public enum PieceType
 {
     Red = 0,
     Green = 1,

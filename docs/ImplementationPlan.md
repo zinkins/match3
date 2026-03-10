@@ -64,38 +64,42 @@ T039 [x] Прогнать tests.
 
 ## Фаза 3. Pieces, BoardState и случайная генерация поля
 
-T040 [ ] Написать test `PieceCatalog_ContainsExactlyFivePieceTypes`.
-T041 [ ] Зафиксировать ровно 5 типов элементов.
-T042 [ ] Прогнать tests.
-T043 [ ] Написать test `PieceType_HasColor`.
-T044 [ ] Зафиксировать цвет у каждого типа элемента.
-T045 [ ] Прогнать tests.
-T046 [ ] Написать test `BoardState_HasWidthEight`.
-T047 [ ] Написать test `BoardState_HasHeightEight`.
-T048 [ ] Реализовать базовый `BoardState`.
-T049 [ ] Прогнать tests.
-T050 [ ] Написать test на чтение пустой клетки.
-T051 [ ] Реализовать чтение клетки.
-T052 [ ] Прогнать tests.
-T053 [ ] Написать test на запись фишки в клетку.
-T054 [ ] Реализовать запись фишки в клетку.
-T055 [ ] Прогнать tests.
-T056 [ ] Написать test на выход за границы поля.
-T057 [ ] Реализовать проверку границ.
-T058 [ ] Прогнать tests.
-T059 [ ] Написать test на инвариант "поле всегда 8x8".
-T060 [ ] Зафиксировать инвариант в `BoardState`.
-T061 [ ] Прогнать tests.
-T062 [ ] Написать test `BoardGenerator_FillsEveryCell`.
-T063 [ ] Создать `BoardGenerator`.
-T064 [ ] Реализовать заполнение всех клеток стартового поля.
-T065 [ ] Прогнать tests.
-T066 [ ] Написать test `BoardGenerator_UsesRandomPieceTypes`.
-T067 [ ] Реализовать случайную генерацию типов элементов.
-T068 [ ] Прогнать tests.
-T069 [ ] Написать test `RefillResolver_UsesRandomPieceTypes`.
-T070 [ ] Зафиксировать случайную генерацию новых элементов при refill.
-T071 [ ] Прогнать tests.
+T040 [x] Написать test `PieceCatalog_ContainsExactlyFivePieceTypes`.
+T041 [x] Зафиксировать ровно 5 типов элементов.
+T042 [x] Прогнать tests.
+T043 [x] Написать test `PieceType_HasColor`.
+T044 [x] Зафиксировать цвет у каждого типа элемента.
+T045 [x] Прогнать tests.
+T046 [x] Написать test `BoardState_HasWidthEight`.
+T047 [x] Написать test `BoardState_HasHeightEight`.
+T048 [x] Реализовать базовый `BoardState`.
+T049 [x] Прогнать tests.
+T050 [x] Написать test на чтение пустой клетки.
+T051 [x] Реализовать чтение клетки.
+T052 [x] Прогнать tests.
+T053 [x] Написать test на запись фишки в клетку.
+T054 [x] Реализовать запись фишки в клетку.
+T055 [x] Прогнать tests.
+T056 [x] Написать test на выход за границы поля.
+T057 [x] Реализовать проверку границ.
+T058 [x] Прогнать tests.
+T059 [x] Написать test на инвариант "поле всегда 8x8".
+T060 [x] Зафиксировать инвариант в `BoardState`.
+T061 [x] Прогнать tests.
+T062 [x] Написать test `BoardGenerator_FillsEveryCell`.
+T063 [x] Создать `BoardGenerator`.
+T064 [x] Реализовать заполнение всех клеток стартового поля.
+T065 [x] Прогнать tests.
+T066 [x] Написать test `BoardGenerator_UsesRandomPieceTypes`.
+T067 [x] Реализовать случайную генерацию типов элементов.
+T068 [x] Прогнать tests.
+T069 [x] Написать test `RefillResolver_UsesRandomPieceTypes`.
+T070 [x] Зафиксировать случайную генерацию новых элементов при refill.
+T071 [x] Прогнать tests.
+T071a [x] Добавить `IRandomSource` и реализацию по умолчанию.
+T071b [x] Перевести `BoardGenerator` и `RefillResolver` на `IRandomSource`.
+T071c [x] Добавить тест на детерминизм генерации через фиксированную последовательность.
+T071d [x] Прогнать tests.
 
 ---
 
