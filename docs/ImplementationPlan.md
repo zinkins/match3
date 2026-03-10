@@ -348,24 +348,24 @@ T274 [x] Прогнать tests.
 
 ## Фаза 12. Shared Presentation и обязательные экраны
 
-T275 [ ] Создать структуру папок `Screens/`, `Rendering/`, `Animation/`, `Input/`, `UI/` в `Match3.Presentation`.
-T276 [ ] [P] Создать `MainMenuScreen`.
-T277 [ ] [P] Создать `GameOverScreen`.
-T278 [ ] [P] Создать `GameplayScreen`.
-T279 [ ] Создать `BoardRenderer`.
-T280 [ ] Создать `HudRenderer`.
-T281 [ ] Создать `GameplayPresenter`.
-T282 [ ] Подключить `GameplayPresenter` к `Game Flow`.
-T283 [ ] Создать `AnimationQueue`.
-T284 [ ] Подключить `Domain Events` к `AnimationQueue`.
-T285 [ ] Реализовать на `MainMenuScreen` единственную кнопку `Play`.
-T286 [ ] Подключить кнопку `Play` к запуску игровой сессии.
-T287 [ ] Реализовать на `GameOverScreen` сообщение `Game Over`.
-T288 [ ] Реализовать на `GameOverScreen` единственную кнопку `Ok`.
-T289 [ ] Подключить кнопку `Ok` к возврату в `MainMenuScreen`.
-T290 [ ] Реализовать отображение score в `HudRenderer`.
-T291 [ ] Реализовать отображение remaining time в `HudRenderer`.
-T292 [ ] Реализовать policy: `Game Over` показывается после завершения уже начатых анимаций текущего atomic step.
+T275 [x] Создать структуру папок `Screens/`, `Rendering/`, `Animation/`, `Input/`, `UI/` в `Match3.Presentation`.
+T276 [x] [P] Создать `MainMenuScreen`.
+T277 [x] [P] Создать `GameOverScreen`.
+T278 [x] [P] Создать `GameplayScreen`.
+T279 [x] Создать `BoardRenderer`.
+T280 [x] Создать `HudRenderer`.
+T281 [x] Создать `GameplayPresenter`.
+T282 [x] Подключить `GameplayPresenter` к `Game Flow`.
+T283 [x] Создать `AnimationQueue`.
+T284 [x] Подключить `Domain Events` к `AnimationQueue`.
+T285 [x] Реализовать на `MainMenuScreen` единственную кнопку `Play`.
+T286 [x] Подключить кнопку `Play` к запуску игровой сессии.
+T287 [x] Реализовать на `GameOverScreen` сообщение `Game Over`.
+T288 [x] Реализовать на `GameOverScreen` единственную кнопку `Ok`.
+T289 [x] Подключить кнопку `Ok` к возврату в `MainMenuScreen`.
+T290 [x] Реализовать отображение score в `HudRenderer`.
+T291 [x] Реализовать отображение remaining time в `HudRenderer`.
+T292 [x] Реализовать policy: `Game Over` показывается после завершения уже начатых анимаций текущего atomic step.
 
 ---
 
