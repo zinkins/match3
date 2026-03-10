@@ -261,37 +261,37 @@ T197 [x] Прогнать tests.
 
 ## Фаза 10. Domain Events
 
-T198 [ ] Написать test `TurnProcessor_ReturnsPiecesSwappedEvent`.
-T199 [ ] Создать `PiecesSwapped` event.
-T200 [ ] Вернуть `PiecesSwapped` из `TurnProcessor`.
-T201 [ ] Прогнать tests.
-T202 [ ] Написать test `TurnProcessor_ReturnsSwapRevertedEvent`.
-T203 [ ] Создать `SwapReverted` event.
-T204 [ ] Вернуть `SwapReverted` из `TurnProcessor`.
-T205 [ ] Прогнать tests.
-T206 [ ] Написать test `TurnProcessor_ReturnsMatchResolvedEvent`.
-T207 [ ] Создать `MatchResolved` event.
-T208 [ ] Вернуть `MatchResolved` из pipeline.
-T209 [ ] Прогнать tests.
-T210 [ ] Написать test `TurnProcessor_ReturnsPiecesFellEvent`.
-T211 [ ] Создать `PiecesFell` event.
-T212 [ ] Вернуть `PiecesFell` после gravity.
-T213 [ ] Прогнать tests.
-T214 [ ] Написать test `TurnProcessor_ReturnsPiecesSpawnedEvent`.
-T215 [ ] Создать `PiecesSpawned` event.
-T216 [ ] Вернуть `PiecesSpawned` после refill.
-T217 [ ] Прогнать tests.
-T218 [ ] Написать test `TurnProcessor_ReturnsScoreAddedEvent`.
-T219 [ ] Создать `ScoreAdded` event.
-T220 [ ] Вернуть `ScoreAdded` после начисления очков.
-T221 [ ] Прогнать tests.
-T222 [ ] Написать test `TurnProcessor_ReturnsGameEndedEvent`.
-T223 [ ] Создать `GameEnded` event.
-T224 [ ] Вернуть `GameEnded` при завершении игры.
-T225 [ ] Прогнать tests.
-T226 [ ] Написать test `TurnProcessor_ReturnsGameEndedEvent_WhenTimerExpiresMidPipeline`.
-T227 [ ] Дополнить pipeline публикацией `GameEnded` при истечении timer во время промежуточной фазы.
-T228 [ ] Прогнать tests.
+T198 [x] Написать test `TurnProcessor_ReturnsPiecesSwappedEvent`.
+T199 [x] Создать `PiecesSwapped` event.
+T200 [x] Вернуть `PiecesSwapped` из `TurnProcessor`.
+T201 [x] Прогнать tests.
+T202 [x] Написать test `TurnProcessor_ReturnsSwapRevertedEvent`.
+T203 [x] Создать `SwapReverted` event.
+T204 [x] Вернуть `SwapReverted` из `TurnProcessor`.
+T205 [x] Прогнать tests.
+T206 [x] Написать test `TurnProcessor_ReturnsMatchResolvedEvent`.
+T207 [x] Создать `MatchResolved` event.
+T208 [x] Вернуть `MatchResolved` из pipeline.
+T209 [x] Прогнать tests.
+T210 [x] Написать test `TurnProcessor_ReturnsPiecesFellEvent`.
+T211 [x] Создать `PiecesFell` event.
+T212 [x] Вернуть `PiecesFell` после gravity.
+T213 [x] Прогнать tests.
+T214 [x] Написать test `TurnProcessor_ReturnsPiecesSpawnedEvent`.
+T215 [x] Создать `PiecesSpawned` event.
+T216 [x] Вернуть `PiecesSpawned` после refill.
+T217 [x] Прогнать tests.
+T218 [x] Написать test `TurnProcessor_ReturnsScoreAddedEvent`.
+T219 [x] Создать `ScoreAdded` event.
+T220 [x] Вернуть `ScoreAdded` после начисления очков.
+T221 [x] Прогнать tests.
+T222 [x] Написать test `TurnProcessor_ReturnsGameEndedEvent`.
+T223 [x] Создать `GameEnded` event.
+T224 [x] Вернуть `GameEnded` при завершении игры.
+T225 [x] Прогнать tests.
+T226 [x] Написать test `TurnProcessor_ReturnsGameEndedEvent_WhenTimerExpiresMidPipeline`.
+T227 [x] Дополнить pipeline публикацией `GameEnded` при истечении timer во время промежуточной фазы.
+T228 [x] Прогнать tests.
 
 ---
 
