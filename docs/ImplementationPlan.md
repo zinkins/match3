@@ -34,31 +34,31 @@ T014 [x] Прогнать весь test suite и убедиться, что ин
 
 ## Фаза 2. Базовая структура Game Core и Game Flow
 
-T015 [ ] Создать папку `GameCore/` в `Match3.Core`.
-T016 [ ] Создать папку `GameFlow/` в `Match3.Core`.
-T017 [ ] [P] Создать подпапку `GameCore/ValueObjects/`.
-T018 [ ] [P] Создать подпапку `GameCore/Board/`.
-T019 [ ] [P] Создать подпапку `GameCore/Pieces/`.
-T020 [ ] [P] Создать подпапку `GameCore/Bonuses/`.
-T021 [ ] [P] Создать подпапку `GameCore/Events/`.
-T022 [ ] [P] Создать подпапку `GameFlow/Sessions/`.
-T023 [ ] [P] Создать подпапку `GameFlow/StateMachine/`.
-T024 [ ] [P] Создать подпапку `GameFlow/Pipeline/`.
-T025 [ ] Написать test на создание `GridPosition`.
-T026 [ ] Реализовать `GridPosition`.
-T027 [ ] Прогнать tests.
-T028 [ ] Написать test на создание `Move`.
-T029 [ ] Реализовать `Move`.
-T030 [ ] Прогнать tests.
-T031 [ ] Написать test на создание `Piece`.
-T032 [ ] Реализовать `Piece`.
-T033 [ ] Прогнать tests.
-T034 [ ] Написать test на создание `PieceColor`.
-T035 [ ] Реализовать `PieceColor`.
-T036 [ ] Прогнать tests.
-T037 [ ] Написать test на создание `BonusKind`.
-T038 [ ] Реализовать `BonusKind`.
-T039 [ ] Прогнать tests.
+T015 [x] Создать папку `GameCore/` в `Match3.Core`.
+T016 [x] Создать папку `GameFlow/` в `Match3.Core`.
+T017 [x] [P] Создать подпапку `GameCore/ValueObjects/`.
+T018 [x] [P] Создать подпапку `GameCore/Board/`.
+T019 [x] [P] Создать подпапку `GameCore/Pieces/`.
+T020 [x] [P] Создать подпапку `GameCore/Bonuses/`.
+T021 [x] [P] Создать подпапку `GameCore/Events/`.
+T022 [x] [P] Создать подпапку `GameFlow/Sessions/`.
+T023 [x] [P] Создать подпапку `GameFlow/StateMachine/`.
+T024 [x] [P] Создать подпапку `GameFlow/Pipeline/`.
+T025 [x] Написать test на создание `GridPosition`.
+T026 [x] Реализовать `GridPosition`.
+T027 [x] Прогнать tests.
+T028 [x] Написать test на создание `Move`.
+T029 [x] Реализовать `Move`.
+T030 [x] Прогнать tests.
+T031 [x] Написать test на создание `Piece`.
+T032 [x] Реализовать `Piece`.
+T033 [x] Прогнать tests.
+T034 [x] Написать test на создание `PieceColor`.
+T035 [x] Реализовать `PieceColor`.
+T036 [x] Прогнать tests.
+T037 [x] Написать test на создание `BonusKind`.
+T038 [x] Реализовать `BonusKind`.
+T039 [x] Прогнать tests.
 
 ---
 
