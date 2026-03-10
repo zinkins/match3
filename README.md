@@ -23,6 +23,8 @@ Desktop development является самым быстрым способом 
 - `docs/Architecture.md`: целевой architectural approach (`Game Core + Game Flow + Presentation`)
 - `docs/ADR-001-architecture.md`: architecture decision record для выбранного подхода
 - `docs/SolutionStructure.md`: рекомендуемая будущая структура solution/project split
+- `docs/ImplementationPlan.md`: пошаговый implementation plan
+- `docs/TestStrategy.md`: test-first strategy и порядок добавления tests
 
 ## Contributing
 Contributor workflow, style, testing и ожидания по PR описаны в [AGENTS.md](AGENTS.md).
