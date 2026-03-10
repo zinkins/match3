@@ -20,7 +20,7 @@
     <ProjectReference Include="..\Match3.Presentation\Match3.Presentation.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.*" />
+    <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.4.1" />
     <PackageReference Include="MonoGame.Content.Builder.Task" Version="3.8.5-preview.3" />
   </ItemGroup>
 </Project>

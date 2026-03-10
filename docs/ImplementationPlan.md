@@ -26,9 +26,9 @@ T008 [x] Настроить reference `Match3.iOS -> Match3.Presentation`.
 T009 [x] Настроить reference `Match3.Tests -> Match3.Core`.
 T010 [x] Подключить test framework в `Match3.Tests`.
 T011 [x] Подключить test runner packages в `Match3.Tests`.
-T012 [ ] [P] Добавить базовый smoke test `Tests_Project_BuildsAndRuns`.
+T012 [x] [P] Добавить базовый smoke test `Tests_Project_BuildsAndRuns`.
 T013 [x] [P] Проверить, что `Match3.Tests` не зависит от `MonoGame`.
-T014 [ ] Прогнать весь test suite и убедиться, что инфраструктура работает.
+T014 [x] Прогнать весь test suite и убедиться, что инфраструктура работает.
 
 ---
 
