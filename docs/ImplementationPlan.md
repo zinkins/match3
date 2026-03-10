@@ -139,19 +139,19 @@ T100 [x] Прогнать tests.
 
 ## Фаза 5. Поиск матчей
 
-T101 [ ] Написать test `MatchFinder_FindsHorizontalMatchOfThree`.
-T102 [ ] Создать `MatchFinder`.
-T103 [ ] Реализовать поиск horizontal match длины 3.
-T104 [ ] Прогнать tests.
-T105 [ ] Написать test `MatchFinder_FindsVerticalMatchOfThree`.
-T106 [ ] Реализовать поиск vertical match длины 3.
-T107 [ ] Прогнать tests.
-T108 [ ] Написать test `MatchFinder_DoesNotReturnMatch_WhenNoSequenceExists`.
-T109 [ ] Реализовать сценарий без match.
-T110 [ ] Прогнать tests.
-T111 [ ] Написать test на возврат нескольких match groups.
-T112 [ ] Реализовать сбор нескольких match groups.
-T113 [ ] Прогнать tests.
+T101 [x] Написать test `MatchFinder_FindsHorizontalMatchOfThree`.
+T102 [x] Создать `MatchFinder`.
+T103 [x] Реализовать поиск horizontal match длины 3.
+T104 [x] Прогнать tests.
+T105 [x] Написать test `MatchFinder_FindsVerticalMatchOfThree`.
+T106 [x] Реализовать поиск vertical match длины 3.
+T107 [x] Прогнать tests.
+T108 [x] Написать test `MatchFinder_DoesNotReturnMatch_WhenNoSequenceExists`.
+T109 [x] Реализовать сценарий без match.
+T110 [x] Прогнать tests.
+T111 [x] Написать test на возврат нескольких match groups.
+T112 [x] Реализовать сбор нескольких match groups.
+T113 [x] Прогнать tests.
 
 ---
 
