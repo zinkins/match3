@@ -297,52 +297,52 @@ T228 [x] Прогнать tests.
 
 ## Фаза 11. Бонусы
 
-T229 [ ] Написать test `BonusFactory_CreatesLine_ForMatchOfFour`.
-T230 [ ] Создать `BonusFactory`.
-T231 [ ] Реализовать создание `Line` для match of four.
-T232 [ ] Прогнать tests.
-T233 [ ] Написать test `BonusFactory_CreatesLine_OnLastMovedCell`.
-T234 [ ] Реализовать placement rule для `Line` на last moved cell.
-T235 [ ] Прогнать tests.
-T236 [ ] Написать test `LineBonus_HasSameColorAsMatchedPieces`.
-T237 [ ] Реализовать наследование цвета для `Line`.
-T238 [ ] Прогнать tests.
-T239 [ ] Написать test `LineBonus_HasOrientation`.
-T240 [ ] Реализовать horizontal/vertical orientation для `Line`.
-T241 [ ] Прогнать tests.
-T242 [ ] Написать test `BonusFactory_CreatesBomb_ForMatchOfFive`.
-T243 [ ] Реализовать создание `Bomb` для match of five.
-T244 [ ] Прогнать tests.
-T245 [ ] Написать test `BonusFactory_CreatesBomb_OnLastMovedCell_ForLinearMatch`.
-T246 [ ] Реализовать placement rule для `Bomb` на last moved cell.
-T247 [ ] Прогнать tests.
-T248 [ ] Написать test `BonusFactory_CreatesBomb_ForCrossMatch`.
-T249 [ ] Реализовать создание `Bomb` для cross match в точке пересечения.
-T250 [ ] Прогнать tests.
-T251 [ ] Написать test `BombBonus_HasSameColorAsMatchedPieces`.
-T252 [ ] Реализовать наследование цвета для `Bomb`.
-T253 [ ] Прогнать tests.
-T254 [ ] Написать test `LineBonus_ActivatesAndProducesDestroyers`.
-T255 [ ] Создать `LineBonusBehavior`.
-T256 [ ] Реализовать активацию `Line`.
-T257 [ ] Прогнать tests.
-T258 [ ] Написать test `Destroyer_DestroysPiecesOnPath`.
-T259 [ ] Реализовать разрушение элементов на траектории `Destroyer`.
-T260 [ ] Прогнать tests.
-T261 [ ] Написать test `Destroyer_ActivatesOtherBonusesOnPath`.
-T262 [ ] Реализовать активацию бонусов на траектории `Destroyer`.
-T263 [ ] Прогнать tests.
-T264 [ ] Написать test `BombBonus_ActivatesAndExplodesArea`.
-T265 [ ] Создать `BombBonusBehavior`.
-T266 [ ] Реализовать активацию `Bomb`.
-T267 [ ] Прогнать tests.
-T268 [ ] Написать test `BombBonus_ActivatesOtherBonusesInsideExplosionArea`.
-T269 [ ] Реализовать активацию бонусов внутри области взрыва.
-T270 [ ] Прогнать tests.
-T271 [ ] Написать test на chain reaction бонусов.
-T272 [ ] Создать `BonusActivationResolver`.
-T273 [ ] Реализовать chain reaction.
-T274 [ ] Прогнать tests.
+T229 [x] Написать test `BonusFactory_CreatesLine_ForMatchOfFour`.
+T230 [x] Создать `BonusFactory`.
+T231 [x] Реализовать создание `Line` для match of four.
+T232 [x] Прогнать tests.
+T233 [x] Написать test `BonusFactory_CreatesLine_OnLastMovedCell`.
+T234 [x] Реализовать placement rule для `Line` на last moved cell.
+T235 [x] Прогнать tests.
+T236 [x] Написать test `LineBonus_HasSameColorAsMatchedPieces`.
+T237 [x] Реализовать наследование цвета для `Line`.
+T238 [x] Прогнать tests.
+T239 [x] Написать test `LineBonus_HasOrientation`.
+T240 [x] Реализовать horizontal/vertical orientation для `Line`.
+T241 [x] Прогнать tests.
+T242 [x] Написать test `BonusFactory_CreatesBomb_ForMatchOfFive`.
+T243 [x] Реализовать создание `Bomb` для match of five.
+T244 [x] Прогнать tests.
+T245 [x] Написать test `BonusFactory_CreatesBomb_OnLastMovedCell_ForLinearMatch`.
+T246 [x] Реализовать placement rule для `Bomb` на last moved cell.
+T247 [x] Прогнать tests.
+T248 [x] Написать test `BonusFactory_CreatesBomb_ForCrossMatch`.
+T249 [x] Реализовать создание `Bomb` для cross match в точке пересечения.
+T250 [x] Прогнать tests.
+T251 [x] Написать test `BombBonus_HasSameColorAsMatchedPieces`.
+T252 [x] Реализовать наследование цвета для `Bomb`.
+T253 [x] Прогнать tests.
+T254 [x] Написать test `LineBonus_ActivatesAndProducesDestroyers`.
+T255 [x] Создать `LineBonusBehavior`.
+T256 [x] Реализовать активацию `Line`.
+T257 [x] Прогнать tests.
+T258 [x] Написать test `Destroyer_DestroysPiecesOnPath`.
+T259 [x] Реализовать разрушение элементов на траектории `Destroyer`.
+T260 [x] Прогнать tests.
+T261 [x] Написать test `Destroyer_ActivatesOtherBonusesOnPath`.
+T262 [x] Реализовать активацию бонусов на траектории `Destroyer`.
+T263 [x] Прогнать tests.
+T264 [x] Написать test `BombBonus_ActivatesAndExplodesArea`.
+T265 [x] Создать `BombBonusBehavior`.
+T266 [x] Реализовать активацию `Bomb`.
+T267 [x] Прогнать tests.
+T268 [x] Написать test `BombBonus_ActivatesOtherBonusesInsideExplosionArea`.
+T269 [x] Реализовать активацию бонусов внутри области взрыва.
+T270 [x] Прогнать tests.
+T271 [x] Написать test на chain reaction бонусов.
+T272 [x] Создать `BonusActivationResolver`.
+T273 [x] Реализовать chain reaction.
+T274 [x] Прогнать tests.
 
 ---
 
