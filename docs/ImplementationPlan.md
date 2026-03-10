@@ -105,35 +105,35 @@ T071d [x] Прогнать tests.
 
 ## Фаза 4. Валидация хода и selection logic
 
-T072 [ ] Написать test `GridPosition_IsAdjacentTo_HorizontalNeighbor`.
-T073 [ ] Реализовать `GridPosition.IsAdjacentTo`.
-T074 [ ] Прогнать tests.
-T075 [ ] Написать test `GridPosition_IsAdjacentTo_VerticalNeighbor`.
-T076 [ ] Дополнить реализацию `IsAdjacentTo`.
-T077 [ ] Прогнать tests.
-T078 [ ] Написать test `GridPosition_IsAdjacentTo_DiagonalCell_ReturnsFalse`.
-T079 [ ] Дополнить реализацию `IsAdjacentTo`.
-T080 [ ] Прогнать tests.
-T081 [ ] Написать test `MoveValidator_AllowsAdjacentSwap`.
-T082 [ ] Создать `MoveValidator`.
-T083 [ ] Реализовать проверку соседнего swap.
-T084 [ ] Прогнать tests.
-T085 [ ] Написать test `MoveValidator_RejectsNonAdjacentSwap`.
-T086 [ ] Реализовать отказ для non-adjacent swap.
-T087 [ ] Прогнать tests.
-T088 [ ] Написать test `MoveValidator_RejectsSameCellSwap`.
-T089 [ ] Реализовать отказ для swap в ту же клетку.
-T090 [ ] Прогнать tests.
-T091 [ ] Написать test `SelectionController_StoresFirstSelectedCell`.
-T092 [ ] Создать `SelectionController`.
-T093 [ ] Реализовать выбор первого элемента.
-T094 [ ] Прогнать tests.
-T095 [ ] Написать test `SelectionController_ResetsSelection_WhenSecondCellIsNotAdjacent`.
-T096 [ ] Реализовать сброс selection для non-adjacent second click.
-T097 [ ] Прогнать tests.
-T098 [ ] Написать test `SelectionController_CreatesMove_WhenSecondCellIsAdjacent`.
-T099 [ ] Реализовать формирование `Move` при соседнем second click.
-T100 [ ] Прогнать tests.
+T072 [x] Написать test `GridPosition_IsAdjacentTo_HorizontalNeighbor`.
+T073 [x] Реализовать `GridPosition.IsAdjacentTo`.
+T074 [x] Прогнать tests.
+T075 [x] Написать test `GridPosition_IsAdjacentTo_VerticalNeighbor`.
+T076 [x] Дополнить реализацию `IsAdjacentTo`.
+T077 [x] Прогнать tests.
+T078 [x] Написать test `GridPosition_IsAdjacentTo_DiagonalCell_ReturnsFalse`.
+T079 [x] Дополнить реализацию `IsAdjacentTo`.
+T080 [x] Прогнать tests.
+T081 [x] Написать test `MoveValidator_AllowsAdjacentSwap`.
+T082 [x] Создать `MoveValidator`.
+T083 [x] Реализовать проверку соседнего swap.
+T084 [x] Прогнать tests.
+T085 [x] Написать test `MoveValidator_RejectsNonAdjacentSwap`.
+T086 [x] Реализовать отказ для non-adjacent swap.
+T087 [x] Прогнать tests.
+T088 [x] Написать test `MoveValidator_RejectsSameCellSwap`.
+T089 [x] Реализовать отказ для swap в ту же клетку.
+T090 [x] Прогнать tests.
+T091 [x] Написать test `SelectionController_StoresFirstSelectedCell`.
+T092 [x] Создать `SelectionController`.
+T093 [x] Реализовать выбор первого элемента.
+T094 [x] Прогнать tests.
+T095 [x] Написать test `SelectionController_ResetsSelection_WhenSecondCellIsNotAdjacent`.
+T096 [x] Реализовать сброс selection для non-adjacent second click.
+T097 [x] Прогнать tests.
+T098 [x] Написать test `SelectionController_CreatesMove_WhenSecondCellIsAdjacent`.
+T099 [x] Реализовать формирование `Move` при соседнем second click.
+T100 [x] Прогнать tests.
 
 ---
 
