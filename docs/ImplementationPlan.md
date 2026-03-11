@@ -412,28 +412,128 @@ T325 [x] Проверить компиляцию `iOS`.
 
 ---
 
-## Фаза 15. Финализация и проверка по ТЗ
+## Фаза 15. Runtime rendering и screen loop
 
-T326 [ ] Прогнать полный test suite.
-T327 [ ] Выполнить manual smoke test в `DesktopGL`.
-T328 [ ] Отдельно проверить сценарий истечения timer во время `Swapping`.
-T329 [ ] Отдельно проверить сценарий истечения timer во время `Resolving`.
-T330 [ ] Отдельно проверить сценарий истечения timer во время `ApplyingGravity`.
-T331 [ ] Отдельно проверить сценарий истечения timer во время `Refilling`.
-T332 [ ] Отдельно проверить `Main Menu` с одной кнопкой `Play`.
-T333 [ ] Отдельно проверить `Game Over` с одной кнопкой `Ok`.
-T334 [ ] Отдельно проверить отображение score на игровом экране.
-T335 [ ] Отдельно проверить отображение remaining time на игровом экране.
-T336 [ ] Отдельно проверить reset selection для non-adjacent second click.
-T337 [ ] Отдельно проверить создание `Line` на last moved cell.
-T338 [ ] Отдельно проверить создание `Bomb` на last moved cell.
-T339 [ ] Отдельно проверить создание `Bomb` в точке пересечения match groups.
-T340 [ ] Отдельно проверить анимацию движения `Destroyer`.
-T341 [ ] Сверить реализацию с `TZ.txt`.
-T342 [ ] Сверить реализацию с `GameDesignDocument.md`.
-T343 [ ] Сверить реализацию с `Architecture.md`.
-T344 [ ] Сверить реализацию с `ADR-001-architecture.md`.
-T345 [ ] Обновить `README.md`, если фактическая структура solution изменилась.
-T346 [ ] Обновить `AGENTS.md`, если workflow contributors изменился.
-T347 [ ] Обновить `SolutionStructure.md`, если решение было скорректировано по ходу реализации.
-T348 [ ] Подготовить итоговый список реализованных фич и покрытых tests для demo.
+T326 [ ] Написать test `BoardRenderer_ProducesRenderableBoardSnapshot`.
+T327 [ ] Дополнить `BoardRenderer` построением render snapshot для всего поля.
+T328 [ ] Прогнать tests.
+T329 [ ] Написать test `HudRenderer_ProducesHudSnapshot`.
+T330 [ ] Дополнить `HudRenderer` render snapshot для score и timer.
+T331 [ ] Прогнать tests.
+T332 [ ] Создать `SpriteBatchRenderer`.
+T333 [ ] Реализовать отрисовку квадрата клетки и элемента через `SpriteBatch`.
+T334 [ ] Выполнить manual smoke check рендера одной клетки.
+T335 [ ] Реализовать отрисовку полного поля 8x8 через `BoardRenderer`.
+T336 [ ] Выполнить manual smoke check полного поля.
+T337 [ ] Реализовать отрисовку HUD через `HudRenderer`.
+T338 [ ] Выполнить manual smoke check HUD.
+T339 [ ] Реализовать отрисовку `MainMenuScreen`.
+T340 [ ] Проверить manual render `MainMenuScreen`.
+T341 [ ] Реализовать отрисовку `GameplayScreen`.
+T342 [ ] Проверить manual render `GameplayScreen`.
+T343 [ ] Реализовать отрисовку `GameOverScreen`.
+T344 [ ] Проверить manual render `GameOverScreen`.
+T345 [ ] Подключить screen update/draw loop в `Match3Game`.
+T346 [ ] Проверить переходы экранов в runtime.
+T347 [ ] Подключить render selection highlight.
+T348 [ ] Проверить visual selection highlight вручную.
+T349 [ ] Подключить проигрывание animation queue к render loop.
+T350 [ ] Проверить визуально swap/fall/spawn/destroyer animations вручную.
+T351 [ ] Написать test `MouseInputRouter_MapsLeftClickToBoardSelection`.
+T352 [ ] Создать `MouseInputRouter`.
+T353 [ ] Реализовать runtime обработку mouse input для игрового поля.
+T354 [ ] Прогнать tests.
+T355 [ ] Написать test `TouchInputRouter_MapsTapToBoardSelection`.
+T356 [ ] Создать `TouchInputRouter`.
+T357 [ ] Реализовать runtime обработку touch input для игрового поля.
+T358 [ ] Прогнать tests.
+T359 [ ] Подключить input routing к `GameplayScreen`.
+T360 [ ] Проверить manual input на игровом поле для desktop и mobile.
+T361 [ ] Реализовать обработку input для кнопки `Play`.
+T362 [ ] Реализовать обработку input для кнопки `Ok`.
+T363 [ ] Проверить manual input для menu/game over экранов.
+T364 [ ] Написать test `LayoutCalculator_ProducesStableGameplayLayout_ForDifferentViewportSizes`.
+T365 [ ] Создать `LayoutCalculator`.
+T366 [ ] Реализовать адаптивный layout поля и HUD для разных desktop resolution.
+T367 [ ] Прогнать tests.
+T368 [ ] Написать test `LayoutCalculator_ProducesStableGameplayLayout_ForSupportedMobileOrientations`.
+T369 [ ] Реализовать адаптацию layout для mobile landscape orientations.
+T370 [ ] Прогнать tests.
+T371 [ ] Реализовать layout policy с учетом safe area и отступов экрана для menu/game over/gameplay экранов.
+T372 [ ] Проверить manual smoke test UI на нескольких aspect ratio.
+
+---
+
+## Фаза 16. Конфигурация и настраиваемые параметры
+
+T373 [ ] Написать test `BoardSize_CannotBeCreated_WithNonPositiveDimensions`.
+T374 [ ] Создать value object `BoardSize`.
+T375 [ ] Реализовать инварианты `BoardSize`.
+T376 [ ] Прогнать tests.
+T377 [ ] Написать test `GameConfig_LoadsBoardSizeFromFile`.
+T378 [ ] Создать `GameConfig`.
+T379 [ ] Создать файл конфигурации приложения.
+T380 [ ] Реализовать чтение `BoardSize` из конфигурации.
+T381 [ ] Прогнать tests.
+T382 [ ] Написать test `GameConfig_LoadsGameplayTimingValues`.
+T383 [ ] Добавить в конфиг timer/cell size/animation duration.
+T384 [ ] Реализовать чтение gameplay/render параметров из файла.
+T385 [ ] Прогнать tests.
+T386 [ ] Перевести `BoardState` на использование `BoardSize`.
+T387 [ ] Перевести `BoardTransform` на размеры из конфига.
+T388 [ ] Перевести `GameSession` на стартовый timer из конфига.
+T389 [ ] Прогнать tests.
+T390 [ ] Подключить загрузку конфига в platform startup.
+T391 [ ] Проверить runtime override параметров через конфиг файл.
+
+---
+
+## Фаза 17. DI container и composition root
+
+T392 [ ] Написать test `ServiceRegistration_CanResolveGameplayScreen`.
+T393 [ ] Подключить `Microsoft.Extensions.DependencyInjection`.
+T394 [ ] Создать `AddMatch3Core(...)`.
+T395 [ ] Создать `AddMatch3Presentation(...)`.
+T396 [ ] Прогнать tests.
+T397 [ ] Зарегистрировать config как `Singleton`.
+T398 [ ] Зарегистрировать stateless services как `Singleton`.
+T399 [ ] Зарегистрировать session state как scoped lifetime.
+T400 [ ] Прогнать tests.
+T401 [ ] Перевести platform composition root на `IServiceCollection`.
+T402 [ ] Создать session scope для игрового матча.
+T403 [ ] Подключить пересоздание session scope при старте новой игры.
+T404 [ ] Прогнать tests.
+T405 [ ] Проверить, что `Game Core` не зависит от DI-контейнера.
+T406 [ ] Проверить, что platform projects остаются composition root.
+
+---
+
+## Фаза 18. Финализация и проверка по ТЗ
+
+T407 [ ] Прогнать полный test suite.
+T408 [ ] Выполнить manual smoke test в `DesktopGL`.
+T409 [ ] Отдельно проверить сценарий истечения timer во время `Swapping`.
+T410 [ ] Отдельно проверить сценарий истечения timer во время `Resolving`.
+T411 [ ] Отдельно проверить сценарий истечения timer во время `ApplyingGravity`.
+T412 [ ] Отдельно проверить сценарий истечения timer во время `Refilling`.
+T413 [ ] Отдельно проверить `Main Menu` с одной кнопкой `Play`.
+T414 [ ] Отдельно проверить `Game Over` с одной кнопкой `Ok`.
+T415 [ ] Отдельно проверить отображение score на игровом экране.
+T416 [ ] Отдельно проверить отображение remaining time на игровом экране.
+T417 [ ] Отдельно проверить reset selection для non-adjacent second click.
+T418 [ ] Отдельно проверить создание `Line` на last moved cell.
+T419 [ ] Отдельно проверить создание `Bomb` на last moved cell.
+T420 [ ] Отдельно проверить создание `Bomb` в точке пересечения match groups.
+T421 [ ] Отдельно проверить анимацию движения `Destroyer`.
+T422 [ ] Отдельно проверить UI на desktop/mobile viewport с разным aspect ratio.
+T423 [ ] Отдельно проверить supported mobile orientations.
+T424 [ ] Отдельно проверить mouse input на desktop.
+T425 [ ] Отдельно проверить touch input на mobile.
+T426 [ ] Сверить реализацию с `GameDesignDocument.md`.
+T427 [ ] Сверить реализацию с `Architecture.md`.
+T428 [ ] Сверить реализацию с `ADR-001-architecture.md`.
+T429 [ ] Сверить реализацию с `TZ.txt`.
+T430 [ ] Обновить `README.md`, если фактическая структура solution изменилась.
+T431 [ ] Обновить `AGENTS.md`, если workflow contributors изменился.
+T432 [ ] Обновить `SolutionStructure.md`, если решение было скорректировано по ходу реализации.
+T433 [ ] Подготовить итоговый список реализованных фич и покрытых tests для demo.
