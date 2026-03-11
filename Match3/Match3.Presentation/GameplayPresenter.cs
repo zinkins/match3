@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using Match3.Core.GameCore.Board;
+using Match3.Core.GameCore.Bonuses;
 using Match3.Core.GameCore.ValueObjects;
 using Match3.Core.GameFlow.Pipeline;
 using Match3.Core.GameFlow.Sessions;
@@ -28,6 +30,8 @@ public sealed class GameplayPresenter
 
     public AnimationQueue AnimationQueue { get; }
 
+    public Dictionary<GridPosition, BonusToken> Bonuses { get; } = [];
+
     public int Score { get; private set; }
 
     public TimeSpan RemainingTime => session.RemainingTime;
@@ -40,7 +44,7 @@ public sealed class GameplayPresenter
 
         if (AnimationQueue.HasRunningAnimations)
         {
-            AnimationQueue.Dequeue();
+            AnimationQueue.Update((float)elapsed.TotalSeconds);
         }
     }
 
@@ -51,7 +55,8 @@ public sealed class GameplayPresenter
             move,
             session,
             stateMachine,
-            currentScore: Score);
+            currentScore: Score,
+            bonuses: Bonuses);
 
         AnimationQueue.Enqueue(result.Events);
 

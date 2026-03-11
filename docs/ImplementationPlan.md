@@ -437,10 +437,10 @@ T345 [x] Подключить screen update/draw loop в `Match3Game`.
 T346 [x] Проверить переходы экранов в runtime.
 T347 [x] Подключить render selection highlight.
 T348 [x] Проверить visual selection highlight вручную.
-T349 [ ] Подключить проигрывание animation queue к render loop.
+T349 [x] Подключить проигрывание animation queue к render loop.
 T350 [ ] Проверить визуально swap/fall/spawn/destroyer animations вручную.
-T350a [ ] Реализовать визуальный рендер `Line` bonus как приплюснутого ромба с направлением по оси действия.
-T350b [ ] Реализовать визуальный рендер `Bomb` bonus как круга.
+T350a [x] Реализовать визуальный рендер `Line` bonus как приплюснутого ромба с направлением по оси действия.
+T350b [x] Реализовать визуальный рендер `Bomb` bonus как круга.
 T350c [ ] Проверить визуально отличие бонусов от обычных элементов.
 T351 [x] Написать test `MouseInputRouter_MapsLeftClickToBoardSelection`.
 T352 [x] Создать `MouseInputRouter`.

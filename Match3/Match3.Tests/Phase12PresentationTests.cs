@@ -80,8 +80,23 @@ public class Phase12PresentationTests
 
         Assert.False(presenter.ShouldShowGameOverOverlay);
 
-        presenter.AnimationQueue.Dequeue();
+        presenter.Update(TimeSpan.FromMilliseconds(20));
         Assert.True(presenter.ShouldShowGameOverOverlay);
+    }
+
+    [Fact]
+    public void AnimationQueue_AdvancesByElapsedTime_InRenderLoop()
+    {
+        var queue = new AnimationQueue();
+        queue.Enqueue([new Match3.Core.GameFlow.Events.PiecesSwapped(new Move(new GridPosition(0, 0), new GridPosition(0, 1)))]);
+
+        Assert.Equal(nameof(Match3.Core.GameFlow.Events.PiecesSwapped), queue.CurrentStep?.Name);
+
+        queue.Update(0.1f);
+        Assert.True(queue.HasRunningAnimations);
+
+        queue.Update(0.2f);
+        Assert.False(queue.HasRunningAnimations);
     }
 
     [Fact]

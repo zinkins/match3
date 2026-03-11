@@ -158,6 +158,28 @@ public sealed class TimedPieceEffect
     }
 }
 
+public sealed class TimedVisualEffect(Func<float, RenderPiece> buildPiece, float durationSeconds)
+{
+    private readonly Func<float, RenderPiece> buildPiece = buildPiece;
+
+    public float DurationSeconds { get; } = durationSeconds;
+
+    public float ElapsedSeconds { get; private set; }
+
+    public bool IsCompleted => ElapsedSeconds >= DurationSeconds;
+
+    public void Update(float deltaSeconds)
+    {
+        ElapsedSeconds += deltaSeconds;
+    }
+
+    public RenderPiece BuildPiece()
+    {
+        var progress = DurationSeconds <= 0f ? 1f : MathF.Min(1f, ElapsedSeconds / DurationSeconds);
+        return buildPiece(progress);
+    }
+}
+
 public sealed class GameplayEffectsController
 {
     private readonly CompositePieceEffect selectedEffect = new(
@@ -166,6 +188,7 @@ public sealed class GameplayEffectsController
 
     private readonly Dictionary<GridPosition, TimedPieceEffect> cellEffects = [];
     private readonly List<TimedPieceEffect> overlayEffects = [];
+    private readonly List<TimedVisualEffect> visualEffects = [];
     private GridPosition? lastSelectedCell;
     private float totalSeconds;
 
@@ -187,6 +210,15 @@ public sealed class GameplayEffectsController
             if (overlayEffects[i].IsCompleted)
             {
                 overlayEffects.RemoveAt(i);
+            }
+        }
+
+        for (var i = visualEffects.Count - 1; i >= 0; i--)
+        {
+            visualEffects[i].Update(delta);
+            if (visualEffects[i].IsCompleted)
+            {
+                visualEffects.RemoveAt(i);
             }
         }
 
@@ -249,7 +281,101 @@ public sealed class GameplayEffectsController
             pieces.Add(overlay.BuildPiece());
         }
 
+        foreach (var visualEffect in visualEffects)
+        {
+            pieces.Add(visualEffect.BuildPiece());
+        }
+
         return pieces.OrderBy(piece => piece.Layer).ToArray();
+    }
+
+    public void QueueDestroyer(GridPosition origin, IReadOnlyList<GridPosition> path, BoardTransform transform)
+    {
+        if (path.Count == 0)
+        {
+            return;
+        }
+
+        var launchIndex = Array.IndexOf(path.ToArray(), origin);
+        if (launchIndex < 0)
+        {
+            launchIndex = path.Count / 2;
+        }
+
+        var forwardPath = BuildWorldPath(path.Skip(launchIndex), transform);
+        var backwardPath = BuildWorldPath(path.Take(launchIndex + 1).Reverse(), transform);
+        var size = transform.CellSize * 0.42f;
+
+        QueueDestroyerVisual(forwardPath, size);
+        QueueDestroyerVisual(backwardPath, size);
+    }
+
+    public void QueueExplosion(IReadOnlyList<GridPosition> area, BoardTransform transform)
+    {
+        if (area.Count == 0)
+        {
+            return;
+        }
+
+        var centerRow = (float)area.Average(position => position.Row);
+        var centerColumn = (float)area.Average(position => position.Column);
+        var centerWorld = transform.GridToWorld(new GridPosition((int)MathF.Round(centerRow), (int)MathF.Round(centerColumn)));
+        var center = new Vector2(centerWorld.X + (transform.CellSize / 2f), centerWorld.Y + (transform.CellSize / 2f));
+        var maxSize = transform.CellSize * 1.9f;
+
+        visualEffects.Add(new TimedVisualEffect(
+            progress =>
+            {
+                var size = maxSize * Easing.SmoothStep(progress);
+                return new RenderPiece(
+                    new GridPosition(-1, -1),
+                    PieceVisualConstants.ShapeCircle,
+                    PieceVisualConstants.TintOrange,
+                    center.X - (size / 2f),
+                    center.Y - (size / 2f),
+                    size,
+                    size,
+                    Rotation: 0f,
+                    Layer: 25f);
+            },
+            durationSeconds: 0.3f));
+    }
+
+    private void QueueDestroyerVisual(IReadOnlyList<Vector2> worldPath, float size)
+    {
+        if (worldPath.Count <= 1)
+        {
+            return;
+        }
+
+        var animation = new DestroyerAnimation(worldPath);
+        visualEffects.Add(new TimedVisualEffect(
+            progress =>
+            {
+                var center = animation.Evaluate(progress);
+                return new RenderPiece(
+                    new GridPosition(-1, -1),
+                    PieceVisualConstants.ShapeDiamond,
+                    PieceVisualConstants.TintOrange,
+                    center.X - (size / 2f),
+                    center.Y - (size / 2f),
+                    size,
+                    size,
+                    Rotation: progress * MathF.PI * 2f,
+                    Layer: 30f);
+            },
+            durationSeconds: 0.55f));
+    }
+
+    private static IReadOnlyList<Vector2> BuildWorldPath(IEnumerable<GridPosition> path, BoardTransform transform)
+    {
+        return path
+            .Select(position =>
+            {
+                var world = transform.GridToWorld(position);
+                return new Vector2(world.X + (transform.CellSize / 2f), world.Y + (transform.CellSize / 2f));
+            })
+            .ToArray();
     }
 
     public void QueueSwap(BoardRenderSnapshot snapshot, Move move, bool rollback)

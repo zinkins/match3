@@ -3,6 +3,10 @@ using Match3.Core.GameCore.Board;
 using Match3.Core.GameCore.Bonuses;
 using Match3.Core.GameCore.Pieces;
 using Match3.Core.GameCore.ValueObjects;
+using Match3.Core.GameFlow.Events;
+using Match3.Core.GameFlow.Pipeline;
+using Match3.Core.GameFlow.Sessions;
+using Match3.Core.GameFlow.StateMachine;
 
 namespace Match3.Tests;
 
@@ -229,6 +233,53 @@ public class Phase11BonusesTests
         Assert.True(result.DestroyedPositions.Count > 9);
     }
 
+    [Fact]
+    public void TurnProcessor_CreatesLineBonus_OnBoard_WhenMoveFormsMatchOfFour()
+    {
+        var board = CreateBoardForLineBonusCreation();
+        var bonuses = new Dictionary<GridPosition, BonusToken>();
+        var processor = new TurnProcessor(
+            new MatchFinder(),
+            new GravityResolver(),
+            new RefillResolver(new SequenceRandomSource(1, 2, 3, 4, 0)),
+            new ScoreCalculator(),
+            new BonusFactory(),
+            new BonusActivationResolver());
+
+        processor.ProcessTurnPipelineWithEvents(
+            board,
+            new Move(new GridPosition(0, 2), new GridPosition(1, 2)),
+            new GameSession(),
+            new GameplayStateMachine(),
+            bonuses: bonuses);
+
+        var created = Assert.Single(bonuses);
+        Assert.IsType<LineBonus>(created.Value);
+        Assert.Equal(new GridPosition(0, 2), created.Key);
+    }
+
+    [Fact]
+    public void TurnProcessor_ReturnsBonusCreatedEvent_WhenBonusAppears()
+    {
+        var board = CreateBoardForLineBonusCreation();
+        var processor = new TurnProcessor(
+            new MatchFinder(),
+            new GravityResolver(),
+            new RefillResolver(new SequenceRandomSource(1, 2, 3, 4, 0)),
+            new ScoreCalculator(),
+            new BonusFactory(),
+            new BonusActivationResolver());
+
+        var result = processor.ProcessTurnPipelineWithEvents(
+            board,
+            new Move(new GridPosition(0, 2), new GridPosition(1, 2)),
+            new GameSession(),
+            new GameplayStateMachine(),
+            bonuses: new Dictionary<GridPosition, BonusToken>());
+
+        Assert.Contains(result.Events, e => e is LineBonusCreated);
+    }
+
     private static MatchGroup Match(PieceType piece, params GridPosition[] positions)
     {
         return new MatchGroup(piece, positions);
@@ -246,5 +297,46 @@ public class Phase11BonusesTests
         }
 
         return board;
+    }
+
+    private static BoardState CreateBoardForLineBonusCreation()
+    {
+        var board = new BoardState();
+        var rows =
+            new[]
+            {
+                new[] { PieceType.Red, PieceType.Red, PieceType.Blue, PieceType.Red, PieceType.Purple, PieceType.Green, PieceType.Blue, PieceType.Yellow },
+                new[] { PieceType.Blue, PieceType.Green, PieceType.Red, PieceType.Purple, PieceType.Green, PieceType.Blue, PieceType.Yellow, PieceType.Purple },
+                new[] { PieceType.Yellow, PieceType.Purple, PieceType.Green, PieceType.Green, PieceType.Blue, PieceType.Yellow, PieceType.Purple, PieceType.Green },
+                new[] { PieceType.Purple, PieceType.Yellow, PieceType.Blue, PieceType.Red, PieceType.Yellow, PieceType.Purple, PieceType.Green, PieceType.Blue },
+                new[] { PieceType.Green, PieceType.Blue, PieceType.Yellow, PieceType.Purple, PieceType.Green, PieceType.Blue, PieceType.Yellow, PieceType.Purple },
+                new[] { PieceType.Blue, PieceType.Green, PieceType.Purple, PieceType.Yellow, PieceType.Blue, PieceType.Yellow, PieceType.Purple, PieceType.Green },
+                new[] { PieceType.Yellow, PieceType.Purple, PieceType.Green, PieceType.Blue, PieceType.Yellow, PieceType.Purple, PieceType.Green, PieceType.Blue },
+                new[] { PieceType.Purple, PieceType.Yellow, PieceType.Blue, PieceType.Green, PieceType.Purple, PieceType.Green, PieceType.Blue, PieceType.Yellow }
+            };
+
+        for (var row = 0; row < board.Height; row++)
+        {
+            for (var column = 0; column < board.Width; column++)
+            {
+                board.SetCell(new GridPosition(row, column), rows[row][column]);
+            }
+        }
+
+        return board;
+    }
+
+    private sealed class SequenceRandomSource(params int[] values) : IRandomSource
+    {
+        private readonly int[] values = values.Length == 0 ? [0] : values;
+        private int index;
+
+        public int Next(int minInclusive, int maxExclusive)
+        {
+            var value = values[index % values.Length];
+            index++;
+            var range = maxExclusive - minInclusive;
+            return minInclusive + (value % range);
+        }
     }
 }

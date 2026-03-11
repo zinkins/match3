@@ -1,4 +1,5 @@
 using Match3.Core.GameCore.Board;
+using Match3.Core.GameCore.Bonuses;
 using Match3.Core.GameCore.Pieces;
 using Match3.Core.GameCore.ValueObjects;
 using Match3.Core.Runtime;
@@ -63,6 +64,42 @@ public class Phase15RuntimeRenderingTests
         Assert.True(tabletLandscape.BoardTransform.CellSize > 0f);
         Assert.True(phoneLandscape.BoardTransform.Origin.Y >= phoneLandscape.SafeBounds.Y);
         Assert.True(tabletLandscape.BoardTransform.Origin.Y >= tabletLandscape.SafeBounds.Y);
+    }
+
+    [Fact]
+    public void BoardRenderer_RendersLineBonus_AsFlattenedDiamond()
+    {
+        var renderer = new BoardRenderer();
+        var transform = new BoardTransform(48f, new System.Numerics.Vector2(20f, 20f));
+        var board = CreateBoard();
+        var bonuses = new Dictionary<GridPosition, BonusToken>
+        {
+            [new GridPosition(0, 0)] = new LineBonus(new GridPosition(0, 0), PieceColor.Red, LineOrientation.Horizontal)
+        };
+
+        var snapshot = renderer.BuildSnapshot(board, transform, bonuses);
+        var piece = Assert.Single(snapshot.Pieces, p => p.Position == new GridPosition(0, 0));
+
+        Assert.Equal(PieceVisualConstants.ShapeDiamond, piece.Shape);
+        Assert.True(piece.Width > piece.Height);
+    }
+
+    [Fact]
+    public void BoardRenderer_RendersBombBonus_AsCircle()
+    {
+        var renderer = new BoardRenderer();
+        var transform = new BoardTransform(48f, new System.Numerics.Vector2(20f, 20f));
+        var board = CreateBoard();
+        var bonuses = new Dictionary<GridPosition, BonusToken>
+        {
+            [new GridPosition(0, 1)] = new BombBonus(new GridPosition(0, 1), PieceColor.Blue)
+        };
+
+        var snapshot = renderer.BuildSnapshot(board, transform, bonuses);
+        var piece = Assert.Single(snapshot.Pieces, p => p.Position == new GridPosition(0, 1));
+
+        Assert.Equal(PieceVisualConstants.ShapeCircle, piece.Shape);
+        Assert.Equal(piece.Width, piece.Height);
     }
 
     [Fact]
@@ -162,6 +199,26 @@ public class Phase15RuntimeRenderingTests
             new InputState(true, new System.Numerics.Vector2(cellWorld.X + 8f, cellWorld.Y + 8f), true, false, 800, 480));
 
         Assert.Null(gameplay.SelectedCell);
+    }
+
+    [Fact]
+    public void PresentationScreenHost_AllowsBoardInput_WhenOnlyAnimationQueueIsRunning()
+    {
+        var flow = new ScreenFlowController();
+        var host = new PresentationScreenHost(flow, new SpriteBatchRenderer());
+        flow.MainMenu.PlayButton.Click();
+        flow.Tick();
+        flow.UpdateLayout(800, 480);
+        var gameplay = flow.Gameplay;
+        var cellWorld = gameplay.BoardTransform.GridToWorld(new GridPosition(0, 0));
+
+        gameplay.AnimationQueue.Enqueue([new Match3.Core.GameFlow.Events.MatchResolved(3)]);
+
+        host.Update(
+            TimeSpan.FromMilliseconds(16),
+            new InputState(true, new System.Numerics.Vector2(cellWorld.X + 8f, cellWorld.Y + 8f), true, false, 800, 480));
+
+        Assert.NotNull(gameplay.SelectedCell);
     }
 
     private static BoardState CreateBoard()

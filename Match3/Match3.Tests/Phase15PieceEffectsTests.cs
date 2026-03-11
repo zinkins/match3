@@ -34,4 +34,41 @@ public class Phase15PieceEffectsTests
         Assert.True(forward.X > piece.X);
         Assert.True(backward.X < 20f);
     }
+
+    [Fact]
+    public void GameplayEffectsController_QueuesDestroyerVisualOverlay()
+    {
+        var controller = new GameplayEffectsController();
+        var transform = new BoardTransform(48f, new System.Numerics.Vector2(20f, 20f));
+        var snapshot = new BoardRenderSnapshot(
+            [],
+            [
+                new RenderPiece(new GridPosition(0, 0), PieceVisualConstants.ShapeSquare, PieceVisualConstants.TintRed, 20f, 20f, 32f, 32f)
+            ]);
+
+        controller.QueueDestroyer(new GridPosition(0, 1), [new GridPosition(0, 0), new GridPosition(0, 1), new GridPosition(0, 2)], transform);
+        controller.Update(TimeSpan.FromMilliseconds(50));
+
+        var pieces = controller.BuildPieces(snapshot, null);
+
+        Assert.Contains(pieces, piece => piece.Shape == PieceVisualConstants.ShapeDiamond && piece.Tint == PieceVisualConstants.TintOrange);
+    }
+
+    [Fact]
+    public void GameplayEffectsController_QueuesTwoDestroyers_FromBonusCenter()
+    {
+        var controller = new GameplayEffectsController();
+        var transform = new BoardTransform(48f, new System.Numerics.Vector2(20f, 20f));
+        var snapshot = new BoardRenderSnapshot([], []);
+
+        controller.QueueDestroyer(
+            new GridPosition(0, 2),
+            [new GridPosition(0, 0), new GridPosition(0, 1), new GridPosition(0, 2), new GridPosition(0, 3), new GridPosition(0, 4)],
+            transform);
+        controller.Update(TimeSpan.FromMilliseconds(50));
+
+        var pieces = controller.BuildPieces(snapshot, null);
+
+        Assert.Equal(2, pieces.Count(piece => piece.Shape == PieceVisualConstants.ShapeDiamond && piece.Tint == PieceVisualConstants.TintOrange));
+    }
 }

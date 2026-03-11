@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Match3.Core.GameCore.Board;
+using Match3.Core.GameCore.Bonuses;
 using Match3.Core.GameCore.Pieces;
 using Match3.Core.GameCore.ValueObjects;
 
@@ -14,7 +15,10 @@ public sealed class BoardRenderer
         LastRenderedBoard = board;
     }
 
-    public BoardRenderSnapshot BuildSnapshot(BoardState board, BoardTransform transform)
+    public BoardRenderSnapshot BuildSnapshot(
+        BoardState board,
+        BoardTransform transform,
+        IReadOnlyDictionary<GridPosition, BonusToken>? bonuses = null)
     {
         var cells = new List<RenderQuad>(board.Width * board.Height);
         var pieces = new List<RenderPiece>(board.Width * board.Height);
@@ -39,15 +43,22 @@ public sealed class BoardRenderer
                     continue;
                 }
 
-                var pieceVisual = GetVisual(pieceType.Value);
+                BonusToken? bonus = null;
+                var hasBonus = bonuses is not null && bonuses.TryGetValue(position, out bonus);
+                var pieceVisual = hasBonus
+                    ? GetBonusVisual(bonus!)
+                    : GetVisual(pieceType.Value);
+                var pieceBounds = hasBonus
+                    ? GetBonusBounds(transform, world, inset, bonus!)
+                    : (X: world.X + inset, Y: world.Y + inset, Width: transform.CellSize - (2f * inset), Height: transform.CellSize - (2f * inset));
                 pieces.Add(new RenderPiece(
                     position,
                     pieceVisual.Shape,
                     pieceVisual.Tint,
-                    world.X + inset,
-                    world.Y + inset,
-                    transform.CellSize - (2f * inset),
-                    transform.CellSize - (2f * inset)));
+                    pieceBounds.X,
+                    pieceBounds.Y,
+                    pieceBounds.Width,
+                    pieceBounds.Height));
             }
         }
 
@@ -64,6 +75,49 @@ public sealed class BoardRenderer
             PieceType.Yellow => new PieceVisual(PieceVisualConstants.ShapeSquare, PieceVisualConstants.TintYellow),
             PieceType.Purple => new PieceVisual(PieceVisualConstants.ShapeSquare, PieceVisualConstants.TintPurple),
             _ => new PieceVisual(PieceVisualConstants.ShapeUnknown, PieceVisualConstants.TintWhite)
+        };
+    }
+
+    public PieceVisual GetBonusVisual(BonusToken bonus)
+    {
+        return bonus switch
+        {
+            LineBonus => new PieceVisual(PieceVisualConstants.ShapeDiamond, GetTint(bonus.Color)),
+            BombBonus => new PieceVisual(PieceVisualConstants.ShapeCircle, GetTint(bonus.Color)),
+            _ => new PieceVisual(PieceVisualConstants.ShapeUnknown, PieceVisualConstants.TintWhite)
+        };
+    }
+
+    private static (float X, float Y, float Width, float Height) GetBonusBounds(
+        BoardTransform transform,
+        System.Numerics.Vector2 world,
+        float inset,
+        BonusToken bonus)
+    {
+        var baseSize = transform.CellSize - (2f * inset);
+        return bonus switch
+        {
+            LineBonus { Orientation: LineOrientation.Horizontal } =>
+                (world.X + (transform.CellSize * 0.08f), world.Y + (transform.CellSize * 0.26f), transform.CellSize * 0.84f, transform.CellSize * 0.48f),
+            LineBonus { Orientation: LineOrientation.Vertical } =>
+                (world.X + (transform.CellSize * 0.26f), world.Y + (transform.CellSize * 0.08f), transform.CellSize * 0.48f, transform.CellSize * 0.84f),
+            BombBonus =>
+                (world.X + inset, world.Y + inset, baseSize, baseSize),
+            _ =>
+                (world.X + inset, world.Y + inset, baseSize, baseSize)
+        };
+    }
+
+    private static string GetTint(PieceColor color)
+    {
+        return color switch
+        {
+            PieceColor.Red => PieceVisualConstants.TintRed,
+            PieceColor.Green => PieceVisualConstants.TintGreen,
+            PieceColor.Blue => PieceVisualConstants.TintBlue,
+            PieceColor.Yellow => PieceVisualConstants.TintYellow,
+            PieceColor.Purple => PieceVisualConstants.TintPurple,
+            _ => PieceVisualConstants.TintWhite
         };
     }
 }

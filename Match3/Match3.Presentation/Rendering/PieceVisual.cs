@@ -5,6 +5,8 @@ public sealed record PieceVisual(string Shape, string Tint);
 public static class PieceVisualConstants
 {
     public const string ShapeSquare = "Square";
+    public const string ShapeDiamond = "Diamond";
+    public const string ShapeCircle = "Circle";
     public const string ShapeUnknown = "Unknown";
 
     public const string TintBlack = "Black";
