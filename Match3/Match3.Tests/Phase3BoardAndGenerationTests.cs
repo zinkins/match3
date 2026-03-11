@@ -106,6 +106,18 @@ public class Phase3BoardAndGenerationTests
     }
 
     [Fact]
+    public void BoardGenerator_DoesNotCreateStartingMatches()
+    {
+        var boardGenerator = new BoardGenerator(new SequenceRandomSource(0, 1, 2, 3, 4));
+        var board = boardGenerator.Generate();
+        var matchFinder = new MatchFinder();
+
+        var matches = matchFinder.FindMatches(board);
+
+        Assert.Empty(matches);
+    }
+
+    [Fact]
     public void RefillResolver_UsesRandomPieceTypes()
     {
         var board = new BoardState();

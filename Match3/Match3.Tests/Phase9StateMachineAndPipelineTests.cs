@@ -166,6 +166,25 @@ public class Phase9StateMachineAndPipelineTests
         Assert.Equal(GameplayState.Idle, machine.State);
     }
 
+    [Fact]
+    public void TurnProcessor_ClearsMatchedPieces_BeforeGravityAndRefill()
+    {
+        var board = CreateBoardForSwapWithMatch();
+        var move = new Move(new GridPosition(0, 2), new GridPosition(1, 2));
+        var processor = new TurnProcessor(
+            matchFinder: new MatchFinder(),
+            gravityResolver: new GravityResolver(),
+            refillResolver: new RefillResolver(new SequenceRandomSource(1)));
+        var session = new GameSession();
+        var machine = new GameplayStateMachine();
+
+        processor.ProcessTurnPipeline(board, move, session, machine);
+
+        Assert.Equal(PieceType.Green, board.GetCell(new GridPosition(0, 0)));
+        Assert.Equal(PieceType.Green, board.GetCell(new GridPosition(0, 1)));
+        Assert.Equal(PieceType.Green, board.GetCell(new GridPosition(0, 2)));
+    }
+
     private static BoardState CreateBoardForSwapWithMatch()
     {
         var board = new BoardState();

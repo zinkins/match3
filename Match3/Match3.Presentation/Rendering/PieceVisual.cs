@@ -7,6 +7,10 @@ public static class PieceVisualConstants
     public const string ShapeSquare = "Square";
     public const string ShapeUnknown = "Unknown";
 
+    public const string TintBlack = "Black";
+    public const string TintDarkGray = "DarkGray";
+    public const string TintLightGray = "LightGray";
+    public const string TintOrange = "Orange";
     public const string TintRed = "Red";
     public const string TintGreen = "Green";
     public const string TintBlue = "Blue";

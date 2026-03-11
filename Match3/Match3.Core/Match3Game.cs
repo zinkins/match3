@@ -1,7 +1,9 @@
 using Match3.Core.Localization;
+using Match3.Core.Runtime;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Input.Touch;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -17,6 +19,8 @@ namespace Match3.Core
     {
         // Resources for drawing.
         private GraphicsDeviceManager graphicsDeviceManager;
+        private MonoGameCanvas canvas = null!;
+        private bool wasPrimaryDown;
 
         /// <summary>
         /// Indicates if the game is running on a mobile platform.
@@ -36,6 +40,7 @@ namespace Match3.Core
         public Match3Game()
         {
             graphicsDeviceManager = new GraphicsDeviceManager(this);
+            IsMouseVisible = true;
 
             // Share GraphicsDeviceManager as a service.
             Services.AddService(typeof(GraphicsDeviceManager), graphicsDeviceManager);
@@ -73,6 +78,7 @@ namespace Match3.Core
         /// </summary>
         protected override void LoadContent()
         {
+            canvas = new MonoGameCanvas(GraphicsDevice, Content);
             base.LoadContent();
         }
 
@@ -89,7 +95,10 @@ namespace Match3.Core
                 || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            // TODO: Add your update logic here
+            if (Services.GetService(typeof(IGameScreenHost)) is IGameScreenHost screenHost)
+            {
+                screenHost.Update(gameTime.ElapsedGameTime, ReadInputState());
+            }
 
             base.Update(gameTime);
         }
@@ -105,9 +114,50 @@ namespace Match3.Core
             // Clears the screen with the MonoGame orange color before drawing.
             GraphicsDevice.Clear(Color.MonoGameOrange);
 
-            // TODO: Add your drawing code here
+            if (canvas is not null &&
+                Services.GetService(typeof(IGameScreenHost)) is IGameScreenHost screenHost)
+            {
+                canvas.Begin();
+                screenHost.Draw(canvas);
+                canvas.End();
+            }
 
             base.Draw(gameTime);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                canvas?.Dispose();
+            }
+
+            base.Dispose(disposing);
+        }
+
+        private Runtime.InputState ReadInputState()
+        {
+            var mouseState = Mouse.GetState();
+            var touchCollection = TouchPanel.GetState();
+
+            var hasTouch = touchCollection.Count > 0;
+            var pointerPosition = hasTouch
+                ? touchCollection[0].Position
+                : new Microsoft.Xna.Framework.Vector2(mouseState.X, mouseState.Y);
+            var isPrimaryDown = hasTouch
+                ? touchCollection[0].State != TouchLocationState.Released
+                : mouseState.LeftButton == ButtonState.Pressed;
+
+            var inputState = new Runtime.InputState(
+                hasTouch || IsDesktop,
+                new System.Numerics.Vector2(pointerPosition.X, pointerPosition.Y),
+                isPrimaryDown,
+                wasPrimaryDown,
+                GraphicsDevice.Viewport.Width,
+                GraphicsDevice.Viewport.Height);
+
+            wasPrimaryDown = isPrimaryDown;
+            return inputState;
         }
     }
 }

@@ -26,12 +26,45 @@ public sealed class BoardGenerator
         {
             for (var column = 0; column < board.Width; column++)
             {
-                var type = NextPieceType();
+                var type = NextPieceTypeAvoidingImmediateMatch(board, row, column);
                 board.SetCell(new GridPosition(row, column), type);
             }
         }
 
         return board;
+    }
+
+    private PieceType NextPieceTypeAvoidingImmediateMatch(BoardState board, int row, int column)
+    {
+        for (var attempt = 0; attempt < PieceCatalog.All.Count * 2; attempt++)
+        {
+            var candidate = NextPieceType();
+            if (!CreatesImmediateMatch(board, row, column, candidate))
+            {
+                return candidate;
+            }
+        }
+
+        return NextPieceType();
+    }
+
+    private static bool CreatesImmediateMatch(BoardState board, int row, int column, PieceType candidate)
+    {
+        if (column >= 2 &&
+            board.GetCell(new GridPosition(row, column - 1)) == candidate &&
+            board.GetCell(new GridPosition(row, column - 2)) == candidate)
+        {
+            return true;
+        }
+
+        if (row >= 2 &&
+            board.GetCell(new GridPosition(row - 1, column)) == candidate &&
+            board.GetCell(new GridPosition(row - 2, column)) == candidate)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     private PieceType NextPieceType()

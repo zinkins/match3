@@ -414,43 +414,46 @@ T325 [x] Проверить компиляцию `iOS`.
 
 ## Фаза 15. Runtime rendering и screen loop
 
-T326 [ ] Написать test `BoardRenderer_ProducesRenderableBoardSnapshot`.
-T327 [ ] Дополнить `BoardRenderer` построением render snapshot для всего поля.
-T328 [ ] Прогнать tests.
-T329 [ ] Написать test `HudRenderer_ProducesHudSnapshot`.
-T330 [ ] Дополнить `HudRenderer` render snapshot для score и timer.
-T331 [ ] Прогнать tests.
-T332 [ ] Создать `SpriteBatchRenderer`.
-T333 [ ] Реализовать отрисовку квадрата клетки и элемента через `SpriteBatch`.
-T334 [ ] Выполнить manual smoke check рендера одной клетки.
-T335 [ ] Реализовать отрисовку полного поля 8x8 через `BoardRenderer`.
-T336 [ ] Выполнить manual smoke check полного поля.
-T337 [ ] Реализовать отрисовку HUD через `HudRenderer`.
-T338 [ ] Выполнить manual smoke check HUD.
-T339 [ ] Реализовать отрисовку `MainMenuScreen`.
-T340 [ ] Проверить manual render `MainMenuScreen`.
-T341 [ ] Реализовать отрисовку `GameplayScreen`.
-T342 [ ] Проверить manual render `GameplayScreen`.
-T343 [ ] Реализовать отрисовку `GameOverScreen`.
-T344 [ ] Проверить manual render `GameOverScreen`.
-T345 [ ] Подключить screen update/draw loop в `Match3Game`.
-T346 [ ] Проверить переходы экранов в runtime.
-T347 [ ] Подключить render selection highlight.
+T326 [x] Написать test `BoardRenderer_ProducesRenderableBoardSnapshot`.
+T327 [x] Дополнить `BoardRenderer` построением render snapshot для всего поля.
+T328 [x] Прогнать tests.
+T329 [x] Написать test `HudRenderer_ProducesHudSnapshot`.
+T330 [x] Дополнить `HudRenderer` render snapshot для score и timer.
+T331 [x] Прогнать tests.
+T332 [x] Создать `SpriteBatchRenderer`.
+T333 [x] Реализовать отрисовку квадрата клетки и элемента через `SpriteBatch`.
+T334 [x] Выполнить manual smoke check рендера одной клетки.
+T335 [x] Реализовать отрисовку полного поля 8x8 через `BoardRenderer`.
+T336 [x] Выполнить manual smoke check полного поля.
+T337 [x] Реализовать отрисовку HUD через `HudRenderer`.
+T338 [x] Выполнить manual smoke check HUD.
+T339 [x] Реализовать отрисовку `MainMenuScreen`.
+T340 [x] Проверить manual render `MainMenuScreen`.
+T341 [x] Реализовать отрисовку `GameplayScreen`.
+T342 [x] Проверить manual render `GameplayScreen`.
+T343 [x] Реализовать отрисовку `GameOverScreen`.
+T344 [x] Проверить manual render `GameOverScreen`.
+T345 [x] Подключить screen update/draw loop в `Match3Game`.
+T346 [x] Проверить переходы экранов в runtime.
+T347 [x] Подключить render selection highlight.
 T348 [ ] Проверить visual selection highlight вручную.
 T349 [ ] Подключить проигрывание animation queue к render loop.
 T350 [ ] Проверить визуально swap/fall/spawn/destroyer animations вручную.
-T351 [ ] Написать test `MouseInputRouter_MapsLeftClickToBoardSelection`.
-T352 [ ] Создать `MouseInputRouter`.
-T353 [ ] Реализовать runtime обработку mouse input для игрового поля.
-T354 [ ] Прогнать tests.
-T355 [ ] Написать test `TouchInputRouter_MapsTapToBoardSelection`.
-T356 [ ] Создать `TouchInputRouter`.
-T357 [ ] Реализовать runtime обработку touch input для игрового поля.
-T358 [ ] Прогнать tests.
-T359 [ ] Подключить input routing к `GameplayScreen`.
+T350a [ ] Реализовать визуальный рендер `Line` bonus как приплюснутого ромба с направлением по оси действия.
+T350b [ ] Реализовать визуальный рендер `Bomb` bonus как круга.
+T350c [ ] Проверить визуально отличие бонусов от обычных элементов.
+T351 [x] Написать test `MouseInputRouter_MapsLeftClickToBoardSelection`.
+T352 [x] Создать `MouseInputRouter`.
+T353 [x] Реализовать runtime обработку mouse input для игрового поля.
+T354 [x] Прогнать tests.
+T355 [x] Написать test `TouchInputRouter_MapsTapToBoardSelection`.
+T356 [x] Создать `TouchInputRouter`.
+T357 [x] Реализовать runtime обработку touch input для игрового поля.
+T358 [x] Прогнать tests.
+T359 [x] Подключить input routing к `GameplayScreen`.
 T360 [ ] Проверить manual input на игровом поле для desktop и mobile.
-T361 [ ] Реализовать обработку input для кнопки `Play`.
-T362 [ ] Реализовать обработку input для кнопки `Ok`.
+T361 [x] Реализовать обработку input для кнопки `Play`.
+T362 [x] Реализовать обработку input для кнопки `Ok`.
 T363 [ ] Проверить manual input для menu/game over экранов.
 T364 [ ] Написать test `LayoutCalculator_ProducesStableGameplayLayout_ForDifferentViewportSizes`.
 T365 [ ] Создать `LayoutCalculator`.

@@ -34,6 +34,16 @@ public sealed class GameplayPresenter
 
     public bool ShouldShowGameOverOverlay => session.IsGameOver && !AnimationQueue.HasRunningAnimations;
 
+    public void Update(TimeSpan elapsed)
+    {
+        session.UpdateTimer(elapsed);
+
+        if (AnimationQueue.HasRunningAnimations)
+        {
+            AnimationQueue.Dequeue();
+        }
+    }
+
     public TurnPipelineResult ProcessMove(BoardState board, Move move)
     {
         var result = turnProcessor.ProcessTurnPipelineWithEvents(

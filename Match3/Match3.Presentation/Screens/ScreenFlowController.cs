@@ -1,8 +1,10 @@
 using System;
+using Match3.Core.GameCore.Board;
 using Match3.Core.GameFlow.Pipeline;
 using Match3.Core.GameFlow.Sessions;
 using Match3.Core.GameFlow.StateMachine;
 using Match3.Presentation.Animation;
+using Match3.Presentation.Input;
 using Match3.Presentation.Rendering;
 
 namespace Match3.Presentation.Screens;
@@ -53,6 +55,8 @@ public sealed class ScreenFlowController
 
     private static GameplayScreen CreateGameplayScreen(GameSession session)
     {
+        var board = new BoardGenerator().Generate();
+        var boardTransform = new BoardTransform(48f, new System.Numerics.Vector2(40f, 100f));
         var presenter = new GameplayPresenter(
             new TurnProcessor(),
             new GameplayStateMachine(),
@@ -61,7 +65,10 @@ public sealed class ScreenFlowController
 
         return new GameplayScreen(
             presenter,
+            board,
+            new BoardInputHandler(boardTransform, new SelectionController()),
             new BoardRenderer(),
-            new HudRenderer());
+            new HudRenderer(),
+            boardTransform);
     }
 }

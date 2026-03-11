@@ -96,22 +96,23 @@ public sealed class TurnProcessor
         {
             Swap(board, move);
             events.Add(new SwapReverted(move));
+            stateMachine.TransitionToIdle();
+            return new TurnPipelineResult(false, events);
         }
 
         stateMachine.TransitionToResolving();
         onPhaseCompleted?.Invoke(stateMachine.State, session);
 
-        if (applied)
-        {
-            var destroyedPieces = matches
-                .SelectMany(group => group.Positions)
-                .Distinct()
-                .Count();
+        var destroyedPositions = matches
+            .SelectMany(group => group.Positions)
+            .Distinct()
+            .ToArray();
+        ClearMatchedPieces(board, destroyedPositions);
+        var destroyedPieces = destroyedPositions.Length;
 
-            events.Add(new MatchResolved(destroyedPieces));
-            var updatedScore = scoreCalculator.AddScore(currentScore, destroyedPieces);
-            events.Add(new ScoreAdded(updatedScore - currentScore));
-        }
+        events.Add(new MatchResolved(destroyedPieces));
+        var updatedScore = scoreCalculator.AddScore(currentScore, destroyedPieces);
+        events.Add(new ScoreAdded(updatedScore - currentScore));
 
         if (session.IsGameOver)
         {
@@ -141,6 +142,14 @@ public sealed class TurnProcessor
 
         stateMachine.TransitionToIdle();
         return new TurnPipelineResult(applied, events);
+    }
+
+    private static void ClearMatchedPieces(BoardState board, IReadOnlyList<GridPosition> positions)
+    {
+        foreach (var position in positions)
+        {
+            board.SetCell(position, null);
+        }
     }
 
     private static TurnPipelineResult FinishWithGameOver(

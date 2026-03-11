@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace Match3.Presentation.Rendering;
@@ -27,5 +28,14 @@ public sealed class HudRenderer
         builder.Append("Time: ");
         builder.Append(seconds);
         return builder.ToString();
+    }
+
+    public HudRenderSnapshot BuildSnapshot(int score, TimeSpan remainingTime, float viewportWidth)
+    {
+        return new HudRenderSnapshot(
+        [
+            new RenderText(FormatScore(score), 24f, 20f, PieceVisualConstants.TintWhite),
+            new RenderText(FormatRemainingTime(remainingTime), Math.Max(24f, viewportWidth - 150f), 20f, PieceVisualConstants.TintWhite)
+        ]);
     }
 }

@@ -1,4 +1,5 @@
 using Match3.Core;
+using Match3.Core.Runtime;
 using Match3.Presentation.Composition;
 using Match3.Presentation.Screens;
 
@@ -9,8 +10,10 @@ internal static class AndroidCompositionRoot
     public static Match3Game CreateGame()
     {
         var game = new Match3Game();
-        var flow = new GameFlowCompositionRoot().CreateScreenFlowController();
+        var compositionRoot = new GameFlowCompositionRoot();
+        var flow = compositionRoot.CreateScreenFlowController();
         game.Services.AddService(typeof(ScreenFlowController), flow);
+        game.Services.AddService(typeof(IGameScreenHost), compositionRoot.CreateScreenHost(flow));
         return game;
     }
 }

@@ -84,6 +84,20 @@ public class Phase12PresentationTests
         Assert.True(presenter.ShouldShowGameOverOverlay);
     }
 
+    [Fact]
+    public void GameplayPresenter_Update_DecreasesRemainingTime()
+    {
+        var presenter = new GameplayPresenter(
+            turnProcessor: new Match3.Core.GameFlow.Pipeline.TurnProcessor(),
+            stateMachine: new Match3.Core.GameFlow.StateMachine.GameplayStateMachine(),
+            session: new GameSession(),
+            animationQueue: new AnimationQueue());
+
+        presenter.Update(TimeSpan.FromSeconds(1.5));
+
+        Assert.Equal(TimeSpan.FromSeconds(58.5), presenter.RemainingTime);
+    }
+
     private static BoardState CreateBoardForSwapWithMatch()
     {
         var board = new BoardState();

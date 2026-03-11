@@ -29,6 +29,17 @@ public class Phase10DomainEventsTests
     }
 
     [Fact]
+    public void TurnProcessor_DoesNotReturnGravityOrSpawnEvents_WhenSwapIsReverted()
+    {
+        var board = CreateBoardForSwapWithoutMatch();
+        var move = new Move(new GridPosition(0, 0), new GridPosition(0, 1));
+        var result = ExecutePipeline(board, move, new GameSession());
+
+        Assert.DoesNotContain(result.Events, e => e is PiecesFell);
+        Assert.DoesNotContain(result.Events, e => e is PiecesSpawned);
+    }
+
+    [Fact]
     public void TurnProcessor_ReturnsMatchResolvedEvent()
     {
         var result = ExecutePipeline(CreateBoardForSwapWithMatch(), CreateMatchMove(), new GameSession());
