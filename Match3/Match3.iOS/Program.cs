@@ -15,7 +15,7 @@ namespace Match3.iOS
         /// </summary>
         internal static void RunGame()
         {
-            _game = new Match3Game();
+            _game = IosCompositionRoot.CreateGame();
             _game.Run();
         }
 

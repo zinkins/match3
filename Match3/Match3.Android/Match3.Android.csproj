@@ -7,18 +7,18 @@
     <ApplicationVersion>1</ApplicationVersion>
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
     <AssemblyName>Match3</AssemblyName>
-    <MonoGameContentRoot>$(MSBuildThisFileDirectory)..\Match3.Core\Content\</MonoGameContentRoot>
-    <MonoGameContentDefinition>$(MonoGameContentRoot)Match3.mgcb</MonoGameContentDefinition>
-    <MonoGameContentOutputDir>$(MonoGameContentRoot)bin\Android\Match3.Android\</MonoGameContentOutputDir>
-    <MonoGameContentIntermediateDir>$(BaseIntermediateOutputPath)mgcb\</MonoGameContentIntermediateDir>
-    <MonoGameContentStamp>$(MonoGameContentIntermediateDir)content.stamp</MonoGameContentStamp>
+    <MonoGameContentRoot>$(MSBuildThisFileDirectory)..\Match3.Core\Content</MonoGameContentRoot>
+    <MonoGameContentDefinition>$(MonoGameContentRoot)\Match3.mgcb</MonoGameContentDefinition>
+    <MonoGameContentOutputDir>$(MonoGameContentRoot)\bin\Android\Match3.Android</MonoGameContentOutputDir>
+    <MonoGameContentIntermediateDir>$(BaseIntermediateOutputPath)mgcb</MonoGameContentIntermediateDir>
+    <MonoGameContentStamp>$(MonoGameContentIntermediateDir)\content.stamp</MonoGameContentStamp>
     <MonoGameDotnetCommand Condition="'$(DotnetCommand)' != ''">$(DotnetCommand)</MonoGameDotnetCommand>
     <MonoGameDotnetCommand Condition="'$(MonoGameDotnetCommand)' == ''">dotnet</MonoGameDotnetCommand>
   </PropertyGroup>
 
   <ItemGroup>
-    <MonoGameContentSource Include="$(MonoGameContentRoot)**\*.*"
-                           Exclude="$(MonoGameContentRoot)bin\**\*.*;$(MonoGameContentRoot)obj\**\*.*" />
+    <MonoGameContentSource Include="$(MonoGameContentRoot)\**\*.*"
+                           Exclude="$(MonoGameContentRoot)\bin\**\*.*;$(MonoGameContentRoot)\obj\**\*.*" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Match3.Core\Match3.Core.csproj" />
@@ -42,9 +42,7 @@
           DependsOnTargets="BuildMonoGameContent"
           BeforeTargets="BeforeCompile">
     <ItemGroup>
-      <AndroidAsset Include="$(MonoGameContentOutputDir)**\*.*">
-        <Link>Assets\Content\%(RecursiveDir)%(Filename)%(Extension)</Link>
-      </AndroidAsset>
+      <AndroidAsset Include="$(MonoGameContentOutputDir)\**\*.*" />
     </ItemGroup>
   </Target>
 </Project>

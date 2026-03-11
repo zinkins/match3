@@ -400,15 +400,15 @@ T316 [x] [P] При необходимости добавить `Matrix`-transfo
 
 ## Фаза 14. Platform integration
 
-T317 [ ] Подключить `Match3.Presentation` в `Match3.DesktopGL`.
-T318 [ ] Подключить `Match3.Presentation` в `Match3.Android`.
-T319 [ ] Подключить `Match3.Presentation` в `Match3.iOS`.
-T320 [ ] Настроить desktop composition root.
-T321 [ ] Настроить Android composition root.
-T322 [ ] Настроить iOS composition root.
-T323 [ ] Проверить запуск `DesktopGL`.
-T324 [ ] Проверить компиляцию `Android`.
-T325 [ ] Проверить компиляцию `iOS`.
+T317 [x] Подключить `Match3.Presentation` в `Match3.DesktopGL`.
+T318 [x] Подключить `Match3.Presentation` в `Match3.Android`.
+T319 [x] Подключить `Match3.Presentation` в `Match3.iOS`.
+T320 [x] Настроить desktop composition root.
+T321 [x] Настроить Android composition root.
+T322 [x] Настроить iOS composition root.
+T323 [x] Проверить запуск `DesktopGL`.
+T324 [x] Проверить компиляцию `Android`.
+T325 [x] Проверить компиляцию `iOS`.
 
 ---
 

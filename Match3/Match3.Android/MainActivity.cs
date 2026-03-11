@@ -40,7 +40,7 @@ namespace Match3.Android
         {
             base.OnCreate(bundle);
 
-            _game = new Match3Game();
+            _game = AndroidCompositionRoot.CreateGame();
             _view = _game.Services.GetService(typeof(View)) as View;
 
             SetContentView(_view);
