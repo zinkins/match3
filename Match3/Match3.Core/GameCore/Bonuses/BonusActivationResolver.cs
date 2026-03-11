@@ -20,10 +20,7 @@ public sealed class BonusActivationResolver
         this.bombBehavior = bombBehavior;
     }
 
-    public BonusActivationResult Resolve(
-        BoardState board,
-        IReadOnlyDictionary<GridPosition, BonusToken> bonusesOnBoard,
-        BonusToken rootBonus)
+    public BonusActivationResult Resolve(BoardState board, BonusToken rootBonus)
     {
         var queue = new Queue<BonusToken>();
         var activatedPositions = new HashSet<GridPosition>();
@@ -44,7 +41,7 @@ public sealed class BonusActivationResolver
 
             if (next is LineBonus line)
             {
-                var destroyer = lineBehavior.Activate(line, board, bonusesOnBoard);
+                var destroyer = lineBehavior.Activate(line, board);
                 AddDestroyed(destroyedPositions, destroyer.DestroyedPositions);
                 Enqueue(activatedPositions, queue, destroyer.ActivatedBonuses);
                 continue;
@@ -52,7 +49,7 @@ public sealed class BonusActivationResolver
 
             if (next is BombBonus bomb)
             {
-                var explosion = bombBehavior.Activate(bomb, board, bonusesOnBoard);
+                var explosion = bombBehavior.Activate(bomb, board);
                 AddDestroyed(destroyedPositions, explosion.DestroyedPositions);
                 Enqueue(activatedPositions, queue, explosion.ActivatedBonuses);
             }

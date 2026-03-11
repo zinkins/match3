@@ -72,12 +72,9 @@ public class Phase15RuntimeRenderingTests
         var renderer = new BoardRenderer();
         var transform = new BoardTransform(48f, new System.Numerics.Vector2(20f, 20f));
         var board = CreateBoard();
-        var bonuses = new Dictionary<GridPosition, BonusToken>
-        {
-            [new GridPosition(0, 0)] = new LineBonus(new GridPosition(0, 0), PieceColor.Red, LineOrientation.Horizontal)
-        };
+        board.SetBonus(new GridPosition(0, 0), new LineBonus(new GridPosition(0, 0), PieceColor.Red, LineOrientation.Horizontal));
 
-        var snapshot = renderer.BuildSnapshot(board, transform, bonuses);
+        var snapshot = renderer.BuildSnapshot(board, transform);
         var piece = Assert.Single(snapshot.Pieces, p => p.Position == new GridPosition(0, 0));
 
         Assert.Equal(PieceVisualConstants.ShapeDiamond, piece.Shape);
@@ -90,12 +87,9 @@ public class Phase15RuntimeRenderingTests
         var renderer = new BoardRenderer();
         var transform = new BoardTransform(48f, new System.Numerics.Vector2(20f, 20f));
         var board = CreateBoard();
-        var bonuses = new Dictionary<GridPosition, BonusToken>
-        {
-            [new GridPosition(0, 1)] = new BombBonus(new GridPosition(0, 1), PieceColor.Blue)
-        };
+        board.SetBonus(new GridPosition(0, 1), new BombBonus(new GridPosition(0, 1), PieceColor.Blue));
 
-        var snapshot = renderer.BuildSnapshot(board, transform, bonuses);
+        var snapshot = renderer.BuildSnapshot(board, transform);
         var piece = Assert.Single(snapshot.Pieces, p => p.Position == new GridPosition(0, 1));
 
         Assert.Equal(PieceVisualConstants.ShapeCircle, piece.Shape);
@@ -228,7 +222,7 @@ public class Phase15RuntimeRenderingTests
         {
             for (var column = 0; column < board.Width; column++)
             {
-                board.SetCell(new GridPosition(row, column), PieceCatalog.All[(row + column) % PieceCatalog.All.Count]);
+                board.SetPiece(new GridPosition(row, column), PieceCatalog.All[(row + column) % PieceCatalog.All.Count]);
             }
         }
 

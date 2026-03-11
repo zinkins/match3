@@ -17,8 +17,8 @@ public class Phase6TurnProcessorTests
         var applied = processor.TryProcessMove(board, move);
 
         Assert.True(applied);
-        Assert.Equal(PieceType.Red, board.GetCell(move.From));
-        Assert.Equal(PieceType.Blue, board.GetCell(move.To));
+        Assert.Equal(PieceType.Red, board.GetPiece(move.From));
+        Assert.Equal(PieceType.Blue, board.GetPiece(move.To));
     }
 
     [Fact]
@@ -31,8 +31,8 @@ public class Phase6TurnProcessorTests
         var applied = processor.TryProcessMove(board, move);
 
         Assert.False(applied);
-        Assert.Equal(PieceType.Red, board.GetCell(move.From));
-        Assert.Equal(PieceType.Green, board.GetCell(move.To));
+        Assert.Equal(PieceType.Red, board.GetPiece(move.From));
+        Assert.Equal(PieceType.Green, board.GetPiece(move.To));
     }
 
     [Fact]
@@ -53,18 +53,18 @@ public class Phase6TurnProcessorTests
     private static BoardState CreateBoardForSwapWithMatch()
     {
         var board = CreateCheckerBoard();
-        board.SetCell(new GridPosition(0, 0), PieceType.Red);
-        board.SetCell(new GridPosition(0, 1), PieceType.Red);
-        board.SetCell(new GridPosition(0, 2), PieceType.Blue);
-        board.SetCell(new GridPosition(1, 2), PieceType.Red);
+        board.SetPiece(new GridPosition(0, 0), PieceType.Red);
+        board.SetPiece(new GridPosition(0, 1), PieceType.Red);
+        board.SetPiece(new GridPosition(0, 2), PieceType.Blue);
+        board.SetPiece(new GridPosition(1, 2), PieceType.Red);
         return board;
     }
 
     private static BoardState CreateBoardForSwapWithoutMatch()
     {
         var board = CreateCheckerBoard();
-        board.SetCell(new GridPosition(0, 0), PieceType.Red);
-        board.SetCell(new GridPosition(0, 1), PieceType.Green);
+        board.SetPiece(new GridPosition(0, 0), PieceType.Red);
+        board.SetPiece(new GridPosition(0, 1), PieceType.Green);
         return board;
     }
 
@@ -75,7 +75,7 @@ public class Phase6TurnProcessorTests
         {
             for (var column = 0; column < board.Width; column++)
             {
-                parts.Add(board.GetCell(new GridPosition(row, column))?.ToString() ?? "null");
+                parts.Add(board.GetPiece(new GridPosition(row, column))?.ToString() ?? "null");
             }
         }
 
@@ -91,7 +91,7 @@ public class Phase6TurnProcessorTests
         {
             for (var column = 0; column < board.Width; column++)
             {
-                board.SetCell(new GridPosition(row, column), types[(row + column) % types.Count]);
+                board.SetPiece(new GridPosition(row, column), types[(row + column) % types.Count]);
             }
         }
 

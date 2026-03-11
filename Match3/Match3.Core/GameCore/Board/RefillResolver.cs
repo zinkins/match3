@@ -25,9 +25,9 @@ public sealed class RefillResolver
             for (var column = 0; column < board.Width; column++)
             {
                 var position = new GridPosition(row, column);
-                if (board.GetCell(position) is null)
+                if (board.GetContent(position) is null)
                 {
-                    board.SetCell(position, NextPieceTypeAvoidingImmediateMatch(board, row, column));
+                    board.SetContent(position, new CellContent(NextPieceTypeAvoidingImmediateMatch(board, row, column)));
                 }
             }
         }
@@ -58,15 +58,15 @@ public sealed class RefillResolver
     private static bool CreatesImmediateMatch(BoardState board, int row, int column, PieceType candidate)
     {
         if (column >= 2 &&
-            board.GetCell(new GridPosition(row, column - 1)) == candidate &&
-            board.GetCell(new GridPosition(row, column - 2)) == candidate)
+            board.GetContent(new GridPosition(row, column - 1))?.PieceType == candidate &&
+            board.GetContent(new GridPosition(row, column - 2))?.PieceType == candidate)
         {
             return true;
         }
 
         if (row >= 2 &&
-            board.GetCell(new GridPosition(row - 1, column)) == candidate &&
-            board.GetCell(new GridPosition(row - 2, column)) == candidate)
+            board.GetContent(new GridPosition(row - 1, column))?.PieceType == candidate &&
+            board.GetContent(new GridPosition(row - 2, column))?.PieceType == candidate)
         {
             return true;
         }

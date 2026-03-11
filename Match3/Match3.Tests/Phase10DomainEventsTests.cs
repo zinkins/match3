@@ -112,17 +112,13 @@ public class Phase10DomainEventsTests
     public void TurnProcessor_ReturnsDestroyerSpawned_WhenMatchedLineBonusActivates()
     {
         var board = CreateBoardForSwapWithMatch();
-        var bonuses = new Dictionary<GridPosition, Match3.Core.GameCore.Bonuses.BonusToken>
-        {
-            [new GridPosition(0, 1)] = new Match3.Core.GameCore.Bonuses.LineBonus(new GridPosition(0, 1), PieceColor.Red, Match3.Core.GameCore.Bonuses.LineOrientation.Horizontal)
-        };
+        board.SetBonus(new GridPosition(0, 1), new Match3.Core.GameCore.Bonuses.LineBonus(new GridPosition(0, 1), PieceColor.Red, Match3.Core.GameCore.Bonuses.LineOrientation.Horizontal));
 
         var result = CreateProcessor().ProcessTurnPipelineWithEvents(
             board,
             CreateMatchMove(),
             new GameSession(),
-            new GameplayStateMachine(),
-            bonuses: bonuses);
+            new GameplayStateMachine());
 
         Assert.Contains(result.Events, e => e is DestroyerSpawned);
     }
@@ -131,17 +127,13 @@ public class Phase10DomainEventsTests
     public void TurnProcessor_ReturnsDestroyerSpawned_WhenMovedBonusCompletesMatch()
     {
         var board = CreateBoardForSwapWithMatch();
-        var bonuses = new Dictionary<GridPosition, Match3.Core.GameCore.Bonuses.BonusToken>
-        {
-            [new GridPosition(1, 2)] = new Match3.Core.GameCore.Bonuses.LineBonus(new GridPosition(1, 2), PieceColor.Red, Match3.Core.GameCore.Bonuses.LineOrientation.Horizontal)
-        };
+        board.SetBonus(new GridPosition(1, 2), new Match3.Core.GameCore.Bonuses.LineBonus(new GridPosition(1, 2), PieceColor.Red, Match3.Core.GameCore.Bonuses.LineOrientation.Horizontal));
 
         var result = CreateProcessor().ProcessTurnPipelineWithEvents(
             board,
             new Move(new GridPosition(1, 2), new GridPosition(0, 2)),
             new GameSession(),
-            new GameplayStateMachine(),
-            bonuses: bonuses);
+            new GameplayStateMachine());
 
         Assert.Contains(result.Events, e => e is DestroyerSpawned);
     }
@@ -150,18 +142,14 @@ public class Phase10DomainEventsTests
     public void TurnProcessor_AppliesSwap_WhenMovedBonusFormsMatchWithAnotherBonusAndPiece()
     {
         var board = CreateBoardForBonusToBonusMatch();
-        var bonuses = new Dictionary<GridPosition, Match3.Core.GameCore.Bonuses.BonusToken>
-        {
-            [new GridPosition(0, 1)] = new Match3.Core.GameCore.Bonuses.LineBonus(new GridPosition(0, 1), PieceColor.Red, Match3.Core.GameCore.Bonuses.LineOrientation.Horizontal),
-            [new GridPosition(1, 2)] = new Match3.Core.GameCore.Bonuses.LineBonus(new GridPosition(1, 2), PieceColor.Red, Match3.Core.GameCore.Bonuses.LineOrientation.Vertical)
-        };
+        board.SetBonus(new GridPosition(0, 1), new Match3.Core.GameCore.Bonuses.LineBonus(new GridPosition(0, 1), PieceColor.Red, Match3.Core.GameCore.Bonuses.LineOrientation.Horizontal));
+        board.SetBonus(new GridPosition(1, 2), new Match3.Core.GameCore.Bonuses.LineBonus(new GridPosition(1, 2), PieceColor.Red, Match3.Core.GameCore.Bonuses.LineOrientation.Vertical));
 
         var result = CreateProcessor().ProcessTurnPipelineWithEvents(
             board,
             new Move(new GridPosition(1, 2), new GridPosition(0, 2)),
             new GameSession(),
-            new GameplayStateMachine(),
-            bonuses: bonuses);
+            new GameplayStateMachine());
 
         Assert.True(result.IsSwapApplied);
         Assert.Contains(result.Events, e => e is DestroyerSpawned);
@@ -171,20 +159,22 @@ public class Phase10DomainEventsTests
     public void TurnProcessor_UsesBonusColorForMatchDetection_WhenBoardCellDrifted()
     {
         var board = CreateBoardForBonusToBonusMatch();
-        board.SetCell(new GridPosition(0, 1), PieceType.Green);
-        board.SetCell(new GridPosition(1, 2), PieceType.Blue);
-        var bonuses = new Dictionary<GridPosition, Match3.Core.GameCore.Bonuses.BonusToken>
-        {
-            [new GridPosition(0, 1)] = new Match3.Core.GameCore.Bonuses.LineBonus(new GridPosition(0, 1), PieceColor.Red, Match3.Core.GameCore.Bonuses.LineOrientation.Horizontal),
-            [new GridPosition(1, 2)] = new Match3.Core.GameCore.Bonuses.LineBonus(new GridPosition(1, 2), PieceColor.Red, Match3.Core.GameCore.Bonuses.LineOrientation.Vertical)
-        };
+        board.SetContent(
+            new GridPosition(0, 1),
+            new Match3.Core.GameCore.Board.CellContent(
+                PieceType.Red,
+                new Match3.Core.GameCore.Bonuses.LineBonus(new GridPosition(0, 1), PieceColor.Red, Match3.Core.GameCore.Bonuses.LineOrientation.Horizontal)));
+        board.SetContent(
+            new GridPosition(1, 2),
+            new Match3.Core.GameCore.Board.CellContent(
+                PieceType.Red,
+                new Match3.Core.GameCore.Bonuses.LineBonus(new GridPosition(1, 2), PieceColor.Red, Match3.Core.GameCore.Bonuses.LineOrientation.Vertical)));
 
         var result = CreateProcessor().ProcessTurnPipelineWithEvents(
             board,
             new Move(new GridPosition(1, 2), new GridPosition(0, 2)),
             new GameSession(),
-            new GameplayStateMachine(),
-            bonuses: bonuses);
+            new GameplayStateMachine());
 
         Assert.True(result.IsSwapApplied);
     }
@@ -215,14 +205,14 @@ public class Phase10DomainEventsTests
         {
             for (var column = 0; column < board.Width; column++)
             {
-                board.SetCell(new GridPosition(row, column), types[(row + column) % types.Count]);
+                board.SetPiece(new GridPosition(row, column), types[(row + column) % types.Count]);
             }
         }
 
-        board.SetCell(new GridPosition(0, 0), PieceType.Red);
-        board.SetCell(new GridPosition(0, 1), PieceType.Red);
-        board.SetCell(new GridPosition(0, 2), PieceType.Blue);
-        board.SetCell(new GridPosition(1, 2), PieceType.Red);
+        board.SetPiece(new GridPosition(0, 0), PieceType.Red);
+        board.SetPiece(new GridPosition(0, 1), PieceType.Red);
+        board.SetPiece(new GridPosition(0, 2), PieceType.Blue);
+        board.SetPiece(new GridPosition(1, 2), PieceType.Red);
         return board;
     }
 
@@ -234,12 +224,12 @@ public class Phase10DomainEventsTests
         {
             for (var column = 0; column < board.Width; column++)
             {
-                board.SetCell(new GridPosition(row, column), types[(row + column) % types.Count]);
+                board.SetPiece(new GridPosition(row, column), types[(row + column) % types.Count]);
             }
         }
 
-        board.SetCell(new GridPosition(0, 0), PieceType.Red);
-        board.SetCell(new GridPosition(0, 1), PieceType.Green);
+        board.SetPiece(new GridPosition(0, 0), PieceType.Red);
+        board.SetPiece(new GridPosition(0, 1), PieceType.Green);
         return board;
     }
 
@@ -251,14 +241,14 @@ public class Phase10DomainEventsTests
         {
             for (var column = 0; column < board.Width; column++)
             {
-                board.SetCell(new GridPosition(row, column), types[(row + column) % types.Count]);
+                board.SetPiece(new GridPosition(row, column), types[(row + column) % types.Count]);
             }
         }
 
-        board.SetCell(new GridPosition(0, 0), PieceType.Red);
-        board.SetCell(new GridPosition(0, 1), PieceType.Red);
-        board.SetCell(new GridPosition(0, 2), PieceType.Blue);
-        board.SetCell(new GridPosition(1, 2), PieceType.Red);
+        board.SetPiece(new GridPosition(0, 0), PieceType.Red);
+        board.SetPiece(new GridPosition(0, 1), PieceType.Red);
+        board.SetPiece(new GridPosition(0, 2), PieceType.Blue);
+        board.SetPiece(new GridPosition(1, 2), PieceType.Red);
         return board;
     }
 

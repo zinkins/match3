@@ -13,17 +13,17 @@ public class Phase7GravityRefillAndCascadeTests
         var board = CreateFilledBoard(PieceType.Purple);
         for (var row = 0; row < board.Height; row++)
         {
-            board.SetCell(new GridPosition(row, 0), null);
+            board.SetPiece(new GridPosition(row, 0), null);
         }
 
-        board.SetCell(new GridPosition(6, 0), PieceType.Red);
-        board.SetCell(new GridPosition(7, 0), null);
+        board.SetPiece(new GridPosition(6, 0), PieceType.Red);
+        board.SetPiece(new GridPosition(7, 0), null);
 
         var gravity = new GravityResolver();
         gravity.Apply(board);
 
-        Assert.Null(board.GetCell(new GridPosition(6, 0)));
-        Assert.Equal(PieceType.Red, board.GetCell(new GridPosition(7, 0)));
+        Assert.Null(board.GetPiece(new GridPosition(6, 0)));
+        Assert.Equal(PieceType.Red, board.GetPiece(new GridPosition(7, 0)));
     }
 
     [Fact]
@@ -32,43 +32,43 @@ public class Phase7GravityRefillAndCascadeTests
         var board = CreateFilledBoard(PieceType.Purple);
         for (var row = 0; row < board.Height; row++)
         {
-            board.SetCell(new GridPosition(row, 0), null);
+            board.SetPiece(new GridPosition(row, 0), null);
         }
 
-        board.SetCell(new GridPosition(0, 0), PieceType.Red);
-        board.SetCell(new GridPosition(3, 0), PieceType.Green);
-        board.SetCell(new GridPosition(6, 0), PieceType.Blue);
+        board.SetPiece(new GridPosition(0, 0), PieceType.Red);
+        board.SetPiece(new GridPosition(3, 0), PieceType.Green);
+        board.SetPiece(new GridPosition(6, 0), PieceType.Blue);
 
         var gravity = new GravityResolver();
         gravity.Apply(board);
 
-        Assert.Null(board.GetCell(new GridPosition(4, 0)));
-        Assert.Equal(PieceType.Red, board.GetCell(new GridPosition(5, 0)));
-        Assert.Equal(PieceType.Green, board.GetCell(new GridPosition(6, 0)));
-        Assert.Equal(PieceType.Blue, board.GetCell(new GridPosition(7, 0)));
+        Assert.Null(board.GetPiece(new GridPosition(4, 0)));
+        Assert.Equal(PieceType.Red, board.GetPiece(new GridPosition(5, 0)));
+        Assert.Equal(PieceType.Green, board.GetPiece(new GridPosition(6, 0)));
+        Assert.Equal(PieceType.Blue, board.GetPiece(new GridPosition(7, 0)));
     }
 
     [Fact]
     public void RefillResolver_FillsTopEmptyCells()
     {
         var board = CreateFilledBoard(PieceType.Purple);
-        board.SetCell(new GridPosition(0, 2), null);
-        board.SetCell(new GridPosition(1, 2), null);
+        board.SetPiece(new GridPosition(0, 2), null);
+        board.SetPiece(new GridPosition(1, 2), null);
 
         var refill = new RefillResolver(new SequenceRandomSource(0, 1));
         refill.Refill(board);
 
-        Assert.Equal(PieceType.Red, board.GetCell(new GridPosition(0, 2)));
-        Assert.Equal(PieceType.Green, board.GetCell(new GridPosition(1, 2)));
+        Assert.Equal(PieceType.Red, board.GetPiece(new GridPosition(0, 2)));
+        Assert.Equal(PieceType.Green, board.GetPiece(new GridPosition(1, 2)));
     }
 
     [Fact]
     public void TurnProcessor_RechecksBoardAfterGravityAndRefill()
     {
         var board = CreateFilledBoard(PieceType.Purple);
-        board.SetCell(new GridPosition(0, 0), null);
-        board.SetCell(new GridPosition(1, 0), null);
-        board.SetCell(new GridPosition(2, 0), null);
+        board.SetPiece(new GridPosition(0, 0), null);
+        board.SetPiece(new GridPosition(1, 0), null);
+        board.SetPiece(new GridPosition(2, 0), null);
 
         var turnProcessor = new TurnProcessor(
             matchFinder: new MatchFinder(),
@@ -87,7 +87,7 @@ public class Phase7GravityRefillAndCascadeTests
         {
             for (var column = 0; column < board.Width; column++)
             {
-                board.SetCell(new GridPosition(row, column), type);
+                board.SetPiece(new GridPosition(row, column), type);
             }
         }
 

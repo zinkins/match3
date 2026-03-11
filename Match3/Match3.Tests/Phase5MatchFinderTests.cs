@@ -10,9 +10,9 @@ public class Phase5MatchFinderTests
     public void MatchFinder_FindsHorizontalMatchOfThree()
     {
         var board = CreateCheckerBoard();
-        board.SetCell(new GridPosition(2, 1), PieceType.Red);
-        board.SetCell(new GridPosition(2, 2), PieceType.Red);
-        board.SetCell(new GridPosition(2, 3), PieceType.Red);
+        board.SetPiece(new GridPosition(2, 1), PieceType.Red);
+        board.SetPiece(new GridPosition(2, 2), PieceType.Red);
+        board.SetPiece(new GridPosition(2, 3), PieceType.Red);
 
         var finder = new MatchFinder();
         var groups = finder.FindMatches(board);
@@ -26,9 +26,9 @@ public class Phase5MatchFinderTests
     public void MatchFinder_FindsVerticalMatchOfThree()
     {
         var board = CreateCheckerBoard();
-        board.SetCell(new GridPosition(1, 4), PieceType.Green);
-        board.SetCell(new GridPosition(2, 4), PieceType.Green);
-        board.SetCell(new GridPosition(3, 4), PieceType.Green);
+        board.SetPiece(new GridPosition(1, 4), PieceType.Green);
+        board.SetPiece(new GridPosition(2, 4), PieceType.Green);
+        board.SetPiece(new GridPosition(3, 4), PieceType.Green);
 
         var finder = new MatchFinder();
         var groups = finder.FindMatches(board);
@@ -53,13 +53,13 @@ public class Phase5MatchFinderTests
     public void MatchFinder_ReturnsMultipleMatchGroups()
     {
         var board = CreateCheckerBoard();
-        board.SetCell(new GridPosition(0, 0), PieceType.Blue);
-        board.SetCell(new GridPosition(0, 1), PieceType.Blue);
-        board.SetCell(new GridPosition(0, 2), PieceType.Blue);
+        board.SetPiece(new GridPosition(0, 0), PieceType.Blue);
+        board.SetPiece(new GridPosition(0, 1), PieceType.Blue);
+        board.SetPiece(new GridPosition(0, 2), PieceType.Blue);
 
-        board.SetCell(new GridPosition(4, 7), PieceType.Yellow);
-        board.SetCell(new GridPosition(5, 7), PieceType.Yellow);
-        board.SetCell(new GridPosition(6, 7), PieceType.Yellow);
+        board.SetPiece(new GridPosition(4, 7), PieceType.Yellow);
+        board.SetPiece(new GridPosition(5, 7), PieceType.Yellow);
+        board.SetPiece(new GridPosition(6, 7), PieceType.Yellow);
 
         var finder = new MatchFinder();
         var groups = finder.FindMatches(board);
@@ -77,7 +77,7 @@ public class Phase5MatchFinderTests
             for (var column = 0; column < board.Width; column++)
             {
                 var index = (row + column) % types.Count;
-                board.SetCell(new GridPosition(row, column), types[index]);
+                board.SetPiece(new GridPosition(row, column), types[index]);
             }
         }
 

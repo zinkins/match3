@@ -13,16 +13,16 @@ public sealed class GravityResolver
 
             for (var row = board.Height - 1; row >= 0; row--)
             {
-                var piece = board.GetCell(new GridPosition(row, column));
-                if (piece is null)
+                var content = board.GetContent(new GridPosition(row, column));
+                if (content is null)
                 {
                     continue;
                 }
 
                 if (targetRow != row)
                 {
-                    board.SetCell(new GridPosition(targetRow, column), piece);
-                    board.SetCell(new GridPosition(row, column), null);
+                    board.SetContent(new GridPosition(targetRow, column), content);
+                    board.SetContent(new GridPosition(row, column), null);
                 }
 
                 targetRow--;
@@ -30,7 +30,7 @@ public sealed class GravityResolver
 
             while (targetRow >= 0)
             {
-                board.SetCell(new GridPosition(targetRow, column), null);
+                board.SetContent(new GridPosition(targetRow, column), null);
                 targetRow--;
             }
         }

@@ -121,14 +121,14 @@ public class Phase12PresentationTests
         {
             for (var column = 0; column < board.Width; column++)
             {
-                board.SetCell(new GridPosition(row, column), types[(row + column) % types.Count]);
+                board.SetPiece(new GridPosition(row, column), types[(row + column) % types.Count]);
             }
         }
 
-        board.SetCell(new GridPosition(0, 0), PieceType.Red);
-        board.SetCell(new GridPosition(0, 1), PieceType.Red);
-        board.SetCell(new GridPosition(0, 2), PieceType.Blue);
-        board.SetCell(new GridPosition(1, 2), PieceType.Red);
+        board.SetPiece(new GridPosition(0, 0), PieceType.Red);
+        board.SetPiece(new GridPosition(0, 1), PieceType.Red);
+        board.SetPiece(new GridPosition(0, 2), PieceType.Blue);
+        board.SetPiece(new GridPosition(1, 2), PieceType.Red);
         return board;
     }
 }

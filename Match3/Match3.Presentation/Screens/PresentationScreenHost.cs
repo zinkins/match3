@@ -1,8 +1,6 @@
 using System;
-using System.Collections.Generic;
 using Match3.Core.Runtime;
 using Match3.Core.GameCore.Board;
-using Match3.Core.GameCore.Bonuses;
 using Match3.Core.GameFlow.Events;
 using Match3.Presentation.Input;
 using Match3.Presentation.Rendering;
@@ -79,20 +77,17 @@ public sealed class PresentationScreenHost : IGameScreenHost
         var move = gameplay.BoardInputHandler.HandleClick(ToNumerics(inputState.PointerPosition));
         if (move is not null)
         {
-            var beforeBoard = CloneBoard(gameplay.Board);
-            var beforeBonuses = CloneBonuses(gameplay.Bonuses);
-            var beforeSnapshot = gameplay.BoardRenderer.BuildSnapshot(beforeBoard, gameplay.BoardTransform, beforeBonuses);
+            var beforeBoard = gameplay.Board.Clone();
+            var beforeSnapshot = gameplay.BoardRenderer.BuildSnapshot(beforeBoard, gameplay.BoardTransform);
             var result = gameplay.Presenter.ProcessMove(gameplay.Board, move.Value);
-            var afterSnapshot = gameplay.BoardRenderer.BuildSnapshot(gameplay.Board, gameplay.BoardTransform, gameplay.Bonuses);
+            var afterSnapshot = gameplay.BoardRenderer.BuildSnapshot(gameplay.Board, gameplay.BoardTransform);
             QueueVisualEvents(gameplay, result.Events);
             gameplay.EffectsController.QueueSwap(beforeSnapshot, move.Value, rollback: !result.IsSwapApplied);
             if (result.IsSwapApplied)
             {
-                var swappedBoard = CloneBoard(beforeBoard);
-                var swappedBonuses = CloneBonuses(beforeBonuses);
+                var swappedBoard = beforeBoard.Clone();
                 ApplySwap(swappedBoard, move.Value);
-                ApplySwap(swappedBonuses, move.Value);
-                var swappedSnapshot = gameplay.BoardRenderer.BuildSnapshot(swappedBoard, gameplay.BoardTransform, swappedBonuses);
+                var swappedSnapshot = gameplay.BoardRenderer.BuildSnapshot(swappedBoard, gameplay.BoardTransform);
                 gameplay.EffectsController.QueueBoardSettle(swappedSnapshot, afterSnapshot, gameplay.BoardTransform.CellSize);
             }
         }
@@ -105,51 +100,10 @@ public sealed class PresentationScreenHost : IGameScreenHost
 
     private static void ApplySwap(BoardState board, Match3.Core.GameCore.ValueObjects.Move move)
     {
-        var fromPiece = board.GetCell(move.From);
-        var toPiece = board.GetCell(move.To);
-        board.SetCell(move.From, toPiece);
-        board.SetCell(move.To, fromPiece);
-    }
-
-    private static void ApplySwap(IDictionary<Match3.Core.GameCore.ValueObjects.GridPosition, BonusToken> bonuses, Match3.Core.GameCore.ValueObjects.Move move)
-    {
-        var hasFromBonus = bonuses.Remove(move.From, out var fromBonus);
-        var hasToBonus = bonuses.Remove(move.To, out var toBonus);
-        if (hasFromBonus && fromBonus is not null)
-        {
-            bonuses[move.To] = fromBonus with { Position = move.To };
-        }
-
-        if (hasToBonus && toBonus is not null)
-        {
-            bonuses[move.From] = toBonus with { Position = move.From };
-        }
-    }
-
-    private static Dictionary<Match3.Core.GameCore.ValueObjects.GridPosition, BonusToken> CloneBonuses(IReadOnlyDictionary<Match3.Core.GameCore.ValueObjects.GridPosition, BonusToken> source)
-    {
-        var clone = new Dictionary<Match3.Core.GameCore.ValueObjects.GridPosition, BonusToken>(source.Count);
-        foreach (var entry in source)
-        {
-            clone[entry.Key] = entry.Value;
-        }
-
-        return clone;
-    }
-
-    private static BoardState CloneBoard(BoardState source)
-    {
-        var clone = new BoardState();
-        for (var row = 0; row < source.Height; row++)
-        {
-            for (var column = 0; column < source.Width; column++)
-            {
-                var position = new Match3.Core.GameCore.ValueObjects.GridPosition(row, column);
-                clone.SetCell(position, source.GetCell(position));
-            }
-        }
-
-        return clone;
+        var fromPiece = board.GetContent(move.From);
+        var toPiece = board.GetContent(move.To);
+        board.SetContent(move.From, toPiece);
+        board.SetContent(move.To, fromPiece);
     }
 
     private static void QueueVisualEvents(GameplayScreen gameplay, IReadOnlyList<IDomainEvent> events)

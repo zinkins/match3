@@ -6,10 +6,7 @@ namespace Match3.Core.GameCore.Bonuses;
 
 public sealed class BombBonusBehavior
 {
-    public ExplosionResult Activate(
-        BombBonus bonus,
-        BoardState board,
-        IReadOnlyDictionary<GridPosition, BonusToken> bonusesOnBoard)
+    public ExplosionResult Activate(BombBonus bonus, BoardState board)
     {
         var area = BuildArea(bonus, board);
         var destroyed = new List<GridPosition>(area.Count);
@@ -17,13 +14,13 @@ public sealed class BombBonusBehavior
 
         foreach (var position in area)
         {
-            board.SetCell(position, null);
-            destroyed.Add(position);
-
-            if (bonusesOnBoard.TryGetValue(position, out var triggered) && triggered.Position != bonus.Position)
+            if (board.GetBonus(position) is { } triggered && triggered.Position != bonus.Position)
             {
                 activatedBonuses.Add(triggered);
             }
+
+            board.SetContent(position, null);
+            destroyed.Add(position);
         }
 
         return new ExplosionResult(area, destroyed, activatedBonuses);

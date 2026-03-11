@@ -17,8 +17,7 @@ public sealed class BoardRenderer
 
     public BoardRenderSnapshot BuildSnapshot(
         BoardState board,
-        BoardTransform transform,
-        IReadOnlyDictionary<GridPosition, BonusToken>? bonuses = null)
+        BoardTransform transform)
     {
         var cells = new List<RenderQuad>(board.Width * board.Height);
         var pieces = new List<RenderPiece>(board.Width * board.Height);
@@ -37,19 +36,17 @@ public sealed class BoardRenderer
                     transform.CellSize - 1f,
                     PieceVisualConstants.TintDarkGray));
 
-                var pieceType = board.GetCell(position);
-                if (pieceType is null)
+                var content = board.GetContent(position);
+                if (content is null)
                 {
                     continue;
                 }
 
-                BonusToken? bonus = null;
-                var hasBonus = bonuses is not null && bonuses.TryGetValue(position, out bonus);
-                var pieceVisual = hasBonus
-                    ? GetBonusVisual(bonus!)
-                    : GetVisual(pieceType.Value);
-                var pieceBounds = hasBonus
-                    ? GetBonusBounds(transform, world, inset, bonus!)
+                var pieceVisual = content.Bonus is not null
+                    ? GetBonusVisual(content.Bonus)
+                    : GetVisual(content.PieceType);
+                var pieceBounds = content.Bonus is not null
+                    ? GetBonusBounds(transform, world, inset, content.Bonus)
                     : (X: world.X + inset, Y: world.Y + inset, Width: transform.CellSize - (2f * inset), Height: transform.CellSize - (2f * inset));
                 pieces.Add(new RenderPiece(
                     position,

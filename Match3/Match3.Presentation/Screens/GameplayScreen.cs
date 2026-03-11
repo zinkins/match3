@@ -2,7 +2,6 @@ using Match3.Presentation.Animation;
 using Match3.Presentation.Input;
 using Match3.Presentation.Rendering;
 using Match3.Core.GameCore.Board;
-using Match3.Core.GameCore.Bonuses;
 using Match3.Core.GameCore.ValueObjects;
 
 namespace Match3.Presentation.Screens;
@@ -42,8 +41,6 @@ public sealed class GameplayScreen : IScreen
     public HudRenderer HudRenderer { get; }
 
     public BoardTransform BoardTransform { get; }
-
-    public IReadOnlyDictionary<GridPosition, BonusToken> Bonuses => Presenter.Bonuses;
 
     public bool ShouldShowGameOverOverlay => Presenter.ShouldShowGameOverOverlay;
 

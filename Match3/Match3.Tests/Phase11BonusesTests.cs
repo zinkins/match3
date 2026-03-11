@@ -141,7 +141,7 @@ public class Phase11BonusesTests
         var behavior = new LineBonusBehavior();
         var bonus = new LineBonus(new GridPosition(2, 3), PieceColor.Red, LineOrientation.Horizontal);
 
-        var destroyer = behavior.Activate(bonus, board, new Dictionary<GridPosition, BonusToken>());
+        var destroyer = behavior.Activate(bonus, board);
 
         Assert.NotEmpty(destroyer.Path);
         Assert.NotEmpty(destroyer.DestroyedPositions);
@@ -154,11 +154,11 @@ public class Phase11BonusesTests
         var behavior = new LineBonusBehavior();
         var bonus = new LineBonus(new GridPosition(1, 4), PieceColor.Blue, LineOrientation.Vertical);
 
-        var destroyer = behavior.Activate(bonus, board, new Dictionary<GridPosition, BonusToken>());
+        var destroyer = behavior.Activate(bonus, board);
 
         foreach (var position in destroyer.Path)
         {
-            Assert.Null(board.GetCell(position));
+            Assert.Null(board.GetPiece(position));
         }
     }
 
@@ -169,15 +169,12 @@ public class Phase11BonusesTests
         var behavior = new LineBonusBehavior();
         var line = new LineBonus(new GridPosition(4, 2), PieceColor.Red, LineOrientation.Horizontal);
         var bombOnPath = new BombBonus(new GridPosition(4, 5), PieceColor.Green);
-        var bonuses = new Dictionary<GridPosition, BonusToken>
-        {
-            [line.Position] = line,
-            [bombOnPath.Position] = bombOnPath
-        };
+        board.SetBonus(line.Position, line);
+        board.SetBonus(bombOnPath.Position, bombOnPath);
 
-        var destroyer = behavior.Activate(line, board, bonuses);
+        var destroyer = behavior.Activate(line, board);
 
-        Assert.Contains(destroyer.ActivatedBonuses, bonus => bonus == bombOnPath);
+        Assert.Contains(destroyer.ActivatedBonuses, bonus => bonus.Position == bombOnPath.Position && bonus.Kind == bombOnPath.Kind);
     }
 
     [Fact]
@@ -187,10 +184,10 @@ public class Phase11BonusesTests
         var behavior = new BombBonusBehavior();
         var bomb = new BombBonus(new GridPosition(3, 3), PieceColor.Yellow);
 
-        var result = behavior.Activate(bomb, board, new Dictionary<GridPosition, BonusToken>());
+        var result = behavior.Activate(bomb, board);
 
         Assert.Equal(9, result.AffectedArea.Count);
-        Assert.All(result.AffectedArea, position => Assert.Null(board.GetCell(position)));
+        Assert.All(result.AffectedArea, position => Assert.Null(board.GetPiece(position)));
     }
 
     [Fact]
@@ -200,15 +197,12 @@ public class Phase11BonusesTests
         var behavior = new BombBonusBehavior();
         var bomb = new BombBonus(new GridPosition(3, 3), PieceColor.Red);
         var lineInArea = new LineBonus(new GridPosition(3, 4), PieceColor.Blue, LineOrientation.Horizontal);
-        var bonuses = new Dictionary<GridPosition, BonusToken>
-        {
-            [bomb.Position] = bomb,
-            [lineInArea.Position] = lineInArea
-        };
+        board.SetBonus(bomb.Position, bomb);
+        board.SetBonus(lineInArea.Position, lineInArea);
 
-        var result = behavior.Activate(bomb, board, bonuses);
+        var result = behavior.Activate(bomb, board);
 
-        Assert.Contains(result.ActivatedBonuses, bonus => bonus == lineInArea);
+        Assert.Contains(result.ActivatedBonuses, bonus => bonus.Position == lineInArea.Position && bonus.Kind == lineInArea.Kind);
     }
 
     [Fact]
@@ -219,17 +213,14 @@ public class Phase11BonusesTests
         var rootBomb = new BombBonus(new GridPosition(3, 3), PieceColor.Red);
         var triggeredLine = new LineBonus(new GridPosition(3, 4), PieceColor.Blue, LineOrientation.Horizontal);
         var triggeredBomb = new BombBonus(new GridPosition(3, 6), PieceColor.Green);
-        var bonuses = new Dictionary<GridPosition, BonusToken>
-        {
-            [rootBomb.Position] = rootBomb,
-            [triggeredLine.Position] = triggeredLine,
-            [triggeredBomb.Position] = triggeredBomb
-        };
+        board.SetBonus(rootBomb.Position, rootBomb);
+        board.SetBonus(triggeredLine.Position, triggeredLine);
+        board.SetBonus(triggeredBomb.Position, triggeredBomb);
 
-        var result = resolver.Resolve(board, bonuses, rootBomb);
+        var result = resolver.Resolve(board, rootBomb);
 
         Assert.Equal(3, result.ActivatedBonuses.Count);
-        Assert.Contains(result.ActivatedBonuses, bonus => bonus == triggeredBomb);
+        Assert.Contains(result.ActivatedBonuses, bonus => bonus.Position == triggeredBomb.Position && bonus.Kind == triggeredBomb.Kind);
         Assert.True(result.DestroyedPositions.Count > 9);
     }
 
@@ -237,7 +228,6 @@ public class Phase11BonusesTests
     public void TurnProcessor_CreatesLineBonus_OnBoard_WhenMoveFormsMatchOfFour()
     {
         var board = CreateBoardForLineBonusCreation();
-        var bonuses = new Dictionary<GridPosition, BonusToken>();
         var processor = new TurnProcessor(
             new MatchFinder(),
             new GravityResolver(),
@@ -250,12 +240,10 @@ public class Phase11BonusesTests
             board,
             new Move(new GridPosition(0, 2), new GridPosition(1, 2)),
             new GameSession(),
-            new GameplayStateMachine(),
-            bonuses: bonuses);
+            new GameplayStateMachine());
 
-        var created = Assert.Single(bonuses);
-        Assert.IsType<LineBonus>(created.Value);
-        Assert.Equal(new GridPosition(0, 2), created.Key);
+        var created = Assert.IsType<LineBonus>(board.GetBonus(new GridPosition(0, 2)));
+        Assert.Equal(new GridPosition(0, 2), created.Position);
     }
 
     [Fact]
@@ -274,8 +262,7 @@ public class Phase11BonusesTests
             board,
             new Move(new GridPosition(0, 2), new GridPosition(1, 2)),
             new GameSession(),
-            new GameplayStateMachine(),
-            bonuses: new Dictionary<GridPosition, BonusToken>());
+            new GameplayStateMachine());
 
         Assert.Contains(result.Events, e => e is LineBonusCreated);
     }
@@ -292,7 +279,7 @@ public class Phase11BonusesTests
         {
             for (var column = 0; column < board.Width; column++)
             {
-                board.SetCell(new GridPosition(row, column), PieceType.Red);
+                board.SetPiece(new GridPosition(row, column), PieceType.Red);
             }
         }
 
@@ -319,7 +306,7 @@ public class Phase11BonusesTests
         {
             for (var column = 0; column < board.Width; column++)
             {
-                board.SetCell(new GridPosition(row, column), rows[row][column]);
+                board.SetPiece(new GridPosition(row, column), rows[row][column]);
             }
         }
 

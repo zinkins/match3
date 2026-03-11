@@ -27,7 +27,7 @@ public sealed class BoardGenerator
             for (var column = 0; column < board.Width; column++)
             {
                 var type = NextPieceTypeAvoidingImmediateMatch(board, row, column);
-                board.SetCell(new GridPosition(row, column), type);
+                board.SetContent(new GridPosition(row, column), new CellContent(type));
             }
         }
 
@@ -59,15 +59,15 @@ public sealed class BoardGenerator
     private static bool CreatesImmediateMatch(BoardState board, int row, int column, PieceType candidate)
     {
         if (column >= 2 &&
-            board.GetCell(new GridPosition(row, column - 1)) == candidate &&
-            board.GetCell(new GridPosition(row, column - 2)) == candidate)
+            board.GetContent(new GridPosition(row, column - 1))?.PieceType == candidate &&
+            board.GetContent(new GridPosition(row, column - 2))?.PieceType == candidate)
         {
             return true;
         }
 
         if (row >= 2 &&
-            board.GetCell(new GridPosition(row - 1, column)) == candidate &&
-            board.GetCell(new GridPosition(row - 2, column)) == candidate)
+            board.GetContent(new GridPosition(row - 1, column))?.PieceType == candidate &&
+            board.GetContent(new GridPosition(row - 2, column))?.PieceType == candidate)
         {
             return true;
         }

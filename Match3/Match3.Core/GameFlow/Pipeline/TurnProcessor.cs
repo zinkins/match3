@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Match3.Core.GameCore.Board;
 using Match3.Core.GameCore.Bonuses;
-using Match3.Core.GameCore.Pieces;
 using Match3.Core.GameCore.ValueObjects;
 using Match3.Core.GameFlow.Events;
 using Match3.Core.GameFlow.Sessions;
@@ -57,7 +56,7 @@ public sealed class TurnProcessor
 
     public bool TryProcessMove(BoardState board, Move move)
     {
-        Swap(board, new Dictionary<GridPosition, BonusToken>(), move);
+        Swap(board, move);
 
         var matches = matchFinder.FindMatches(board);
         if (matches.Count > 0)
@@ -65,7 +64,7 @@ public sealed class TurnProcessor
             return true;
         }
 
-        Swap(board, new Dictionary<GridPosition, BonusToken>(), move);
+        Swap(board, move);
         return false;
     }
 
@@ -94,10 +93,8 @@ public sealed class TurnProcessor
         GameSession session,
         GameplayStateMachine stateMachine,
         int currentScore = 0,
-        IDictionary<GridPosition, BonusToken> bonuses = null,
         Action<GameplayState, GameSession> onPhaseCompleted = null)
     {
-        bonuses ??= new Dictionary<GridPosition, BonusToken>();
         var events = new List<IDomainEvent>();
 
         stateMachine.TransitionToSelecting();
@@ -106,15 +103,14 @@ public sealed class TurnProcessor
         stateMachine.TransitionToSwapping();
         onPhaseCompleted?.Invoke(stateMachine.State, session);
 
-        Swap(board, bonuses, move);
-        SyncBonusColorsToBoard(board, bonuses);
+        Swap(board, move);
         events.Add(new PiecesSwapped(move));
 
         var matches = matchFinder.FindMatches(board);
         var applied = matches.Count > 0;
         if (!applied)
         {
-            Swap(board, bonuses, move);
+            Swap(board, move);
             events.Add(new SwapReverted(move));
             stateMachine.TransitionToIdle();
             return new TurnPipelineResult(false, events);
@@ -130,22 +126,22 @@ public sealed class TurnProcessor
                 .SelectMany(group => group.Positions)
                 .Distinct()
                 .ToArray();
-            var hasMatchedBonuses = matchedPositions.Any(position => bonuses.ContainsKey(position));
+            var hasMatchedBonuses = matchedPositions.Any(position => board.GetBonus(position) is not null);
             var createdBonus = hasMatchedBonuses
                 ? null
-                : TryCreateBonus(matches, GetBonusAnchor(matches, move), bonuses);
+                : TryCreateBonus(matches, GetBonusAnchor(matches, move));
             matchedPositions = matches
                 .SelectMany(group => group.Positions)
                 .Where(position => createdBonus is null || position != createdBonus.Position)
                 .Distinct()
                 .ToArray();
 
-            var bonusActivation = ResolveMatchedBonuses(board, bonuses, matchedPositions);
+            var bonusActivation = ResolveMatchedBonuses(board, matchedPositions);
             var plainDestroyed = matchedPositions
                 .Where(position => !bonusActivation.ActivatedBonusPositions.Contains(position))
                 .ToArray();
 
-            ClearMatchedPieces(board, bonuses, plainDestroyed);
+            ClearMatchedPieces(board, plainDestroyed);
 
             var destroyedPositions = plainDestroyed
                 .Concat(bonusActivation.DestroyedPositions)
@@ -155,7 +151,7 @@ public sealed class TurnProcessor
 
             if (createdBonus is not null)
             {
-                bonuses[createdBonus.Position] = createdBonus;
+                board.SetContent(createdBonus.Position, new CellContent(ToPieceType(createdBonus), createdBonus));
                 events.Add(CreateBonusCreatedEvent(createdBonus));
             }
 
@@ -175,7 +171,6 @@ public sealed class TurnProcessor
             }
 
             stateMachine.TransitionToApplyingGravity();
-            ApplyGravityToBonuses(board, bonuses);
             gravityResolver.Apply(board);
             events.Add(new PiecesFell());
             onPhaseCompleted?.Invoke(stateMachine.State, session);
@@ -187,7 +182,6 @@ public sealed class TurnProcessor
 
             stateMachine.TransitionToRefilling();
             refillResolver.Refill(board);
-            SyncBonusColorsToBoard(board, bonuses);
             events.Add(new PiecesSpawned());
             onPhaseCompleted?.Invoke(stateMachine.State, session);
 
@@ -216,8 +210,7 @@ public sealed class TurnProcessor
 
     private BonusToken TryCreateBonus(
         IReadOnlyList<MatchGroup> matches,
-        GridPosition lastMovedCell,
-        IDictionary<GridPosition, BonusToken> bonuses)
+        GridPosition lastMovedCell)
     {
         if (matches.Count == 0)
         {
@@ -230,9 +223,7 @@ public sealed class TurnProcessor
             return null;
         }
 
-        var bonus = bonusFactory.Create(matches, lastMovedCell);
-        bonuses.Remove(bonus.Position);
-        return bonus;
+        return bonusFactory.Create(matches, lastMovedCell);
     }
 
     private static GridPosition GetBonusAnchor(IReadOnlyList<MatchGroup> matches, Move move)
@@ -265,23 +256,21 @@ public sealed class TurnProcessor
         return false;
     }
 
-    private static void ClearMatchedPieces(BoardState board, IDictionary<GridPosition, BonusToken> bonuses, IReadOnlyList<GridPosition> positions)
+    private static void ClearMatchedPieces(BoardState board, IReadOnlyList<GridPosition> positions)
     {
         foreach (var position in positions)
         {
-            board.SetCell(position, null);
-            bonuses.Remove(position);
+            board.SetContent(position, null);
         }
     }
 
     private BonusActivationSummary ResolveMatchedBonuses(
         BoardState board,
-        IDictionary<GridPosition, BonusToken> bonuses,
         IReadOnlyList<GridPosition> matchedPositions)
     {
         var rootBonuses = matchedPositions
-            .Where(position => bonuses.ContainsKey(position))
-            .Select(position => bonuses[position])
+            .Select(board.GetBonus)
+            .Where(bonus => bonus is not null)
             .GroupBy(bonus => bonus.Position)
             .Select(group => group.First())
             .ToArray();
@@ -294,77 +283,39 @@ public sealed class TurnProcessor
         var destroyedPositions = new HashSet<GridPosition>();
         var activatedBonuses = new List<BonusToken>();
         var activatedBonusPositions = new HashSet<GridPosition>();
-        var bonusesOnBoard = bonuses as IReadOnlyDictionary<GridPosition, BonusToken>
-            ?? new Dictionary<GridPosition, BonusToken>(bonuses);
 
         foreach (var rootBonus in rootBonuses)
         {
-            var result = bonusActivationResolver.Resolve(board, bonusesOnBoard, rootBonus);
+            var result = bonusActivationResolver.Resolve(board, rootBonus);
             foreach (var activated in result.ActivatedBonuses)
             {
                 activatedBonuses.Add(activated);
                 activatedBonusPositions.Add(activated.Position);
-                bonuses.Remove(activated.Position);
             }
 
             foreach (var destroyed in result.DestroyedPositions)
             {
                 destroyedPositions.Add(destroyed);
-                bonuses.Remove(destroyed);
             }
         }
 
         return new BonusActivationSummary([.. destroyedPositions], activatedBonuses, activatedBonusPositions);
     }
 
-    private static void ApplyGravityToBonuses(BoardState board, IDictionary<GridPosition, BonusToken> bonuses)
+    private static GameCore.Pieces.PieceType ToPieceType(BonusToken bonus)
     {
-        if (bonuses.Count == 0)
-        {
-            return;
-        }
-
-        var moved = new Dictionary<GridPosition, BonusToken>();
-        foreach (var entry in bonuses)
-        {
-            var position = entry.Key;
-            var targetRow = position.Row;
-            for (var row = position.Row + 1; row < board.Height; row++)
-            {
-                if (board.GetCell(new GridPosition(row, position.Column)) is null)
-                {
-                    targetRow++;
-                }
-            }
-
-            var target = new GridPosition(targetRow, position.Column);
-            moved[target] = entry.Value with { Position = target };
-        }
-
-        bonuses.Clear();
-        foreach (var entry in moved)
-        {
-            bonuses[entry.Key] = entry.Value;
-        }
+        return ToPieceType(bonus.Color);
     }
 
-    private static void SyncBonusColorsToBoard(BoardState board, IDictionary<GridPosition, BonusToken> bonuses)
-    {
-        foreach (var entry in bonuses)
-        {
-            board.SetCell(entry.Key, ToPieceType(entry.Value.Color));
-        }
-    }
-
-    private static PieceType ToPieceType(PieceColor color)
+    private static GameCore.Pieces.PieceType ToPieceType(GameCore.Pieces.PieceColor color)
     {
         return color switch
         {
-            PieceColor.Red => PieceType.Red,
-            PieceColor.Green => PieceType.Green,
-            PieceColor.Blue => PieceType.Blue,
-            PieceColor.Yellow => PieceType.Yellow,
-            PieceColor.Purple => PieceType.Purple,
+            GameCore.Pieces.PieceColor.Red => GameCore.Pieces.PieceType.Red,
+            GameCore.Pieces.PieceColor.Green => GameCore.Pieces.PieceType.Green,
+            GameCore.Pieces.PieceColor.Blue => GameCore.Pieces.PieceType.Blue,
+            GameCore.Pieces.PieceColor.Yellow => GameCore.Pieces.PieceType.Yellow,
+            GameCore.Pieces.PieceColor.Purple => GameCore.Pieces.PieceType.Purple,
             _ => throw new InvalidOperationException("Unsupported piece color.")
         };
     }
@@ -450,24 +401,12 @@ public sealed class TurnProcessor
         return new TurnPipelineResult(applied, events);
     }
 
-    private static void Swap(BoardState board, IDictionary<GridPosition, BonusToken> bonuses, Move move)
+    private static void Swap(BoardState board, Move move)
     {
-        var from = board.GetCell(move.From);
-        var to = board.GetCell(move.To);
-        board.SetCell(move.From, to);
-        board.SetCell(move.To, from);
-
-        var hasFromBonus = bonuses.Remove(move.From, out var fromBonus);
-        var hasToBonus = bonuses.Remove(move.To, out var toBonus);
-        if (hasFromBonus && fromBonus is not null)
-        {
-            bonuses[move.To] = fromBonus with { Position = move.To };
-        }
-
-        if (hasToBonus && toBonus is not null)
-        {
-            bonuses[move.From] = toBonus with { Position = move.From };
-        }
+        var from = board.GetContent(move.From);
+        var to = board.GetContent(move.To);
+        board.SetContent(move.From, to);
+        board.SetContent(move.To, from);
     }
 
     private sealed class BonusActivationSummary(

@@ -6,10 +6,7 @@ namespace Match3.Core.GameCore.Bonuses;
 
 public sealed class LineBonusBehavior
 {
-    public Destroyer Activate(
-        LineBonus bonus,
-        BoardState board,
-        IReadOnlyDictionary<GridPosition, BonusToken> bonusesOnBoard)
+    public Destroyer Activate(LineBonus bonus, BoardState board)
     {
         var path = BuildPath(bonus, board);
         var destroyed = new List<GridPosition>(path.Count);
@@ -17,13 +14,13 @@ public sealed class LineBonusBehavior
 
         foreach (var position in path)
         {
-            board.SetCell(position, null);
-            destroyed.Add(position);
-
-            if (bonusesOnBoard.TryGetValue(position, out var triggered) && triggered.Position != bonus.Position)
+            if (board.GetBonus(position) is { } triggered && triggered.Position != bonus.Position)
             {
                 activatedBonuses.Add(triggered);
             }
+
+            board.SetContent(position, null);
+            destroyed.Add(position);
         }
 
         return new Destroyer(path, destroyed, activatedBonuses);

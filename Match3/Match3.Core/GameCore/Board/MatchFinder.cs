@@ -22,7 +22,7 @@ public sealed class MatchFinder
 
             while (runStartColumn < board.Width)
             {
-                var piece = board.GetCell(new GridPosition(row, runStartColumn));
+                var piece = board.GetContent(new GridPosition(row, runStartColumn))?.PieceType;
                 if (piece is null)
                 {
                     runStartColumn++;
@@ -31,7 +31,7 @@ public sealed class MatchFinder
 
                 var runEndColumn = runStartColumn + 1;
                 while (runEndColumn < board.Width &&
-                       board.GetCell(new GridPosition(row, runEndColumn)) == piece)
+                       board.GetContent(new GridPosition(row, runEndColumn))?.PieceType == piece)
                 {
                     runEndColumn++;
                 }
@@ -61,7 +61,7 @@ public sealed class MatchFinder
 
             while (runStartRow < board.Height)
             {
-                var piece = board.GetCell(new GridPosition(runStartRow, column));
+                var piece = board.GetContent(new GridPosition(runStartRow, column))?.PieceType;
                 if (piece is null)
                 {
                     runStartRow++;
@@ -70,7 +70,7 @@ public sealed class MatchFinder
 
                 var runEndRow = runStartRow + 1;
                 while (runEndRow < board.Height &&
-                       board.GetCell(new GridPosition(runEndRow, column)) == piece)
+                       board.GetContent(new GridPosition(runEndRow, column))?.PieceType == piece)
                 {
                     runEndRow++;
                 }

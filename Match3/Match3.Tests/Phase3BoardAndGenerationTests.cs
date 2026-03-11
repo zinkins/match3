@@ -40,7 +40,7 @@ public class Phase3BoardAndGenerationTests
     public void BoardState_ReadsEmptyCellAsNull()
     {
         var board = new BoardState();
-        var value = board.GetCell(new GridPosition(0, 0));
+        var value = board.GetPiece(new GridPosition(0, 0));
         Assert.Null(value);
     }
 
@@ -49,17 +49,17 @@ public class Phase3BoardAndGenerationTests
     {
         var board = new BoardState();
         var position = new GridPosition(2, 3);
-        board.SetCell(position, PieceType.Blue);
-        Assert.Equal(PieceType.Blue, board.GetCell(position));
+        board.SetPiece(position, PieceType.Blue);
+        Assert.Equal(PieceType.Blue, board.GetPiece(position));
     }
 
     [Fact]
     public void BoardState_ThrowsWhenPositionIsOutOfBounds()
     {
         var board = new BoardState();
-        Assert.Throws<ArgumentOutOfRangeException>(() => board.GetCell(new GridPosition(-1, 0)));
-        Assert.Throws<ArgumentOutOfRangeException>(() => board.GetCell(new GridPosition(8, 0)));
-        Assert.Throws<ArgumentOutOfRangeException>(() => board.SetCell(new GridPosition(0, 8), PieceType.Red));
+        Assert.Throws<ArgumentOutOfRangeException>(() => board.GetPiece(new GridPosition(-1, 0)));
+        Assert.Throws<ArgumentOutOfRangeException>(() => board.GetPiece(new GridPosition(8, 0)));
+        Assert.Throws<ArgumentOutOfRangeException>(() => board.SetPiece(new GridPosition(0, 8), PieceType.Red));
     }
 
     [Fact]
@@ -80,7 +80,7 @@ public class Phase3BoardAndGenerationTests
         {
             for (var column = 0; column < board.Width; column++)
             {
-                Assert.NotNull(board.GetCell(new GridPosition(row, column)));
+                Assert.NotNull(board.GetPiece(new GridPosition(row, column)));
             }
         }
     }
@@ -96,7 +96,7 @@ public class Phase3BoardAndGenerationTests
         {
             for (var column = 0; column < board.Width; column++)
             {
-                var value = board.GetCell(new GridPosition(row, column));
+                var value = board.GetPiece(new GridPosition(row, column));
                 Assert.NotNull(value);
                 types.Add(value!.Value);
             }
@@ -125,18 +125,18 @@ public class Phase3BoardAndGenerationTests
         {
             for (var column = 0; column < board.Width; column++)
             {
-                board.SetCell(new GridPosition(row, column), PieceType.Purple);
+                board.SetPiece(new GridPosition(row, column), PieceType.Purple);
             }
         }
 
-        board.SetCell(new GridPosition(0, 0), null);
-        board.SetCell(new GridPosition(1, 0), null);
+        board.SetPiece(new GridPosition(0, 0), null);
+        board.SetPiece(new GridPosition(1, 0), null);
 
         var refillResolver = new RefillResolver(new SequenceRandomSource(0, 1));
         refillResolver.Refill(board);
 
-        Assert.Equal(PieceType.Red, board.GetCell(new GridPosition(0, 0)));
-        Assert.Equal(PieceType.Green, board.GetCell(new GridPosition(1, 0)));
+        Assert.Equal(PieceType.Red, board.GetPiece(new GridPosition(0, 0)));
+        Assert.Equal(PieceType.Green, board.GetPiece(new GridPosition(1, 0)));
     }
 
     [Fact]
@@ -147,13 +147,13 @@ public class Phase3BoardAndGenerationTests
         {
             for (var column = 0; column < board.Width; column++)
             {
-                board.SetCell(new GridPosition(row, column), PieceCatalog.All[(row + column) % PieceCatalog.All.Count]);
+                board.SetPiece(new GridPosition(row, column), PieceCatalog.All[(row + column) % PieceCatalog.All.Count]);
             }
         }
 
-        board.SetCell(new GridPosition(0, 0), null);
-        board.SetCell(new GridPosition(0, 1), null);
-        board.SetCell(new GridPosition(0, 2), null);
+        board.SetPiece(new GridPosition(0, 0), null);
+        board.SetPiece(new GridPosition(0, 1), null);
+        board.SetPiece(new GridPosition(0, 2), null);
 
         var refillResolver = new RefillResolver(new SequenceRandomSource(0));
         refillResolver.Refill(board);
