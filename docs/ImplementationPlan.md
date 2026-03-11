@@ -436,7 +436,7 @@ T344 [x] Проверить manual render `GameOverScreen`.
 T345 [x] Подключить screen update/draw loop в `Match3Game`.
 T346 [x] Проверить переходы экранов в runtime.
 T347 [x] Подключить render selection highlight.
-T348 [ ] Проверить visual selection highlight вручную.
+T348 [x] Проверить visual selection highlight вручную.
 T349 [ ] Подключить проигрывание animation queue к render loop.
 T350 [ ] Проверить визуально swap/fall/spawn/destroyer animations вручную.
 T350a [ ] Реализовать визуальный рендер `Line` bonus как приплюснутого ромба с направлением по оси действия.
@@ -455,14 +455,14 @@ T360 [ ] Проверить manual input на игровом поле для des
 T361 [x] Реализовать обработку input для кнопки `Play`.
 T362 [x] Реализовать обработку input для кнопки `Ok`.
 T363 [ ] Проверить manual input для menu/game over экранов.
-T364 [ ] Написать test `LayoutCalculator_ProducesStableGameplayLayout_ForDifferentViewportSizes`.
-T365 [ ] Создать `LayoutCalculator`.
-T366 [ ] Реализовать адаптивный layout поля и HUD для разных desktop resolution.
-T367 [ ] Прогнать tests.
-T368 [ ] Написать test `LayoutCalculator_ProducesStableGameplayLayout_ForSupportedMobileOrientations`.
-T369 [ ] Реализовать адаптацию layout для mobile landscape orientations.
-T370 [ ] Прогнать tests.
-T371 [ ] Реализовать layout policy с учетом safe area и отступов экрана для menu/game over/gameplay экранов.
+T364 [x] Написать test `LayoutCalculator_ProducesStableGameplayLayout_ForDifferentViewportSizes`.
+T365 [x] Создать `LayoutCalculator`.
+T366 [x] Реализовать адаптивный layout поля и HUD для разных desktop resolution.
+T367 [x] Прогнать tests.
+T368 [x] Написать test `LayoutCalculator_ProducesStableGameplayLayout_ForSupportedMobileOrientations`.
+T369 [x] Реализовать адаптацию layout для mobile landscape orientations.
+T370 [x] Прогнать tests.
+T371 [x] Реализовать layout policy с учетом safe area и отступов экрана для menu/game over/gameplay экранов.
 T372 [ ] Проверить manual smoke test UI на нескольких aspect ratio.
 
 ---

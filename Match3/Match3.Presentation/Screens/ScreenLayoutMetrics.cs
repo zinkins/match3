@@ -4,28 +4,30 @@ namespace Match3.Presentation.Screens;
 
 public static class ScreenLayoutMetrics
 {
-    private const float ButtonWidth = 220f;
-    private const float ButtonHeight = 70f;
-    private const float TitleWidth = 220f;
+    private static readonly LayoutCalculator Calculator = new();
 
-    public static UiRect GetMainMenuPlayButtonBounds(float viewportWidth)
+    public static UiRect GetMainMenuPlayButtonBounds(float viewportWidth, float viewportHeight)
     {
-        return CreateCenteredButton(viewportWidth, 130f);
+        return Calculator.CalculateMainMenuLayout(viewportWidth, viewportHeight).ButtonBounds;
     }
 
-    public static UiRect GetGameOverOkButtonBounds(float viewportWidth)
+    public static UiRect GetGameOverOkButtonBounds(float viewportWidth, float viewportHeight)
     {
-        return CreateCenteredButton(viewportWidth, 160f);
+        return Calculator.CalculateGameOverLayout(viewportWidth, viewportHeight).ButtonBounds;
     }
 
-    public static float GetCenteredTitleX(float viewportWidth)
+    public static (float X, float Y) GetMainMenuTitlePosition(float viewportWidth, float viewportHeight)
     {
-        return (viewportWidth - TitleWidth) / 2f;
+        return Calculator.CalculateMainMenuLayout(viewportWidth, viewportHeight).TitlePosition;
     }
 
-    private static UiRect CreateCenteredButton(float viewportWidth, float y)
+    public static (float X, float Y) GetGameOverTitlePosition(float viewportWidth, float viewportHeight)
     {
-        var x = (viewportWidth - ButtonWidth) / 2f;
-        return new UiRect(x, y, ButtonWidth, ButtonHeight);
+        return Calculator.CalculateGameOverLayout(viewportWidth, viewportHeight).TitlePosition;
+    }
+
+    public static GameplayLayout GetGameplayLayout(float viewportWidth, float viewportHeight, int rows = 8, int columns = 8)
+    {
+        return Calculator.CalculateGameplayLayout(viewportWidth, viewportHeight, rows, columns);
     }
 }

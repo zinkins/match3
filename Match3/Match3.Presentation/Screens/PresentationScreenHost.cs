@@ -21,6 +21,8 @@ public sealed class PresentationScreenHost : IGameScreenHost
 
     public void Update(TimeSpan elapsed, InputState inputState)
     {
+        flowController.UpdateLayout(inputState.ViewportWidth, inputState.ViewportHeight);
+
         if (flowController.CurrentScreen is GameplayScreen gameplay)
         {
             gameplay.Presenter.Update(elapsed);
@@ -33,6 +35,7 @@ public sealed class PresentationScreenHost : IGameScreenHost
 
     public void Draw(IGameCanvas canvas)
     {
+        flowController.UpdateLayout(canvas.ViewportWidth, canvas.ViewportHeight);
         renderer.Draw(canvas, flowController.CurrentScreen);
     }
 
@@ -45,10 +48,10 @@ public sealed class PresentationScreenHost : IGameScreenHost
 
         switch (flowController.CurrentScreen)
         {
-            case MainMenuScreen mainMenu when ScreenLayoutMetrics.GetMainMenuPlayButtonBounds(inputState.ViewportWidth).Contains(ToNumerics(inputState.PointerPosition)):
+            case MainMenuScreen mainMenu when ScreenLayoutMetrics.GetMainMenuPlayButtonBounds(inputState.ViewportWidth, inputState.ViewportHeight).Contains(ToNumerics(inputState.PointerPosition)):
                 mainMenu.PlayButton.Click();
                 break;
-            case GameOverScreen gameOver when ScreenLayoutMetrics.GetGameOverOkButtonBounds(inputState.ViewportWidth).Contains(ToNumerics(inputState.PointerPosition)):
+            case GameOverScreen gameOver when ScreenLayoutMetrics.GetGameOverOkButtonBounds(inputState.ViewportWidth, inputState.ViewportHeight).Contains(ToNumerics(inputState.PointerPosition)):
                 gameOver.OkButton.Click();
                 break;
             case GameplayScreen gameplay:

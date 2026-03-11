@@ -30,12 +30,13 @@ public sealed class HudRenderer
         return builder.ToString();
     }
 
-    public HudRenderSnapshot BuildSnapshot(int score, TimeSpan remainingTime, float viewportWidth)
+    public HudRenderSnapshot BuildSnapshot(int score, TimeSpan remainingTime, float viewportWidth, float viewportHeight)
     {
+        var safeBounds = new UI.LayoutCalculator().GetSafeBounds(viewportWidth, viewportHeight);
         return new HudRenderSnapshot(
         [
-            new RenderText(FormatScore(score), 24f, 20f, PieceVisualConstants.TintWhite),
-            new RenderText(FormatRemainingTime(remainingTime), Math.Max(24f, viewportWidth - 150f), 20f, PieceVisualConstants.TintWhite)
+            new RenderText(FormatScore(score), safeBounds.X, safeBounds.Y, PieceVisualConstants.TintWhite),
+            new RenderText(FormatRemainingTime(remainingTime), Math.Max(safeBounds.X, safeBounds.X + safeBounds.Width - 150f), safeBounds.Y, PieceVisualConstants.TintWhite)
         ]);
     }
 }

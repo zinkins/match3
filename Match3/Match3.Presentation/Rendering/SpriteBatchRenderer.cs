@@ -24,8 +24,9 @@ public sealed class SpriteBatchRenderer
 
     private static void DrawMainMenu(IGameCanvas canvas, MainMenuScreen screen)
     {
-        canvas.DrawText("Match3", ScreenLayoutMetrics.GetCenteredTitleX(canvas.ViewportWidth), 50f, PieceVisualConstants.TintWhite);
-        DrawButton(canvas, ScreenLayoutMetrics.GetMainMenuPlayButtonBounds(canvas.ViewportWidth), screen.PlayButton.Label);
+        var titlePosition = ScreenLayoutMetrics.GetMainMenuTitlePosition(canvas.ViewportWidth, canvas.ViewportHeight);
+        canvas.DrawText("Match3", titlePosition.X, titlePosition.Y, PieceVisualConstants.TintWhite);
+        DrawButton(canvas, ScreenLayoutMetrics.GetMainMenuPlayButtonBounds(canvas.ViewportWidth, canvas.ViewportHeight), screen.PlayButton.Label);
     }
 
     private static void DrawButton(IGameCanvas canvas, UiRect bounds, string label)
@@ -67,7 +68,7 @@ public sealed class SpriteBatchRenderer
 
     private static void DrawHud(IGameCanvas canvas, GameplayScreen screen)
     {
-        var hudSnapshot = screen.HudRenderer.BuildSnapshot(screen.Presenter.Score, screen.Presenter.RemainingTime, canvas.ViewportWidth);
+        var hudSnapshot = screen.HudRenderer.BuildSnapshot(screen.Presenter.Score, screen.Presenter.RemainingTime, canvas.ViewportWidth, canvas.ViewportHeight);
         foreach (var label in hudSnapshot.Labels)
         {
             canvas.DrawText(label.Text, label.X, label.Y, label.Tint);
@@ -97,8 +98,9 @@ public sealed class SpriteBatchRenderer
 
     private static void DrawGameOver(IGameCanvas canvas, GameOverScreen screen)
     {
-        canvas.DrawText(screen.Message, ScreenLayoutMetrics.GetCenteredTitleX(canvas.ViewportWidth), 80f, PieceVisualConstants.TintWhite);
-        DrawButton(canvas, ScreenLayoutMetrics.GetGameOverOkButtonBounds(canvas.ViewportWidth), screen.OkButton.Label);
+        var titlePosition = ScreenLayoutMetrics.GetGameOverTitlePosition(canvas.ViewportWidth, canvas.ViewportHeight);
+        canvas.DrawText(screen.Message, titlePosition.X, titlePosition.Y, PieceVisualConstants.TintWhite);
+        DrawButton(canvas, ScreenLayoutMetrics.GetGameOverOkButtonBounds(canvas.ViewportWidth, canvas.ViewportHeight), screen.OkButton.Label);
     }
 
     private static float EstimateTextWidth(string text)

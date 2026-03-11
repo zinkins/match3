@@ -6,6 +6,7 @@ using Match3.Presentation.Animation;
 using Match3.Presentation.Input;
 using Match3.Presentation.Rendering;
 using Match3.Presentation.Screens;
+using Match3.Presentation.UI;
 
 namespace Match3.Tests;
 
@@ -29,11 +30,39 @@ public class Phase15RuntimeRenderingTests
     {
         var renderer = new HudRenderer();
 
-        var snapshot = renderer.BuildSnapshot(120, TimeSpan.FromSeconds(14), 800f);
+        var snapshot = renderer.BuildSnapshot(120, TimeSpan.FromSeconds(14), 800f, 480f);
 
         Assert.Equal(2, snapshot.Labels.Count);
         Assert.Contains(snapshot.Labels, label => label.Text == "Score: 120");
         Assert.Contains(snapshot.Labels, label => label.Text == "Time: 14");
+    }
+
+    [Fact]
+    public void LayoutCalculator_ProducesStableGameplayLayout_ForDifferentViewportSizes()
+    {
+        var calculator = new LayoutCalculator();
+
+        var hd = calculator.CalculateGameplayLayout(1280f, 720f);
+        var fullHd = calculator.CalculateGameplayLayout(1920f, 1080f);
+
+        Assert.True(hd.BoardTransform.CellSize > 0f);
+        Assert.True(fullHd.BoardTransform.CellSize >= hd.BoardTransform.CellSize);
+        Assert.True(hd.BoardTransform.Origin.X >= hd.SafeBounds.X);
+        Assert.True(fullHd.BoardTransform.Origin.X >= fullHd.SafeBounds.X);
+    }
+
+    [Fact]
+    public void LayoutCalculator_ProducesStableGameplayLayout_ForSupportedMobileOrientations()
+    {
+        var calculator = new LayoutCalculator();
+
+        var phoneLandscape = calculator.CalculateGameplayLayout(1280f, 720f);
+        var tabletLandscape = calculator.CalculateGameplayLayout(2732f, 2048f);
+
+        Assert.True(phoneLandscape.BoardTransform.CellSize > 0f);
+        Assert.True(tabletLandscape.BoardTransform.CellSize > 0f);
+        Assert.True(phoneLandscape.BoardTransform.Origin.Y >= phoneLandscape.SafeBounds.Y);
+        Assert.True(tabletLandscape.BoardTransform.Origin.Y >= tabletLandscape.SafeBounds.Y);
     }
 
     [Fact]
@@ -104,10 +133,12 @@ public class Phase15RuntimeRenderingTests
         var flow = new ScreenFlowController();
         var host = new PresentationScreenHost(flow, new SpriteBatchRenderer());
         flow.MainMenu.PlayButton.Click();
+        flow.UpdateLayout(800, 480);
+        var cellWorld = flow.Gameplay.BoardTransform.GridToWorld(new GridPosition(0, 0));
 
         host.Update(
             TimeSpan.FromMilliseconds(16),
-            new InputState(true, new System.Numerics.Vector2(50f, 110f), true, false, 800, 480));
+            new InputState(true, new System.Numerics.Vector2(cellWorld.X + 8f, cellWorld.Y + 8f), true, false, 800, 480));
 
         Assert.NotNull(flow.Gameplay.SelectedCell);
     }
@@ -122,12 +153,13 @@ public class Phase15RuntimeRenderingTests
         flow.Tick();
         var gameplay = flow.Gameplay;
         var snapshot = gameplay.BoardRenderer.BuildSnapshot(gameplay.Board, gameplay.BoardTransform);
+        var cellWorld = gameplay.BoardTransform.GridToWorld(new GridPosition(0, 0));
 
         gameplay.EffectsController.QueueSwap(snapshot, new Move(new GridPosition(0, 0), new GridPosition(0, 1)), rollback: false);
 
         host.Update(
             TimeSpan.FromMilliseconds(16),
-            new InputState(true, new System.Numerics.Vector2(50f, 110f), true, false, 800, 480));
+            new InputState(true, new System.Numerics.Vector2(cellWorld.X + 8f, cellWorld.Y + 8f), true, false, 800, 480));
 
         Assert.Null(gameplay.SelectedCell);
     }

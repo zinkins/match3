@@ -8,9 +8,32 @@ public sealed class BoardTransform
 {
     public BoardTransform(float cellSize, Vector2 origin, int rows = 8, int columns = 8)
     {
+        UpdateLayout(cellSize, origin, rows, columns);
+    }
+
+    public float CellSize { get; private set; }
+
+    public Vector2 Origin { get; private set; }
+
+    public int Rows { get; private set; }
+
+    public int Columns { get; private set; }
+
+    public void UpdateLayout(float cellSize, Vector2 origin, int rows, int columns)
+    {
         if (cellSize <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(cellSize));
+        }
+
+        if (rows <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(rows));
+        }
+
+        if (columns <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(columns));
         }
 
         CellSize = cellSize;
@@ -18,14 +41,6 @@ public sealed class BoardTransform
         Rows = rows;
         Columns = columns;
     }
-
-    public float CellSize { get; }
-
-    public Vector2 Origin { get; }
-
-    public int Rows { get; }
-
-    public int Columns { get; }
 
     public Vector2 GridToWorld(GridPosition gridPosition)
     {

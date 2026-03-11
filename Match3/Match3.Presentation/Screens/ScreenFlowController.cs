@@ -6,11 +6,13 @@ using Match3.Core.GameFlow.StateMachine;
 using Match3.Presentation.Animation;
 using Match3.Presentation.Input;
 using Match3.Presentation.Rendering;
+using Match3.Presentation.UI;
 
 namespace Match3.Presentation.Screens;
 
 public sealed class ScreenFlowController
 {
+    private readonly LayoutCalculator layoutCalculator = new();
     private readonly Func<GameSession> sessionFactory;
 
     public ScreenFlowController(Func<GameSession>? sessionFactory = null)
@@ -42,6 +44,20 @@ public sealed class ScreenFlowController
         }
     }
 
+    public void UpdateLayout(int viewportWidth, int viewportHeight)
+    {
+        var gameplayLayout = layoutCalculator.CalculateGameplayLayout(
+            viewportWidth,
+            viewportHeight,
+            Gameplay.Board.Height,
+            Gameplay.Board.Width);
+        Gameplay.BoardTransform.UpdateLayout(
+            gameplayLayout.BoardTransform.CellSize,
+            gameplayLayout.BoardTransform.Origin,
+            gameplayLayout.BoardTransform.Rows,
+            gameplayLayout.BoardTransform.Columns);
+    }
+
     private void StartGame()
     {
         Gameplay = CreateGameplayScreen(sessionFactory());
@@ -56,7 +72,7 @@ public sealed class ScreenFlowController
     private static GameplayScreen CreateGameplayScreen(GameSession session)
     {
         var board = new BoardGenerator().Generate();
-        var boardTransform = new BoardTransform(48f, new System.Numerics.Vector2(40f, 100f));
+        var boardTransform = new BoardTransform(48f, new System.Numerics.Vector2(40f, 100f), board.Height, board.Width);
         var presenter = new GameplayPresenter(
             new TurnProcessor(),
             new GameplayStateMachine(),
