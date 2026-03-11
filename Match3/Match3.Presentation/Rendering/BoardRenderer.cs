@@ -17,7 +17,7 @@ public sealed class BoardRenderer
     public BoardRenderSnapshot BuildSnapshot(BoardState board, BoardTransform transform)
     {
         var cells = new List<RenderQuad>(board.Width * board.Height);
-        var pieces = new List<RenderQuad>(board.Width * board.Height);
+        var pieces = new List<RenderPiece>(board.Width * board.Height);
         var inset = transform.CellSize * 0.12f;
 
         for (var row = 0; row < board.Height; row++)
@@ -40,12 +40,14 @@ public sealed class BoardRenderer
                 }
 
                 var pieceVisual = GetVisual(pieceType.Value);
-                pieces.Add(new RenderQuad(
+                pieces.Add(new RenderPiece(
+                    position,
+                    pieceVisual.Shape,
+                    pieceVisual.Tint,
                     world.X + inset,
                     world.Y + inset,
                     transform.CellSize - (2f * inset),
-                    transform.CellSize - (2f * inset),
-                    pieceVisual.Tint));
+                    transform.CellSize - (2f * inset)));
             }
         }
 

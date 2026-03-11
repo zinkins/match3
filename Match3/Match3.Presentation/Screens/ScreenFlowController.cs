@@ -67,6 +67,7 @@ public sealed class ScreenFlowController
             presenter,
             board,
             new BoardInputHandler(boardTransform, new SelectionController()),
+            new GameplayEffectsController(),
             new BoardRenderer(),
             new HudRenderer(),
             boardTransform);

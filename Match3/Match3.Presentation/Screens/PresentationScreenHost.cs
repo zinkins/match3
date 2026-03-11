@@ -1,5 +1,6 @@
 using System;
 using Match3.Core.Runtime;
+using Match3.Core.GameCore.Board;
 using Match3.Presentation.Input;
 using Match3.Presentation.Rendering;
 
@@ -23,6 +24,7 @@ public sealed class PresentationScreenHost : IGameScreenHost
         if (flowController.CurrentScreen is GameplayScreen gameplay)
         {
             gameplay.Presenter.Update(elapsed);
+            gameplay.EffectsController.Update(elapsed);
         }
 
         HandleInput(inputState);
@@ -57,6 +59,11 @@ public sealed class PresentationScreenHost : IGameScreenHost
 
     private void HandleGameplayInput(InputState inputState, GameplayScreen gameplay)
     {
+        if (gameplay.EffectsController.HasActiveBlockingEffects)
+        {
+            return;
+        }
+
         if (!mouseInputRouter.ShouldHandleBoardSelection(inputState) &&
             !touchInputRouter.ShouldHandleBoardSelection(inputState))
         {
@@ -66,12 +73,35 @@ public sealed class PresentationScreenHost : IGameScreenHost
         var move = gameplay.BoardInputHandler.HandleClick(ToNumerics(inputState.PointerPosition));
         if (move is not null)
         {
-            gameplay.Presenter.ProcessMove(gameplay.Board, move.Value);
+            var beforeBoard = CloneBoard(gameplay.Board);
+            var beforeSnapshot = gameplay.BoardRenderer.BuildSnapshot(beforeBoard, gameplay.BoardTransform);
+            var result = gameplay.Presenter.ProcessMove(gameplay.Board, move.Value);
+            var afterSnapshot = gameplay.BoardRenderer.BuildSnapshot(gameplay.Board, gameplay.BoardTransform);
+            gameplay.EffectsController.QueueSwap(beforeSnapshot, move.Value, rollback: !result.IsSwapApplied);
+            if (result.IsSwapApplied)
+            {
+                gameplay.EffectsController.QueueBoardSettle(beforeSnapshot, afterSnapshot, gameplay.BoardTransform.CellSize);
+            }
         }
     }
 
     private static System.Numerics.Vector2 ToNumerics(System.Numerics.Vector2 value)
     {
         return value;
+    }
+
+    private static BoardState CloneBoard(BoardState source)
+    {
+        var clone = new BoardState();
+        for (var row = 0; row < source.Height; row++)
+        {
+            for (var column = 0; column < source.Width; column++)
+            {
+                var position = new Match3.Core.GameCore.ValueObjects.GridPosition(row, column);
+                clone.SetCell(position, source.GetCell(position));
+            }
+        }
+
+        return clone;
     }
 }

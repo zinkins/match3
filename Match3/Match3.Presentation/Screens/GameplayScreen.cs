@@ -12,6 +12,7 @@ public sealed class GameplayScreen : IScreen
         GameplayPresenter presenter,
         BoardState board,
         BoardInputHandler boardInputHandler,
+        GameplayEffectsController effectsController,
         BoardRenderer boardRenderer,
         HudRenderer hudRenderer,
         BoardTransform boardTransform)
@@ -19,6 +20,7 @@ public sealed class GameplayScreen : IScreen
         Presenter = presenter;
         Board = board;
         BoardInputHandler = boardInputHandler;
+        EffectsController = effectsController;
         BoardRenderer = boardRenderer;
         HudRenderer = hudRenderer;
         BoardTransform = boardTransform;
@@ -31,6 +33,8 @@ public sealed class GameplayScreen : IScreen
     public BoardState Board { get; }
 
     public BoardInputHandler BoardInputHandler { get; }
+
+    public GameplayEffectsController EffectsController { get; }
 
     public BoardRenderer BoardRenderer { get; }
 

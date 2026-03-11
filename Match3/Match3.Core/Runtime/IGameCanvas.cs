@@ -12,5 +12,7 @@ public interface IGameCanvas
 
     void DrawFilledRectangle(float x, float y, float width, float height, string tint);
 
+    void DrawShape(string shape, float x, float y, float width, float height, string tint, float rotationRadians = 0f);
+
     void DrawText(string text, float x, float y, string tint);
 }

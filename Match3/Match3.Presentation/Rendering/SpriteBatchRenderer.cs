@@ -38,25 +38,22 @@ public sealed class SpriteBatchRenderer
 
     private static void DrawSelectionHighlight(IGameCanvas canvas, GameplayScreen screen)
     {
-        if (screen.SelectedCell is not { } selectedCell)
-        {
-            return;
-        }
-
-        var world = screen.BoardTransform.GridToWorld(selectedCell);
-        canvas.DrawFilledRectangle(
-            world.X + 4f,
-            world.Y + 4f,
-            screen.BoardTransform.CellSize - 8f,
-            screen.BoardTransform.CellSize - 8f,
-            PieceVisualConstants.TintOrange);
+        // Selection is communicated by the piece transform itself to avoid a duplicate-looking base shape.
     }
 
     private static void DrawPieces(IGameCanvas canvas, BoardRenderSnapshot boardSnapshot)
     {
         foreach (var piece in boardSnapshot.Pieces)
         {
-            canvas.DrawFilledRectangle(piece.X, piece.Y, piece.Width, piece.Height, piece.Tint);
+            canvas.DrawShape(piece.Shape, piece.X, piece.Y, piece.Width, piece.Height, piece.Tint, piece.Rotation);
+        }
+    }
+
+    private static void DrawPieces(IGameCanvas canvas, IReadOnlyList<RenderPiece> pieces)
+    {
+        foreach (var piece in pieces)
+        {
+            canvas.DrawShape(piece.Shape, piece.X, piece.Y, piece.Width, piece.Height, piece.Tint, piece.Rotation);
         }
     }
 
@@ -86,9 +83,10 @@ public sealed class SpriteBatchRenderer
     private static void DrawGameplay(IGameCanvas canvas, GameplayScreen screen)
     {
         var boardSnapshot = screen.BoardRenderer.BuildSnapshot(screen.Board, screen.BoardTransform);
+        var renderedPieces = screen.EffectsController.BuildPieces(boardSnapshot, screen.SelectedCell);
         DrawCells(canvas, boardSnapshot);
         DrawSelectionHighlight(canvas, screen);
-        DrawPieces(canvas, boardSnapshot);
+        DrawPieces(canvas, renderedPieces);
         DrawHud(canvas, screen);
 
         if (screen.ShouldShowGameOverOverlay)

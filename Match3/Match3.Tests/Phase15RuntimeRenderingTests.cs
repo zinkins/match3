@@ -112,6 +112,26 @@ public class Phase15RuntimeRenderingTests
         Assert.NotNull(flow.Gameplay.SelectedCell);
     }
 
+
+    [Fact]
+    public void PresentationScreenHost_IgnoresBoardInput_WhileTransientEffectsAreActive()
+    {
+        var flow = new ScreenFlowController();
+        var host = new PresentationScreenHost(flow, new SpriteBatchRenderer());
+        flow.MainMenu.PlayButton.Click();
+        flow.Tick();
+        var gameplay = flow.Gameplay;
+        var snapshot = gameplay.BoardRenderer.BuildSnapshot(gameplay.Board, gameplay.BoardTransform);
+
+        gameplay.EffectsController.QueueSwap(snapshot, new Move(new GridPosition(0, 0), new GridPosition(0, 1)), rollback: false);
+
+        host.Update(
+            TimeSpan.FromMilliseconds(16),
+            new InputState(true, new System.Numerics.Vector2(50f, 110f), true, false, 800, 480));
+
+        Assert.Null(gameplay.SelectedCell);
+    }
+
     private static BoardState CreateBoard()
     {
         var board = new BoardState();
@@ -150,6 +170,10 @@ public class Phase15RuntimeRenderingTests
         }
 
         public void DrawFilledRectangle(float x, float y, float width, float height, string tint)
+        {
+        }
+
+        public void DrawShape(string shape, float x, float y, float width, float height, string tint, float rotationRadians = 0f)
         {
         }
 
