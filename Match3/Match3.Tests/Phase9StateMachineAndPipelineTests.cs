@@ -180,9 +180,29 @@ public class Phase9StateMachineAndPipelineTests
 
         processor.ProcessTurnPipeline(board, move, session, machine);
 
-        Assert.Equal(PieceType.Green, board.GetCell(new GridPosition(0, 0)));
-        Assert.Equal(PieceType.Green, board.GetCell(new GridPosition(0, 1)));
-        Assert.Equal(PieceType.Green, board.GetCell(new GridPosition(0, 2)));
+        Assert.NotNull(board.GetCell(new GridPosition(0, 0)));
+        Assert.NotNull(board.GetCell(new GridPosition(0, 1)));
+        Assert.NotNull(board.GetCell(new GridPosition(0, 2)));
+        Assert.DoesNotContain(new MatchFinder().FindMatches(board), group => group.Positions.Contains(new GridPosition(0, 1)));
+    }
+
+    [Fact]
+    public void TurnProcessor_LeavesBoardWithoutPendingMatches_AfterPipelineFinishes()
+    {
+        var board = CreateBoardForSwapWithMatch();
+        var move = new Move(new GridPosition(0, 2), new GridPosition(1, 2));
+        var processor = new TurnProcessor(
+            matchFinder: new MatchFinder(),
+            gravityResolver: new GravityResolver(),
+            refillResolver: new RefillResolver(new SequenceRandomSource(3, 4, 1, 2, 0)));
+        var session = new GameSession();
+        var machine = new GameplayStateMachine();
+
+        var applied = processor.ProcessTurnPipeline(board, move, session, machine);
+        var matches = new MatchFinder().FindMatches(board);
+
+        Assert.True(applied);
+        Assert.Empty(matches);
     }
 
     private static BoardState CreateBoardForSwapWithMatch()

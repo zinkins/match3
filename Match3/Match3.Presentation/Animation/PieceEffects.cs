@@ -306,30 +306,28 @@ public sealed class GameplayEffectsController
     {
         for (var column = 0; column < 8; column++)
         {
-            var usedSources = new HashSet<GridPosition>();
+            var beforeColumn = beforeSnapshot.Pieces
+                .Where(piece => piece.Position.Column == column)
+                .OrderBy(piece => piece.Position.Row)
+                .ToArray();
+            var afterColumn = afterSnapshot.Pieces
+                .Where(piece => piece.Position.Column == column)
+                .OrderBy(piece => piece.Position.Row)
+                .ToArray();
+            var survivorMap = MatchColumnSurvivors(beforeColumn, afterColumn);
             var spawnCount = 0;
 
-            foreach (var target in afterSnapshot.Pieces
-                .Where(piece => piece.Position.Column == column)
-                .OrderByDescending(piece => piece.Position.Row))
+            foreach (var target in afterColumn.OrderByDescending(piece => piece.Position.Row))
             {
-                var source = beforeSnapshot.Pieces
-                    .Where(piece => piece.Position.Column == column &&
-                                    piece.Tint == target.Tint &&
-                                    piece.Position.Row <= target.Position.Row &&
-                                    !usedSources.Contains(piece.Position))
-                    .OrderByDescending(piece => piece.Position.Row)
-                    .FirstOrDefault();
-
                 Vector2 from;
-                if (source is not null && source.Position != target.Position)
+                if (survivorMap.TryGetValue(target.Position, out var source))
                 {
-                    usedSources.Add(source.Position);
+                    if (source.Position == target.Position)
+                    {
+                        continue;
+                    }
+
                     from = new Vector2(source.X, source.Y);
-                }
-                else if (source is not null && source.Position == target.Position)
-                {
-                    continue;
                 }
                 else
                 {
@@ -342,9 +340,55 @@ public sealed class GameplayEffectsController
                     target with { X = from.X, Y = from.Y, Layer = 15f },
                     new MovePieceEffect(from, new Vector2(target.X, target.Y)),
                     durationSeconds: 0.45f,
-                    delaySeconds: 0.22f,
+                    delaySeconds: 0f,
                     hideBasePiece: true));
             }
         }
+    }
+
+    private static Dictionary<GridPosition, RenderPiece> MatchColumnSurvivors(
+        IReadOnlyList<RenderPiece> beforeColumn,
+        IReadOnlyList<RenderPiece> afterColumn)
+    {
+        var lengths = new int[beforeColumn.Count + 1, afterColumn.Count + 1];
+        for (var beforeIndex = beforeColumn.Count - 1; beforeIndex >= 0; beforeIndex--)
+        {
+            for (var afterIndex = afterColumn.Count - 1; afterIndex >= 0; afterIndex--)
+            {
+                lengths[beforeIndex, afterIndex] = AreSamePiece(beforeColumn[beforeIndex], afterColumn[afterIndex])
+                    ? lengths[beforeIndex + 1, afterIndex + 1] + 1
+                    : Math.Max(lengths[beforeIndex + 1, afterIndex], lengths[beforeIndex, afterIndex + 1]);
+            }
+        }
+
+        var result = new Dictionary<GridPosition, RenderPiece>();
+        var i = 0;
+        var j = 0;
+        while (i < beforeColumn.Count && j < afterColumn.Count)
+        {
+            if (AreSamePiece(beforeColumn[i], afterColumn[j]))
+            {
+                result[afterColumn[j].Position] = beforeColumn[i];
+                i++;
+                j++;
+                continue;
+            }
+
+            if (lengths[i + 1, j] >= lengths[i, j + 1])
+            {
+                i++;
+            }
+            else
+            {
+                j++;
+            }
+        }
+
+        return result;
+    }
+
+    private static bool AreSamePiece(RenderPiece before, RenderPiece after)
+    {
+        return before.Shape == after.Shape && before.Tint == after.Tint;
     }
 }

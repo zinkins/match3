@@ -139,6 +139,30 @@ public class Phase3BoardAndGenerationTests
         Assert.Equal(PieceType.Green, board.GetCell(new GridPosition(1, 0)));
     }
 
+    [Fact]
+    public void RefillResolver_DoesNotCreateImmediateMatches()
+    {
+        var board = new BoardState();
+        for (var row = 0; row < board.Height; row++)
+        {
+            for (var column = 0; column < board.Width; column++)
+            {
+                board.SetCell(new GridPosition(row, column), PieceCatalog.All[(row + column) % PieceCatalog.All.Count]);
+            }
+        }
+
+        board.SetCell(new GridPosition(0, 0), null);
+        board.SetCell(new GridPosition(0, 1), null);
+        board.SetCell(new GridPosition(0, 2), null);
+
+        var refillResolver = new RefillResolver(new SequenceRandomSource(0));
+        refillResolver.Refill(board);
+
+        var matches = new MatchFinder().FindMatches(board);
+
+        Assert.Empty(matches);
+    }
+
     private sealed class SequenceRandomSource(params int[] values) : IRandomSource
     {
         private readonly int[] values = values.Length == 0 ? [0] : values;

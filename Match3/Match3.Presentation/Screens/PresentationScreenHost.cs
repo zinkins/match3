@@ -80,7 +80,10 @@ public sealed class PresentationScreenHost : IGameScreenHost
             gameplay.EffectsController.QueueSwap(beforeSnapshot, move.Value, rollback: !result.IsSwapApplied);
             if (result.IsSwapApplied)
             {
-                gameplay.EffectsController.QueueBoardSettle(beforeSnapshot, afterSnapshot, gameplay.BoardTransform.CellSize);
+                var swappedBoard = CloneBoard(beforeBoard);
+                ApplySwap(swappedBoard, move.Value);
+                var swappedSnapshot = gameplay.BoardRenderer.BuildSnapshot(swappedBoard, gameplay.BoardTransform);
+                gameplay.EffectsController.QueueBoardSettle(swappedSnapshot, afterSnapshot, gameplay.BoardTransform.CellSize);
             }
         }
     }
@@ -88,6 +91,14 @@ public sealed class PresentationScreenHost : IGameScreenHost
     private static System.Numerics.Vector2 ToNumerics(System.Numerics.Vector2 value)
     {
         return value;
+    }
+
+    private static void ApplySwap(BoardState board, Match3.Core.GameCore.ValueObjects.Move move)
+    {
+        var fromPiece = board.GetCell(move.From);
+        var toPiece = board.GetCell(move.To);
+        board.SetCell(move.From, toPiece);
+        board.SetCell(move.To, fromPiece);
     }
 
     private static BoardState CloneBoard(BoardState source)

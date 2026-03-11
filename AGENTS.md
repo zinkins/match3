@@ -13,6 +13,7 @@
 
 ## Coding Style & Naming Conventions
 Используйте 4-space indentation и стандартный C# brace style. Держите types, methods и public fields в `PascalCase`; используйте `camelCase` для locals и private fields. Придерживайтесь существующего layout namespace, например `Match3.Core.Localization`. Предпочитайте небольшие platform-neutral classes в `Match3.Core/` и держите platform-specific code в соответствующем launcher project. Добавляйте XML documentation только для public API или неочевидного поведения.
+Вставляй в текст кода Windows переводы строк.
 
 ## Testing Guidelines
 Сейчас test project отсутствует. Пока он не создан, считайте `dotnet build Match3/Match3.sln` плюс manual smoke test в `Match3.DesktopGL` минимальной проверкой gameplay-изменений. При добавлении tests размещайте их в sibling project вроде `Match3/Match3.Tests/`, не подтягивайте зависимости `MonoGame` в test assembly и используйте method names вроде `Swap_Rejected_When_NoMatchIsCreated`.

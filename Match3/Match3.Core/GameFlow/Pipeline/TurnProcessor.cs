@@ -103,36 +103,53 @@ public sealed class TurnProcessor
         stateMachine.TransitionToResolving();
         onPhaseCompleted?.Invoke(stateMachine.State, session);
 
-        var destroyedPositions = matches
-            .SelectMany(group => group.Positions)
-            .Distinct()
-            .ToArray();
-        ClearMatchedPieces(board, destroyedPositions);
-        var destroyedPieces = destroyedPositions.Length;
-
-        events.Add(new MatchResolved(destroyedPieces));
-        var updatedScore = scoreCalculator.AddScore(currentScore, destroyedPieces);
-        events.Add(new ScoreAdded(updatedScore - currentScore));
-
-        if (session.IsGameOver)
+        var resolvedScore = currentScore;
+        while (matches.Count > 0)
         {
-            return FinishWithGameOver(stateMachine, events, applied);
+            var destroyedPositions = matches
+                .SelectMany(group => group.Positions)
+                .Distinct()
+                .ToArray();
+            ClearMatchedPieces(board, destroyedPositions);
+            var destroyedPieces = destroyedPositions.Length;
+
+            events.Add(new MatchResolved(destroyedPieces));
+            var updatedScore = scoreCalculator.AddScore(resolvedScore, destroyedPieces);
+            events.Add(new ScoreAdded(updatedScore - resolvedScore));
+            resolvedScore = updatedScore;
+
+            if (session.IsGameOver)
+            {
+                return FinishWithGameOver(stateMachine, events, applied);
+            }
+
+            stateMachine.TransitionToApplyingGravity();
+            gravityResolver.Apply(board);
+            events.Add(new PiecesFell());
+            onPhaseCompleted?.Invoke(stateMachine.State, session);
+
+            if (session.IsGameOver)
+            {
+                return FinishWithGameOver(stateMachine, events, applied);
+            }
+
+            stateMachine.TransitionToRefilling();
+            refillResolver.Refill(board);
+            events.Add(new PiecesSpawned());
+            onPhaseCompleted?.Invoke(stateMachine.State, session);
+
+            if (session.IsGameOver)
+            {
+                return FinishWithGameOver(stateMachine, events, applied);
+            }
+
+            matches = matchFinder.FindMatches(board);
+            if (matches.Count > 0)
+            {
+                stateMachine.TransitionToResolving();
+                onPhaseCompleted?.Invoke(stateMachine.State, session);
+            }
         }
-
-        stateMachine.TransitionToApplyingGravity();
-        gravityResolver.Apply(board);
-        events.Add(new PiecesFell());
-        onPhaseCompleted?.Invoke(stateMachine.State, session);
-
-        if (session.IsGameOver)
-        {
-            return FinishWithGameOver(stateMachine, events, applied);
-        }
-
-        stateMachine.TransitionToRefilling();
-        refillResolver.Refill(board);
-        events.Add(new PiecesSpawned());
-        onPhaseCompleted?.Invoke(stateMachine.State, session);
 
         stateMachine.TransitionToCheckingEndGame();
         if (session.IsGameOver)

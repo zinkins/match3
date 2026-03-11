@@ -45,6 +45,14 @@ public sealed class BoardGenerator
             }
         }
 
+        foreach (var candidate in PieceCatalog.All)
+        {
+            if (!CreatesImmediateMatch(board, row, column, candidate))
+            {
+                return candidate;
+            }
+        }
+
         return NextPieceType();
     }
 
