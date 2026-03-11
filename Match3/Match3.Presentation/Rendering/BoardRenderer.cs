@@ -16,12 +16,12 @@ public sealed class BoardRenderer
     {
         return pieceType switch
         {
-            PieceType.Red => new PieceVisual("Circle", "Red"),
-            PieceType.Green => new PieceVisual("Square", "Green"),
-            PieceType.Blue => new PieceVisual("Diamond", "Blue"),
-            PieceType.Yellow => new PieceVisual("Triangle", "Yellow"),
-            PieceType.Purple => new PieceVisual("Hexagon", "Purple"),
-            _ => new PieceVisual("Unknown", "White")
+            PieceType.Red => new PieceVisual(PieceVisualConstants.ShapeSquare, PieceVisualConstants.TintRed),
+            PieceType.Green => new PieceVisual(PieceVisualConstants.ShapeSquare, PieceVisualConstants.TintGreen),
+            PieceType.Blue => new PieceVisual(PieceVisualConstants.ShapeSquare, PieceVisualConstants.TintBlue),
+            PieceType.Yellow => new PieceVisual(PieceVisualConstants.ShapeSquare, PieceVisualConstants.TintYellow),
+            PieceType.Purple => new PieceVisual(PieceVisualConstants.ShapeSquare, PieceVisualConstants.TintPurple),
+            _ => new PieceVisual(PieceVisualConstants.ShapeUnknown, PieceVisualConstants.TintWhite)
         };
     }
 }

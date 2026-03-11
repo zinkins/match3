@@ -60,7 +60,8 @@ public class Phase13MathInputAndAnimationTests
             renderer.GetVisual(PieceType.Purple)
         };
 
-        Assert.Equal(5, visuals.Select(v => v.Shape).Distinct().Count());
+        Assert.All(visuals, visual => Assert.Equal(PieceVisualConstants.ShapeSquare, visual.Shape));
+        Assert.Equal(5, visuals.Select(v => v.Tint).Distinct().Count());
     }
 
     [Fact]
