@@ -40,15 +40,13 @@ public class Phase12PresentationTests
             new GameplayPresenter(
                 new Match3.Core.GameFlow.Pipeline.TurnProcessor(),
                 new Match3.Core.GameFlow.StateMachine.GameplayStateMachine(),
-                new GameSession(),
-                new AnimationQueue()),
+                new GameSession()),
             new BoardState(),
             new Match3.Presentation.Input.BoardInputHandler(
                 new BoardTransform(48f, new System.Numerics.Vector2(40f, 100f), 8, 8),
                 new Match3.Core.GameFlow.Sessions.SelectionController()),
             new AnimationPlayer(),
             new TurnAnimationBuilder(),
-            new GameplayEffectsController(),
             new BoardRenderer(),
             new HudRenderer(),
             new BoardTransform(48f, new System.Numerics.Vector2(40f, 100f), 8, 8),
@@ -59,18 +57,17 @@ public class Phase12PresentationTests
     }
 
     [Fact]
-    public void GameplayPresenter_EnqueuesAnimations_FromDomainEvents()
+    public void GameplayPresenter_UpdatesScore_FromDomainEvents()
     {
         var session = new GameSession();
         var presenter = new GameplayPresenter(
             turnProcessor: new Match3.Core.GameFlow.Pipeline.TurnProcessor(),
             stateMachine: new Match3.Core.GameFlow.StateMachine.GameplayStateMachine(),
-            session: session,
-            animationQueue: new AnimationQueue());
+            session: session);
 
         presenter.ProcessMove(CreateBoardForSwapWithMatch(), new Move(new GridPosition(0, 2), new GridPosition(1, 2)));
 
-        Assert.True(presenter.AnimationQueue.HasRunningAnimations);
+        Assert.True(presenter.Score > 0);
     }
 
     [Fact]
@@ -83,37 +80,47 @@ public class Phase12PresentationTests
     }
 
     [Fact]
-    public void GameplayPresenter_ShowsGameOverOnlyAfterCurrentAnimationsFinish()
+    public void GameplayPresenter_ReflectsGameOverState_FromSession()
     {
         var session = new GameSession();
         session.UpdateTimer(TimeSpan.FromSeconds(60));
-        var queue = new AnimationQueue();
-        queue.Enqueue([new Match3.Core.GameFlow.Events.GameEnded()]);
         var presenter = new GameplayPresenter(
             turnProcessor: new Match3.Core.GameFlow.Pipeline.TurnProcessor(),
             stateMachine: new Match3.Core.GameFlow.StateMachine.GameplayStateMachine(),
-            session: session,
-            animationQueue: queue);
+            session: session);
 
-        Assert.False(presenter.ShouldShowGameOverOverlay);
-
-        presenter.Update(TimeSpan.FromMilliseconds(20));
-        Assert.True(presenter.ShouldShowGameOverOverlay);
+        Assert.True(presenter.IsGameOver);
     }
 
     [Fact]
-    public void AnimationQueue_AdvancesByElapsedTime_InRenderLoop()
+    public void GameplayScreen_ShowsGameOverOnlyAfterBlockingAnimationFinishes()
     {
-        var queue = new AnimationQueue();
-        queue.Enqueue([new Match3.Core.GameFlow.Events.PiecesSwapped(new Move(new GridPosition(0, 0), new GridPosition(0, 1)))]);
+        var session = new GameSession();
+        session.UpdateTimer(TimeSpan.FromSeconds(60));
+        var animationPlayer = new AnimationPlayer();
+        var screen = new GameplayScreen(
+            new GameplayPresenter(
+                new Match3.Core.GameFlow.Pipeline.TurnProcessor(),
+                new Match3.Core.GameFlow.StateMachine.GameplayStateMachine(),
+                session),
+            new BoardState(),
+            new Match3.Presentation.Input.BoardInputHandler(
+                new BoardTransform(48f, new System.Numerics.Vector2(40f, 100f), 8, 8),
+                new Match3.Core.GameFlow.Sessions.SelectionController()),
+            animationPlayer,
+            new TurnAnimationBuilder(),
+            new BoardRenderer(),
+            new HudRenderer(),
+            new BoardTransform(48f, new System.Numerics.Vector2(40f, 100f), 8, 8),
+            () => { });
 
-        Assert.Equal(nameof(Match3.Core.GameFlow.Events.PiecesSwapped), queue.CurrentStep?.Name);
+        animationPlayer.Play(new DelayAnimation(0.2f, blocksInput: true));
 
-        queue.Update(0.1f);
-        Assert.True(queue.HasRunningAnimations);
+        Assert.False(screen.ShouldShowGameOverOverlay);
 
-        queue.Update(0.2f);
-        Assert.False(queue.HasRunningAnimations);
+        animationPlayer.Update(0.2f);
+
+        Assert.True(screen.ShouldShowGameOverOverlay);
     }
 
     [Fact]
@@ -122,8 +129,7 @@ public class Phase12PresentationTests
         var presenter = new GameplayPresenter(
             turnProcessor: new Match3.Core.GameFlow.Pipeline.TurnProcessor(),
             stateMachine: new Match3.Core.GameFlow.StateMachine.GameplayStateMachine(),
-            session: new GameSession(),
-            animationQueue: new AnimationQueue());
+            session: new GameSession());
 
         presenter.Update(TimeSpan.FromSeconds(1.5));
 

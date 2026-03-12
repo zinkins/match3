@@ -77,8 +77,7 @@ public sealed class ScreenFlowController
         var presenter = new GameplayPresenter(
             new TurnProcessor(),
             new GameplayStateMachine(),
-            session,
-            new AnimationQueue());
+            session);
 
         return new GameplayScreen(
             presenter,
@@ -86,7 +85,6 @@ public sealed class ScreenFlowController
             new BoardInputHandler(boardTransform, new SelectionController()),
             new AnimationPlayer(),
             turnAnimationBuilderFactory(),
-            new GameplayEffectsController(),
             new BoardRenderer(),
             new HudRenderer(),
             boardTransform,

@@ -17,7 +17,6 @@ public sealed class GameplayScreen : IScreen
         BoardInputHandler boardInputHandler,
         AnimationPlayer animationPlayer,
         ITurnAnimationBuilder turnAnimationBuilder,
-        GameplayEffectsController effectsController,
         BoardRenderer boardRenderer,
         HudRenderer hudRenderer,
         BoardTransform boardTransform,
@@ -28,12 +27,12 @@ public sealed class GameplayScreen : IScreen
         BoardInputHandler = boardInputHandler;
         AnimationPlayer = animationPlayer ?? throw new ArgumentNullException(nameof(animationPlayer));
         TurnAnimationBuilder = turnAnimationBuilder ?? throw new ArgumentNullException(nameof(turnAnimationBuilder));
-        EffectsController = effectsController;
         BoardRenderer = boardRenderer;
         HudRenderer = hudRenderer;
         BoardTransform = boardTransform;
         BoardViewState = new BoardViewState();
         PieceNodeRenderer = new PieceNodeRenderer();
+        VisualState = new GameplayVisualState();
         OkButton = new UiButton("Ok", onOk ?? throw new ArgumentNullException(nameof(onOk)));
     }
 
@@ -51,8 +50,6 @@ public sealed class GameplayScreen : IScreen
 
     public ITurnAnimationBuilder TurnAnimationBuilder { get; }
 
-    public GameplayEffectsController EffectsController { get; }
-
     public BoardRenderer BoardRenderer { get; }
 
     public HudRenderer HudRenderer { get; }
@@ -63,11 +60,11 @@ public sealed class GameplayScreen : IScreen
 
     public PieceNodeRenderer PieceNodeRenderer { get; }
 
+    public GameplayVisualState VisualState { get; }
+
     public UiButton OkButton { get; }
 
     public bool ShouldShowGameOverOverlay => Presenter.IsGameOver && !AnimationPlayer.HasBlockingAnimations;
-
-    public AnimationQueue AnimationQueue => Presenter.AnimationQueue;
 
     public GridPosition? SelectedCell => BoardInputHandler.SelectedCell;
 }

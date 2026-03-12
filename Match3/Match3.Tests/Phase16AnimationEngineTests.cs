@@ -308,7 +308,7 @@ public sealed class Phase16AnimationEngineTests
     [Fact]
     public void CreatedBonusScenario_StartsFromCreationCell_InsteadOfSpawnLane()
     {
-        var controller = new GameplayEffectsController();
+        var visualState = new GameplayVisualState();
         var player = new AnimationPlayer();
         var viewState = new BoardViewState();
         var renderer = new Match3.Presentation.Rendering.PieceNodeRenderer();
@@ -318,11 +318,11 @@ public sealed class Phase16AnimationEngineTests
                 new Match3.Presentation.Rendering.RenderPiece(new Match3.Core.GameCore.ValueObjects.GridPosition(3, 2), Match3.Presentation.Rendering.PieceVisualConstants.ShapeDiamond, Match3.Presentation.Rendering.PieceVisualConstants.TintRed, 116f, 164f, 32f, 32f)
             ]);
 
-        controller.QueueCreatedBonuses(viewState, player, afterSnapshot, 48f, createdBonusOrigins: [new Match3.Core.GameCore.ValueObjects.GridPosition(1, 2)]);
+        GameplayAnimationRuntime.QueueCreatedBonuses(viewState, player, afterSnapshot, 48f, createdBonusOrigins: [new Match3.Core.GameCore.ValueObjects.GridPosition(1, 2)]);
         player.Update(0.05f);
 
         var nodeSnapshot = renderer.BuildSnapshot(afterSnapshot, viewState);
-        var pieces = controller.BuildPieces(nodeSnapshot, null, viewState, player);
+        var pieces = visualState.BuildPieces(nodeSnapshot, null, viewState, player);
         var bonus = Assert.Single(pieces, piece => piece.Shape == Match3.Presentation.Rendering.PieceVisualConstants.ShapeDiamond);
 
         Assert.True(bonus.Y >= 68f);
@@ -332,7 +332,7 @@ public sealed class Phase16AnimationEngineTests
     public void TurnAnimationBuilder_DoesNotScheduleSpawnForCreatedBonusCell()
     {
         var builder = new TurnAnimationBuilder();
-        var controller = new GameplayEffectsController();
+        var visualState = new GameplayVisualState();
         var player = new AnimationPlayer();
         var viewState = new BoardViewState();
         var afterSnapshot = new Match3.Presentation.Rendering.BoardRenderSnapshot(
@@ -347,8 +347,8 @@ public sealed class Phase16AnimationEngineTests
             IsSwapApplied = true,
             QueueVisualEffects = static () => { },
             QueueSwapAnimation = static () => { },
-            QueueCreatedBonusAnimation = () => controller.QueueCreatedBonuses(viewState, player, afterSnapshot, 48f, createdBonusOrigins: createdBonusOrigins),
-            QueueBoardSettleAnimation = () => controller.QueueBoardSettle(viewState, player, new Match3.Presentation.Rendering.BoardRenderSnapshot([], []), afterSnapshot, 48f, excludedTargets: createdBonusTargets),
+            QueueCreatedBonusAnimation = () => GameplayAnimationRuntime.QueueCreatedBonuses(viewState, player, afterSnapshot, 48f, createdBonusOrigins: createdBonusOrigins),
+            QueueBoardSettleAnimation = () => GameplayAnimationRuntime.QueueBoardSettle(viewState, player, new Match3.Presentation.Rendering.BoardRenderSnapshot([], []), afterSnapshot, 48f, excludedTargets: createdBonusTargets, visualState: visualState),
             SwapDurationSeconds = 0.22f,
             SettleDurationSeconds = 1.15f
         });
@@ -389,7 +389,6 @@ public sealed class Phase16AnimationEngineTests
     {
         var viewState = new BoardViewState();
         var player = new AnimationPlayer();
-        var controller = new GameplayEffectsController();
         var from = new Match3.Core.GameCore.ValueObjects.GridPosition(0, 0);
         var to = new Match3.Core.GameCore.ValueObjects.GridPosition(0, 1);
         var fromNode = new PieceNode(NodeId.New(), from, new Vector2(20f, 20f), new Vector2(1f, 1f), 0f, 1f, Match3.Presentation.Rendering.PieceVisualConstants.TintRed, 0f, true);
@@ -397,7 +396,7 @@ public sealed class Phase16AnimationEngineTests
         viewState.AddOrUpdate(fromNode);
         viewState.AddOrUpdate(toNode);
 
-        controller.QueueSwap(viewState, player, new Match3.Core.GameCore.ValueObjects.Move(from, to), new Match3.Presentation.Rendering.BoardTransform(48f, new Vector2(20f, 20f)), rollback: false);
+        GameplayAnimationRuntime.QueueSwap(viewState, player, new Match3.Core.GameCore.ValueObjects.Move(from, to), rollback: false);
 
         Assert.Equal(to, fromNode.LogicalCell);
         Assert.Equal(from, toNode.LogicalCell);
@@ -411,7 +410,7 @@ public sealed class Phase16AnimationEngineTests
     [Fact]
     public void DestroyerScenario_SpawnsTransientEffectNode_AndClearsPathOverTime()
     {
-        var controller = new GameplayEffectsController();
+        var visualState = new GameplayVisualState();
         var player = new AnimationPlayer();
         var viewState = new BoardViewState();
         var transform = new Match3.Presentation.Rendering.BoardTransform(48f, new Vector2(20f, 20f));
@@ -425,22 +424,21 @@ public sealed class Phase16AnimationEngineTests
                 new Match3.Presentation.Rendering.RenderPiece(tail, Match3.Presentation.Rendering.PieceVisualConstants.ShapeSquare, Match3.Presentation.Rendering.PieceVisualConstants.TintGreen, 164f, 20f, 32f, 32f)
             ]);
 
-        controller.QueueDestroyer(viewState, player, origin, [new Match3.Core.GameCore.ValueObjects.GridPosition(0, 0), origin, new Match3.Core.GameCore.ValueObjects.GridPosition(0, 2), tail], transform);
+        GameplayAnimationRuntime.QueueDestroyer(viewState, player, origin, [new Match3.Core.GameCore.ValueObjects.GridPosition(0, 0), origin, new Match3.Core.GameCore.ValueObjects.GridPosition(0, 2), tail], transform);
 
         Assert.Equal(2, viewState.EffectNodes.Count);
 
-        controller.Update(TimeSpan.FromSeconds(0.05f));
         player.Update(0.05f);
-        var earlyPieces = controller.BuildPieces(snapshot, null, viewState);
+        var earlyPieces = visualState.BuildPieces(snapshot, null, viewState);
         Assert.DoesNotContain(earlyPieces, piece => piece.Position == origin && piece.Shape == Match3.Presentation.Rendering.PieceVisualConstants.ShapeSquare);
         Assert.Contains(earlyPieces, piece => piece.Position == new Match3.Core.GameCore.ValueObjects.GridPosition(0, 2));
 
-        AdvanceRuntime(controller, player, 0.35f);
-        var midPieces = controller.BuildPieces(snapshot, null, viewState);
+        AdvanceRuntime(player, 0.35f);
+        var midPieces = visualState.BuildPieces(snapshot, null, viewState);
         Assert.DoesNotContain(midPieces, piece => piece.Position == new Match3.Core.GameCore.ValueObjects.GridPosition(0, 2) && piece.Shape == Match3.Presentation.Rendering.PieceVisualConstants.ShapeSquare);
         Assert.Contains(midPieces, piece => piece.Position == tail);
 
-        AdvanceRuntime(controller, player, 0.40f);
+        AdvanceRuntime(player, 0.40f);
         Assert.Empty(viewState.EffectNodes);
         Assert.False(viewState.IsCellHidden(origin));
         Assert.False(viewState.IsCellHidden(new Match3.Core.GameCore.ValueObjects.GridPosition(0, 2)));
@@ -465,7 +463,7 @@ public sealed class Phase16AnimationEngineTests
     [Fact]
     public void SelectionEffect_CanStackWithMovementWithoutOverwritingPositionChannel()
     {
-        var controller = new GameplayEffectsController();
+        var visualState = new GameplayVisualState();
         var player = new AnimationPlayer();
         var viewState = new BoardViewState();
         var cell = new Match3.Core.GameCore.ValueObjects.GridPosition(0, 0);
@@ -477,7 +475,7 @@ public sealed class Phase16AnimationEngineTests
         var node = new PieceNode(NodeId.New(), cell, new Vector2(20f, 20f), new Vector2(1f, 1f), 0f, 1f, Match3.Presentation.Rendering.PieceVisualConstants.TintRed, 0f, true);
         viewState.AddOrUpdate(node);
 
-        controller.BuildPieces(snapshot, cell, viewState, player);
+        visualState.BuildPieces(snapshot, cell, viewState, player);
         player.Update(0.12f);
 
         Assert.True(node.Scale.X > 1f);
@@ -493,7 +491,7 @@ public sealed class Phase16AnimationEngineTests
     [Fact]
     public void GravityScenario_ReusesExistingPieceNodes_ForFallingPieces()
     {
-        var controller = new GameplayEffectsController();
+        var visualState = new GameplayVisualState();
         var player = new AnimationPlayer();
         var viewState = new BoardViewState();
         var beforeSnapshot = new Match3.Presentation.Rendering.BoardRenderSnapshot(
@@ -521,7 +519,7 @@ public sealed class Phase16AnimationEngineTests
             true);
         viewState.AddOrUpdate(movingNode);
 
-        controller.QueueBoardSettle(viewState, player, beforeSnapshot, afterSnapshot, 48f);
+        GameplayAnimationRuntime.QueueBoardSettle(viewState, player, beforeSnapshot, afterSnapshot, 48f, visualState: visualState);
 
         var stationaryNode = viewState.GetPieceNode(new Match3.Core.GameCore.ValueObjects.GridPosition(1, 0));
         Assert.Same(movingNode, viewState.GetPieceNode(new Match3.Core.GameCore.ValueObjects.GridPosition(2, 0)));
@@ -537,7 +535,7 @@ public sealed class Phase16AnimationEngineTests
     [Fact]
     public void SpawnScenario_CreatesNewPieceNodes_AboveBoard_AndMovesThemDown()
     {
-        var controller = new GameplayEffectsController();
+        var visualState = new GameplayVisualState();
         var player = new AnimationPlayer();
         var viewState = new BoardViewState();
         var beforeSnapshot = new Match3.Presentation.Rendering.BoardRenderSnapshot([], []);
@@ -547,7 +545,7 @@ public sealed class Phase16AnimationEngineTests
                 new Match3.Presentation.Rendering.RenderPiece(new Match3.Core.GameCore.ValueObjects.GridPosition(0, 0), Match3.Presentation.Rendering.PieceVisualConstants.ShapeDiamond, Match3.Presentation.Rendering.PieceVisualConstants.TintRed, 20f, 20f, 32f, 32f)
             ]);
 
-        controller.QueueBoardSettle(viewState, player, beforeSnapshot, afterSnapshot, 48f);
+        GameplayAnimationRuntime.QueueBoardSettle(viewState, player, beforeSnapshot, afterSnapshot, 48f, visualState: visualState);
 
         var spawnedNode = viewState.GetPieceNode(new Match3.Core.GameCore.ValueObjects.GridPosition(0, 0));
         Assert.NotNull(spawnedNode);
@@ -562,7 +560,7 @@ public sealed class Phase16AnimationEngineTests
     [Fact]
     public void BoardViewState_RemovesConsumedPieceNodes_AfterResolvePhase()
     {
-        var controller = new GameplayEffectsController();
+        var visualState = new GameplayVisualState();
         var player = new AnimationPlayer();
         var viewState = new BoardViewState();
         var consumedNode = new PieceNode(NodeId.New(), new Match3.Core.GameCore.ValueObjects.GridPosition(0, 0), new Vector2(20f, 20f), new Vector2(1f, 1f), 0f, 1f, Match3.Presentation.Rendering.PieceVisualConstants.TintRed, 0f, true);
@@ -586,7 +584,7 @@ public sealed class Phase16AnimationEngineTests
                 new Match3.Presentation.Rendering.RenderPiece(new Match3.Core.GameCore.ValueObjects.GridPosition(2, 0), Match3.Presentation.Rendering.PieceVisualConstants.ShapeSquare, Match3.Presentation.Rendering.PieceVisualConstants.TintGreen, 20f, 116f, 32f, 32f)
             ]);
 
-        controller.QueueBoardSettle(viewState, player, beforeSnapshot, afterSnapshot, 48f);
+        GameplayAnimationRuntime.QueueBoardSettle(viewState, player, beforeSnapshot, afterSnapshot, 48f, visualState: visualState);
 
         Assert.Equal(2, viewState.PieceNodes.Count);
         Assert.Null(viewState.GetPieceNode(new Match3.Core.GameCore.ValueObjects.GridPosition(0, 0)));
@@ -598,7 +596,7 @@ public sealed class Phase16AnimationEngineTests
     [Fact]
     public void BoardViewState_CreatesNodesForPostCascadeBoardState_WithoutFullReset()
     {
-        var controller = new GameplayEffectsController();
+        var visualState = new GameplayVisualState();
         var player = new AnimationPlayer();
         var viewState = new BoardViewState();
         var stableNode = new PieceNode(NodeId.New(), new Match3.Core.GameCore.ValueObjects.GridPosition(2, 0), new Vector2(20f, 116f), new Vector2(1f, 1f), 0f, 1f, Match3.Presentation.Rendering.PieceVisualConstants.TintGreen, 0f, true);
@@ -616,7 +614,7 @@ public sealed class Phase16AnimationEngineTests
                 new Match3.Presentation.Rendering.RenderPiece(new Match3.Core.GameCore.ValueObjects.GridPosition(2, 0), Match3.Presentation.Rendering.PieceVisualConstants.ShapeSquare, Match3.Presentation.Rendering.PieceVisualConstants.TintGreen, 20f, 116f, 32f, 32f)
             ]);
 
-        controller.QueueBoardSettle(viewState, player, firstBefore, firstAfter, 48f);
+        GameplayAnimationRuntime.QueueBoardSettle(viewState, player, firstBefore, firstAfter, 48f, visualState: visualState);
         var preservedNode = viewState.GetPieceNode(new Match3.Core.GameCore.ValueObjects.GridPosition(2, 0));
         Assert.Same(stableNode, preservedNode);
 
@@ -628,7 +626,7 @@ public sealed class Phase16AnimationEngineTests
                 new Match3.Presentation.Rendering.RenderPiece(new Match3.Core.GameCore.ValueObjects.GridPosition(2, 0), Match3.Presentation.Rendering.PieceVisualConstants.ShapeSquare, Match3.Presentation.Rendering.PieceVisualConstants.TintGreen, 20f, 116f, 32f, 32f)
             ]);
 
-        controller.QueueBoardSettle(viewState, player, firstAfter, secondAfter, 48f);
+        GameplayAnimationRuntime.QueueBoardSettle(viewState, player, firstAfter, secondAfter, 48f, visualState: visualState);
 
         Assert.Equal(3, viewState.PieceNodes.Count);
         Assert.Same(stableNode, viewState.GetPieceNode(new Match3.Core.GameCore.ValueObjects.GridPosition(2, 0)));
@@ -639,7 +637,7 @@ public sealed class Phase16AnimationEngineTests
     [Fact]
     public void ExplosionScenario_HidesAffectedCells_OnlyWhileEffectIsActive()
     {
-        var controller = new GameplayEffectsController();
+        var visualState = new GameplayVisualState();
         var player = new AnimationPlayer();
         var viewState = new BoardViewState();
         var transform = new Match3.Presentation.Rendering.BoardTransform(48f, new Vector2(20f, 20f));
@@ -651,23 +649,23 @@ public sealed class Phase16AnimationEngineTests
                 new Match3.Presentation.Rendering.RenderPiece(affected, Match3.Presentation.Rendering.PieceVisualConstants.ShapeSquare, Match3.Presentation.Rendering.PieceVisualConstants.TintBlue, 116f, 116f, 32f, 32f)
             ]);
 
-        controller.QueueExplosion(viewState, player, [affected], transform);
+        GameplayAnimationRuntime.QueueExplosion(viewState, player, [affected], transform);
 
         Assert.Single(viewState.EffectNodes);
 
         player.Update(0.05f);
-        var activePieces = controller.BuildPieces(snapshot, null, viewState);
+        var activePieces = visualState.BuildPieces(snapshot, null, viewState);
         Assert.DoesNotContain(activePieces, piece => piece.Position == affected);
 
         player.Update(0.45f);
-        var restoredPieces = controller.BuildPieces(snapshot, null, viewState);
+        var restoredPieces = visualState.BuildPieces(snapshot, null, viewState);
         Assert.Contains(restoredPieces, piece => piece.Position == affected);
         Assert.Empty(viewState.EffectNodes);
     }
     [Fact]
     public void SelectionEffect_IsSuppressed_WhenPieceNodeIsConsumedByResolvePhase()
     {
-        var controller = new GameplayEffectsController();
+        var visualState = new GameplayVisualState();
         var player = new AnimationPlayer();
         var viewState = new BoardViewState();
         var selectedCell = new Match3.Core.GameCore.ValueObjects.GridPosition(0, 0);
@@ -683,7 +681,7 @@ public sealed class Phase16AnimationEngineTests
                 new Match3.Presentation.Rendering.RenderPiece(selectedCell, Match3.Presentation.Rendering.PieceVisualConstants.ShapeSquare, Match3.Presentation.Rendering.PieceVisualConstants.TintRed, 20f, 20f, 32f, 32f),
                 new Match3.Presentation.Rendering.RenderPiece(survivorCell, Match3.Presentation.Rendering.PieceVisualConstants.ShapeSquare, Match3.Presentation.Rendering.PieceVisualConstants.TintBlue, 20f, 68f, 32f, 32f)
             ]);
-        controller.BuildPieces(beforeSnapshot, selectedCell, viewState, player);
+        visualState.BuildPieces(beforeSnapshot, selectedCell, viewState, player);
         player.Update(0.12f);
         Assert.True(consumedNode.Scale.X > 1f);
 
@@ -694,11 +692,11 @@ public sealed class Phase16AnimationEngineTests
                 new Match3.Presentation.Rendering.RenderPiece(survivorCell, Match3.Presentation.Rendering.PieceVisualConstants.ShapeSquare, Match3.Presentation.Rendering.PieceVisualConstants.TintBlue, 20f, 68f, 32f, 32f)
             ]);
 
-        controller.QueueBoardSettle(viewState, player, beforeSnapshot, afterSnapshot, 48f);
+        GameplayAnimationRuntime.QueueBoardSettle(viewState, player, beforeSnapshot, afterSnapshot, 48f, visualState: visualState);
         var spawnedNode = viewState.GetPieceNode(selectedCell);
         Assert.NotNull(spawnedNode);
         Assert.NotEqual(consumedNode.Id, spawnedNode!.Id);
-        var pieces = controller.BuildPieces(afterSnapshot, selectedCell, viewState, player);
+        var pieces = visualState.BuildPieces(afterSnapshot, selectedCell, viewState, player);
         player.Update(0.12f);
 
         Assert.Equal(1f, spawnedNode!.Scale.X);
@@ -709,12 +707,11 @@ public sealed class Phase16AnimationEngineTests
     [Fact]
     public void AnimationPlayer_DoesNotLeakCompletedTransientNodes()
     {
-        var controller = new GameplayEffectsController();
         var player = new AnimationPlayer();
         var viewState = new BoardViewState();
         var transform = new Match3.Presentation.Rendering.BoardTransform(48f, new Vector2(20f, 20f));
 
-        controller.QueueExplosion(viewState, player, [new Match3.Core.GameCore.ValueObjects.GridPosition(1, 1)], transform);
+        GameplayAnimationRuntime.QueueExplosion(viewState, player, [new Match3.Core.GameCore.ValueObjects.GridPosition(1, 1)], transform);
 
         Assert.Single(viewState.EffectNodes);
 
@@ -723,13 +720,12 @@ public sealed class Phase16AnimationEngineTests
         Assert.Empty(viewState.EffectNodes);
         Assert.False(player.HasActiveAnimations);
     }
-    private static void AdvanceRuntime(GameplayEffectsController controller, AnimationPlayer player, float totalSeconds, float stepSeconds = 0.05f)
+    private static void AdvanceRuntime(AnimationPlayer player, float totalSeconds, float stepSeconds = 0.05f)
     {
         var remaining = totalSeconds;
         while (remaining > 0f)
         {
             var delta = MathF.Min(stepSeconds, remaining);
-            controller.Update(TimeSpan.FromSeconds(delta));
             player.Update(delta);
             remaining -= delta;
         }

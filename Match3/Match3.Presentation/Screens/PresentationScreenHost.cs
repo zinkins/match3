@@ -31,7 +31,6 @@ public sealed class PresentationScreenHost : IGameScreenHost
         {
             gameplay.Presenter.Update(elapsed);
             gameplay.AnimationPlayer.Update((float)elapsed.TotalSeconds);
-            gameplay.EffectsController.Update(elapsed);
         }
 
         HandleInput(inputState);
@@ -75,8 +74,7 @@ public sealed class PresentationScreenHost : IGameScreenHost
         }
 
         if (!gameplay.Presenter.CanAcceptInput ||
-            gameplay.AnimationPlayer.HasBlockingAnimations ||
-            gameplay.EffectsController.HasActiveBlockingEffects)
+            gameplay.AnimationPlayer.HasBlockingAnimations)
         {
             return;
         }
@@ -106,22 +104,23 @@ public sealed class PresentationScreenHost : IGameScreenHost
         {
             IsSwapApplied = result.IsSwapApplied,
             QueueVisualEffects = () => QueueVisualEvents(gameplay, result.Events),
-            QueueSwapAnimation = () => gameplay.EffectsController.QueueSwap(gameplay.BoardViewState, gameplay.AnimationPlayer, move.Value, gameplay.BoardTransform, rollback: !result.IsSwapApplied),
-            QueueCreatedBonusAnimation = () => gameplay.EffectsController.QueueCreatedBonuses(
+            QueueSwapAnimation = () => GameplayAnimationRuntime.QueueSwap(gameplay.BoardViewState, gameplay.AnimationPlayer, move.Value, rollback: !result.IsSwapApplied),
+            QueueCreatedBonusAnimation = () => GameplayAnimationRuntime.QueueCreatedBonuses(
                 gameplay.BoardViewState,
                 gameplay.AnimationPlayer,
                 afterSnapshot,
                 gameplay.BoardTransform.CellSize,
                 GetSettleDelaySeconds(result.Events),
                 createdBonusOrigins),
-            QueueBoardSettleAnimation = () => gameplay.EffectsController.QueueBoardSettle(
+            QueueBoardSettleAnimation = () => GameplayAnimationRuntime.QueueBoardSettle(
                 gameplay.BoardViewState,
                 gameplay.AnimationPlayer,
                 swappedSnapshot,
                 afterSnapshot,
                 gameplay.BoardTransform.CellSize,
                 GetSettleDelaySeconds(result.Events),
-                createdBonusTargets),
+                createdBonusTargets,
+                gameplay.VisualState),
             SwapDurationSeconds = result.IsSwapApplied ? 0.22f : 0.36f,
             SettleDelaySeconds = GetSettleDelaySeconds(result.Events),
             SettleDurationSeconds = 1.15f
@@ -150,10 +149,10 @@ public sealed class PresentationScreenHost : IGameScreenHost
             switch (domainEvent)
             {
                 case DestroyerSpawned destroyer:
-                    gameplay.EffectsController.QueueDestroyer(gameplay.BoardViewState, gameplay.AnimationPlayer, destroyer.Position, destroyer.Path, gameplay.BoardTransform);
+                    GameplayAnimationRuntime.QueueDestroyer(gameplay.BoardViewState, gameplay.AnimationPlayer, destroyer.Position, destroyer.Path, gameplay.BoardTransform);
                     break;
                 case BombExploded explosion:
-                    gameplay.EffectsController.QueueExplosion(gameplay.BoardViewState, gameplay.AnimationPlayer, explosion.Area, gameplay.BoardTransform);
+                    GameplayAnimationRuntime.QueueExplosion(gameplay.BoardViewState, gameplay.AnimationPlayer, explosion.Area, gameplay.BoardTransform);
                     break;
             }
         }

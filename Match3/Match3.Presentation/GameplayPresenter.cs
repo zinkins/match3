@@ -4,8 +4,6 @@ using Match3.Core.GameCore.ValueObjects;
 using Match3.Core.GameFlow.Pipeline;
 using Match3.Core.GameFlow.Sessions;
 using Match3.Core.GameFlow.StateMachine;
-using Match3.Presentation.Animation;
-
 namespace Match3.Presentation;
 
 public sealed class GameplayPresenter
@@ -17,16 +15,12 @@ public sealed class GameplayPresenter
     public GameplayPresenter(
         TurnProcessor turnProcessor,
         GameplayStateMachine stateMachine,
-        GameSession session,
-        AnimationQueue animationQueue)
+        GameSession session)
     {
         this.turnProcessor = turnProcessor ?? throw new ArgumentNullException(nameof(turnProcessor));
         this.stateMachine = stateMachine ?? throw new ArgumentNullException(nameof(stateMachine));
         this.session = session ?? throw new ArgumentNullException(nameof(session));
-        AnimationQueue = animationQueue ?? throw new ArgumentNullException(nameof(animationQueue));
     }
-
-    public AnimationQueue AnimationQueue { get; }
 
     public int Score { get; private set; }
 
@@ -36,16 +30,9 @@ public sealed class GameplayPresenter
 
     public bool CanAcceptInput => session.CanAcceptInput;
 
-    public bool ShouldShowGameOverOverlay => session.IsGameOver && !AnimationQueue.HasRunningAnimations;
-
     public void Update(TimeSpan elapsed)
     {
         session.UpdateTimer(elapsed);
-
-        if (AnimationQueue.HasRunningAnimations)
-        {
-            AnimationQueue.Update((float)elapsed.TotalSeconds);
-        }
     }
 
     public TurnPipelineResult ProcessMove(BoardState board, Move move)
@@ -56,8 +43,6 @@ public sealed class GameplayPresenter
             session,
             stateMachine,
             currentScore: Score);
-
-        AnimationQueue.Enqueue(result.Events);
 
         foreach (var domainEvent in result.Events)
         {

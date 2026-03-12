@@ -109,10 +109,10 @@ T473 [x] [MVP] Прогнать tests.
 T474 [x] [MVP] Написать test `GameplayScreen_ShowsGameOverOnlyAfterBlockingScenarioCompletes`.
 T475 [x] [MVP] Перевести логику `ShouldShowGameOverOverlay` на состояние `AnimationPlayer`.
 T476 [x] [MVP] Прогнать tests.
-T477 [ ] [MVP] Удалить `AnimationQueue`.
-T478 [ ] [MVP] Удалить `GameplayEffectsController`.
-T479 [ ] [MVP] Очистить `GameplayScreen` от ссылок на старую animation system.
-T480 [ ] [MVP] Прогнать tests.
+T477 [x] [MVP] Удалить `AnimationQueue`.
+T478 [x] [MVP] Удалить `GameplayEffectsController`.
+T479 [x] [MVP] Очистить `GameplayScreen` от ссылок на старую animation system.
+T480 [x] [MVP] Прогнать tests.
 T481 [ ] [Nice] [P] Проверить визуально `swap` после миграции на новый runtime.
 T482 [ ] [Nice] [P] Проверить визуально `destroyer` и `explosion` после миграции на новый runtime.
 T483 [ ] [Nice] [P] Проверить визуально `fall` и `spawn` после миграции на новый runtime.

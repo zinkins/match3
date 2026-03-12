@@ -212,17 +212,16 @@ public class Phase15RuntimeRenderingTests
 
 
     [Fact]
-    public void PresentationScreenHost_IgnoresBoardInput_WhileTransientEffectsAreActive()
+    public void PresentationScreenHost_IgnoresBoardInput_WhileBlockingAnimationIsActive()
     {
         var flow = new ScreenFlowController();
         var host = new PresentationScreenHost(flow, new SpriteBatchRenderer());
         flow.MainMenu.PlayButton.Click();
         flow.Tick();
         var gameplay = flow.Gameplay;
-        var snapshot = gameplay.BoardRenderer.BuildSnapshot(gameplay.Board, gameplay.BoardTransform);
         var cellWorld = gameplay.BoardTransform.GridToWorld(new GridPosition(0, 0));
 
-        gameplay.EffectsController.QueueSwap(snapshot, new Move(new GridPosition(0, 0), new GridPosition(0, 1)), rollback: false);
+        gameplay.AnimationPlayer.Play(new DelayAnimation(0.3f, blocksInput: true));
 
         host.Update(
             TimeSpan.FromMilliseconds(16),
@@ -232,7 +231,7 @@ public class Phase15RuntimeRenderingTests
     }
 
     [Fact]
-    public void PresentationScreenHost_AllowsBoardInput_WhenOnlyAnimationQueueIsRunning()
+    public void PresentationScreenHost_AllowsBoardInput_WhenOnlyNonBlockingAnimationIsRunning()
     {
         var flow = new ScreenFlowController();
         var host = new PresentationScreenHost(flow, new SpriteBatchRenderer());
@@ -242,7 +241,7 @@ public class Phase15RuntimeRenderingTests
         var gameplay = flow.Gameplay;
         var cellWorld = gameplay.BoardTransform.GridToWorld(new GridPosition(0, 0));
 
-        gameplay.AnimationQueue.Enqueue([new Match3.Core.GameFlow.Events.MatchResolved(3)]);
+        gameplay.AnimationPlayer.Play(new DelayAnimation(0.3f, blocksInput: false));
 
         host.Update(
             TimeSpan.FromMilliseconds(16),
