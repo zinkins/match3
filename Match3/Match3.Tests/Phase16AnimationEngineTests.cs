@@ -350,7 +350,7 @@ public sealed class Phase16AnimationEngineTests
     }
 
     [Fact]
-    public void DestroyerScenario_SpawnsTransientEffectNode_AndAdvancesAlongPath()
+    public void DestroyerScenario_SpawnsTransientEffectNode_AndClearsPathOverTime()
     {
         var controller = new GameplayEffectsController();
         var player = new AnimationPlayer();
@@ -373,20 +373,18 @@ public sealed class Phase16AnimationEngineTests
         controller.Update(TimeSpan.FromSeconds(0.05f));
         player.Update(0.05f);
         var earlyPieces = controller.BuildPieces(snapshot, null, viewState);
-        var earlyDestroyerX = earlyPieces
-            .Where(piece => piece.Shape == Match3.Presentation.Rendering.PieceVisualConstants.ShapeDiamond)
-            .Max(piece => piece.X);
+        Assert.DoesNotContain(earlyPieces, piece => piece.Position == origin && piece.Shape == Match3.Presentation.Rendering.PieceVisualConstants.ShapeSquare);
+        Assert.Contains(earlyPieces, piece => piece.Position == new Match3.Core.GameCore.ValueObjects.GridPosition(0, 2));
 
-        AdvanceRuntime(controller, player, 0.55f);
-        var latePieces = controller.BuildPieces(snapshot, null, viewState);
-        var lateDestroyerX = latePieces
-            .Where(piece => piece.Shape == Match3.Presentation.Rendering.PieceVisualConstants.ShapeDiamond)
-            .Max(piece => piece.X);
-        Assert.True(lateDestroyerX > earlyDestroyerX);
+        AdvanceRuntime(controller, player, 0.35f);
+        var midPieces = controller.BuildPieces(snapshot, null, viewState);
+        Assert.DoesNotContain(midPieces, piece => piece.Position == new Match3.Core.GameCore.ValueObjects.GridPosition(0, 2) && piece.Shape == Match3.Presentation.Rendering.PieceVisualConstants.ShapeSquare);
+        Assert.Contains(midPieces, piece => piece.Position == tail);
 
         AdvanceRuntime(controller, player, 0.40f);
         Assert.Empty(viewState.EffectNodes);
         Assert.False(viewState.IsCellHidden(origin));
+        Assert.False(viewState.IsCellHidden(new Match3.Core.GameCore.ValueObjects.GridPosition(0, 2)));
     }
 
     [Fact]
@@ -529,6 +527,8 @@ public sealed class Phase16AnimationEngineTests
             isVisible: true);
     }
 }
+
+
 
 
 

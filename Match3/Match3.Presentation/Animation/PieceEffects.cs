@@ -121,8 +121,7 @@ public sealed class TimedPieceEffect
         IPieceEffect effect,
         float durationSeconds,
         float delaySeconds,
-        bool hideBasePiece,
-        bool hideBasePieceBeforeStart = false)
+        bool hideBasePiece)
     {
         Position = position;
         Piece = piece;
@@ -130,7 +129,6 @@ public sealed class TimedPieceEffect
         DurationSeconds = durationSeconds;
         DelaySeconds = delaySeconds;
         HideBasePiece = hideBasePiece;
-        HideBasePieceBeforeStart = hideBasePieceBeforeStart;
     }
 
     public GridPosition? Position { get; }
@@ -142,8 +140,6 @@ public sealed class TimedPieceEffect
     public float DelaySeconds { get; }
 
     public bool HideBasePiece { get; }
-
-    public bool HideBasePieceBeforeStart { get; }
 
     public float ElapsedSeconds { get; private set; }
 
@@ -268,7 +264,6 @@ public sealed class GameplayEffectsController
 
     private readonly Dictionary<GridPosition, TimedPieceEffect> cellEffects = [];
     private readonly List<TimedPieceEffect> overlayEffects = [];
-    private readonly List<TimedPathClearEffect> pathClearEffects = [];
     private GridPosition? lastSelectedCell;
     private float totalSeconds;
 
@@ -290,15 +285,6 @@ public sealed class GameplayEffectsController
             if (overlayEffects[i].IsCompleted)
             {
                 overlayEffects.RemoveAt(i);
-            }
-        }
-
-        for (var i = pathClearEffects.Count - 1; i >= 0; i--)
-        {
-            pathClearEffects[i].Update(delta);
-            if (pathClearEffects[i].IsCompleted)
-            {
-                pathClearEffects.RemoveAt(i);
             }
         }
 
@@ -338,17 +324,12 @@ public sealed class GameplayEffectsController
         var pieces = new List<RenderPiece>(snapshot.Pieces.Count + overlayEffects.Count + effectNodeCount);
         foreach (var piece in snapshot.Pieces)
         {
-            if (overlayEffects.Any(effect => effect.HideBasePiece && effect.Position == piece.Position && (effect.IsStarted || effect.HideBasePieceBeforeStart)))
+            if (overlayEffects.Any(effect => effect.HideBasePiece && effect.Position == piece.Position && effect.IsStarted))
             {
                 continue;
             }
 
             if (viewState?.IsCellHidden(piece.Position) == true)
-            {
-                continue;
-            }
-
-            if (pathClearEffects.Any(effect => effect.Contains(piece.Position)))
             {
                 continue;
             }
@@ -402,8 +383,6 @@ public sealed class GameplayEffectsController
         var size = transform.CellSize * 0.42f;
         var forwardPath = path.Skip(launchIndex).ToArray();
         var backwardPath = path.Take(launchIndex + 1).Reverse().ToArray();
-        pathClearEffects.Add(new TimedPathClearEffect(forwardPath, 0.8f));
-        pathClearEffects.Add(new TimedPathClearEffect(backwardPath, 0.8f));
         QueueDestroyerVisual(viewState, animationPlayer, forwardPath, transform, size);
         QueueDestroyerVisual(viewState, animationPlayer, backwardPath, transform, size);
     }
@@ -481,16 +460,25 @@ public sealed class GameplayEffectsController
         viewState.AddOrUpdate(effectNode);
 
         var segmentDuration = 0.8f / (path.Count - 1);
-        var animation = Anim.Sequence();
+        var pathCells = path.ToArray();
+        var animation = Anim.Sequence()
+            .Append(new CallbackAnimation(() => viewState.HideCells([pathCells[0]])));
 
-        for (var i = 1; i < path.Count; i++)
+        for (var i = 1; i < pathCells.Length; i++)
         {
             var targetCenter = centers[i];
             var targetPosition = new Vector2(targetCenter.X - (size / 2f), targetCenter.Y - (size / 2f));
-            animation.Append(Anim.MoveTo(effectNode, targetPosition, segmentDuration));
+            var cell = pathCells[i];
+            animation
+                .Append(Anim.MoveTo(effectNode, targetPosition, segmentDuration))
+                .Append(new CallbackAnimation(() => viewState.HideCells([cell])));
         }
 
-        animation.Append(new CallbackAnimation(() => viewState.RemoveEffectNode(effectNode.Id)));
+        animation.Append(new CallbackAnimation(() =>
+        {
+            viewState.ShowCells(pathCells);
+            viewState.RemoveEffectNode(effectNode.Id);
+        }));
 
         animationPlayer.Play(animation, ChannelConflictPolicy.Replace);
     }
@@ -687,58 +675,6 @@ public sealed class GameplayEffectsController
 
                 animation.Append(Anim.MoveTo(node, targetPosition, durationSeconds, blocksInput: true));
                 animationPlayer.Play(animation, ChannelConflictPolicy.Replace);
-            }
-        }
-    }
-    public void QueueBoardSettle(BoardRenderSnapshot beforeSnapshot, BoardRenderSnapshot afterSnapshot, float cellSize, float initialDelaySeconds = 0f, IReadOnlyList<GridPosition>? createdBonusOrigins = null)
-    {
-        for (var column = 0; column < 8; column++)
-        {
-            var beforeColumn = beforeSnapshot.Pieces
-                .Where(piece => piece.Position.Column == column)
-                .OrderBy(piece => piece.Position.Row)
-                .ToArray();
-            var afterColumn = afterSnapshot.Pieces
-                .Where(piece => piece.Position.Column == column)
-                .OrderBy(piece => piece.Position.Row)
-                .ToArray();
-            var survivorMap = MatchColumnSurvivors(beforeColumn, afterColumn);
-            var spawnCount = 0;
-
-            foreach (var target in afterColumn.OrderByDescending(piece => piece.Position.Row))
-            {
-                var isSurvivor = survivorMap.TryGetValue(target.Position, out var source);
-                if (isSurvivor && source!.Position == target.Position)
-                {
-                    continue;
-                }
-
-                Vector2 from;
-                if (isSurvivor)
-                {
-                    from = new Vector2(source!.X, source.Y);
-                }
-                else if (createdBonusOrigins?
-                    .Where(position => position.Column == target.Position.Column && position.Row <= target.Position.Row)
-                    .OrderByDescending(position => position.Row)
-                    .FirstOrDefault() is { } createdBonusOrigin)
-                {
-                    from = new Vector2(target.X, target.Y - (cellSize * (target.Position.Row - createdBonusOrigin.Row)));
-                }
-                else
-                {
-                    spawnCount++;
-                    from = new Vector2(target.X, target.Y - (cellSize * (spawnCount + 1)));
-                }
-
-                overlayEffects.Add(new TimedPieceEffect(
-                    target.Position,
-                    target with { X = from.X, Y = from.Y, Layer = 15f },
-                    new MovePieceEffect(from, new Vector2(target.X, target.Y)),
-                    durationSeconds: isSurvivor ? 0.65f : 0.75f,
-                    delaySeconds: initialDelaySeconds + (isSurvivor ? 0f : 0.4f),
-                    hideBasePiece: true,
-                    hideBasePieceBeforeStart: !isSurvivor));
             }
         }
     }

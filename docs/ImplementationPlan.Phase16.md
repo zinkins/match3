@@ -84,10 +84,10 @@ T448 [x] [MVP] Написать test `SwapAnimationScenario_MovesBothPiecesToTar
 T449 [x] [MVP] Перевести `QueueSwap` на `Sequence/Parallel` поверх `PieceNode`.
 T450 [x] [MVP] Удалить старый special-case код swap overlays.
 T451 [x] [MVP] Прогнать tests.
-T452 [ ] [MVP] [P] Написать test `DestroyerScenario_SpawnsTransientEffectNode_AndClearsPathOverTime`.
+T452 [x] [MVP] [P] Написать test `DestroyerScenario_SpawnsTransientEffectNode_AndClearsPathOverTime`.
 T453 [x] [MVP] [P] Создать transient `EffectNode` для runtime visual effects.
-T454 [ ] [MVP] Перевести `QueueDestroyer` на сценарий поверх `EffectNode`.
-T455 [ ] [MVP] Прогнать tests.
+T454 [x] [MVP] Перевести `QueueDestroyer` на сценарий поверх `EffectNode`.
+T455 [x] [MVP] Прогнать tests.
 T456 [x] [MVP] [P] Написать test `ExplosionScenario_HidesAffectedCells_OnlyWhileEffectIsActive`.
 T457 [x] [MVP] Перевести `QueueExplosion` на сценарий поверх `EffectNode`.
 T458 [x] [MVP] Удалить отдельный список `hiddenCells`.
@@ -98,8 +98,8 @@ T462 [x] [MVP] Зафиксировать, что падение не созда
 T463 [x] [MVP] Прогнать tests.
 T464 [x] [MVP] Написать test `SpawnScenario_CreatesNewPieceNodes_AboveBoard_AndMovesThemDown`.
 T465 [x] [MVP] Реализовать сценарий spawn/refill через новые `PieceNode`.
-T466 [ ] [MVP] Удалить special-case логику `hideBasePieceBeforeStart`.
-T467 [ ] [MVP] Прогнать tests.
+T466 [x] [MVP] Удалить special-case логику `hideBasePieceBeforeStart`.
+T467 [x] [MVP] Прогнать tests.
 T468 [ ] [MVP] Написать test `SelectionEffect_CanStackWithMovementWithoutOverwritingPositionChannel`.
 T469 [ ] [MVP] Перевести selection/highlight effect на channel-based tweens.
 T470 [ ] [MVP] Прогнать tests.

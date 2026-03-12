@@ -129,7 +129,6 @@ public class Phase15PieceEffectsTests
         player.Update(0.05f);
 
         var earlyPieces = controller.BuildPieces(snapshot, null, viewState);
-
         var earlyDestroyerX = earlyPieces
             .Where(piece => piece.Shape == PieceVisualConstants.ShapeDiamond)
             .Max(piece => piece.X);
@@ -148,6 +147,9 @@ public class Phase15PieceEffectsTests
     public void GameplayEffectsController_DoesNotHideDelayedSettleTargets_BeforeSettleStarts()
     {
         var controller = new GameplayEffectsController();
+        var player = new AnimationPlayer();
+        var viewState = new BoardViewState();
+        var renderer = new PieceNodeRenderer();
         var beforeSnapshot = new BoardRenderSnapshot(
             [],
             [
@@ -159,18 +161,22 @@ public class Phase15PieceEffectsTests
                 new RenderPiece(new GridPosition(1, 0), PieceVisualConstants.ShapeSquare, PieceVisualConstants.TintRed, 20f, 68f, 32f, 32f)
             ]);
 
-        controller.QueueBoardSettle(beforeSnapshot, afterSnapshot, 48f, initialDelaySeconds: 0.8f);
-        controller.Update(TimeSpan.FromMilliseconds(50));
+        controller.QueueBoardSettle(viewState, player, beforeSnapshot, afterSnapshot, 48f, initialDelaySeconds: 0.8f);
 
-        var pieces = controller.BuildPieces(afterSnapshot, null);
+        var nodeSnapshot = renderer.BuildSnapshot(afterSnapshot, viewState);
+        var pieces = controller.BuildPieces(nodeSnapshot, null, viewState);
+        var movedPiece = Assert.Single(pieces, piece => piece.Position == new GridPosition(1, 0));
 
-        Assert.Contains(pieces, piece => piece.Position == new GridPosition(1, 0));
+        Assert.Equal(20f, movedPiece.Y);
     }
 
     [Fact]
     public void GameplayEffectsController_DoesNotAnimatePiecesUpward_DuringSettle()
     {
         var controller = new GameplayEffectsController();
+        var player = new AnimationPlayer();
+        var viewState = new BoardViewState();
+        var renderer = new PieceNodeRenderer();
         var beforeSnapshot = new BoardRenderSnapshot(
             [],
             [
@@ -185,19 +191,23 @@ public class Phase15PieceEffectsTests
                 new RenderPiece(new GridPosition(2, 0), PieceVisualConstants.ShapeSquare, PieceVisualConstants.TintBlue, 20f, 116f, 32f, 32f)
             ]);
 
-        controller.QueueBoardSettle(beforeSnapshot, afterSnapshot, 48f);
-        controller.Update(TimeSpan.FromMilliseconds(50));
+        controller.QueueBoardSettle(viewState, player, beforeSnapshot, afterSnapshot, 48f);
+        player.Update(0.05f);
 
-        var pieces = controller.BuildPieces(afterSnapshot, null);
+        var nodeSnapshot = renderer.BuildSnapshot(afterSnapshot, viewState);
+        var pieces = controller.BuildPieces(nodeSnapshot, null, viewState);
         var movedBluePiece = Assert.Single(pieces, piece => piece.Position == new GridPosition(2, 0) && piece.Tint == PieceVisualConstants.TintBlue);
 
         Assert.True(movedBluePiece.Y <= 116f);
     }
 
     [Fact]
-    public void GameplayEffectsController_HidesSpawnTargets_BeforeSpawnAnimationStarts()
+    public void GameplayEffectsController_SpawnsPiecesAboveBoard_BeforeSpawnAnimationStarts()
     {
         var controller = new GameplayEffectsController();
+        var player = new AnimationPlayer();
+        var viewState = new BoardViewState();
+        var renderer = new PieceNodeRenderer();
         var beforeSnapshot = new BoardRenderSnapshot([], []);
         var afterSnapshot = new BoardRenderSnapshot(
             [],
@@ -205,18 +215,23 @@ public class Phase15PieceEffectsTests
                 new RenderPiece(new GridPosition(0, 0), PieceVisualConstants.ShapeDiamond, PieceVisualConstants.TintRed, 20f, 20f, 32f, 32f)
             ]);
 
-        controller.QueueBoardSettle(beforeSnapshot, afterSnapshot, 48f);
-        controller.Update(TimeSpan.FromMilliseconds(50));
+        controller.QueueBoardSettle(viewState, player, beforeSnapshot, afterSnapshot, 48f);
+        player.Update(0.05f);
 
-        var pieces = controller.BuildPieces(afterSnapshot, null);
+        var nodeSnapshot = renderer.BuildSnapshot(afterSnapshot, viewState);
+        var pieces = controller.BuildPieces(nodeSnapshot, null, viewState);
+        var spawnedPiece = Assert.Single(pieces, piece => piece.Position == new GridPosition(0, 0));
 
-        Assert.DoesNotContain(pieces, piece => piece.Position == new GridPosition(0, 0));
+        Assert.True(spawnedPiece.Y < 20f);
     }
 
     [Fact]
     public void GameplayEffectsController_AnimatesCreatedBonus_FromCreationCell_InsteadOfTopSpawn()
     {
         var controller = new GameplayEffectsController();
+        var player = new AnimationPlayer();
+        var viewState = new BoardViewState();
+        var renderer = new PieceNodeRenderer();
         var beforeSnapshot = new BoardRenderSnapshot([], []);
         var afterSnapshot = new BoardRenderSnapshot(
             [],
@@ -224,10 +239,11 @@ public class Phase15PieceEffectsTests
                 new RenderPiece(new GridPosition(3, 2), PieceVisualConstants.ShapeDiamond, PieceVisualConstants.TintRed, 116f, 164f, 32f, 32f)
             ]);
 
-        controller.QueueBoardSettle(beforeSnapshot, afterSnapshot, 48f, createdBonusOrigins: [new GridPosition(1, 2)]);
-        controller.Update(TimeSpan.FromMilliseconds(450));
+        controller.QueueBoardSettle(viewState, player, beforeSnapshot, afterSnapshot, 48f, createdBonusOrigins: [new GridPosition(1, 2)]);
+        player.Update(0.45f);
 
-        var pieces = controller.BuildPieces(afterSnapshot, null);
+        var nodeSnapshot = renderer.BuildSnapshot(afterSnapshot, viewState);
+        var pieces = controller.BuildPieces(nodeSnapshot, null, viewState);
         var bonus = Assert.Single(pieces, piece => piece.Shape == PieceVisualConstants.ShapeDiamond);
 
         Assert.True(bonus.Y >= 68f);
@@ -245,10 +261,3 @@ public class Phase15PieceEffectsTests
         }
     }
 }
-
-
-
-
-
-
-
