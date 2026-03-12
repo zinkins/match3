@@ -1,51 +1,51 @@
 # Фаза 16. Рефакторинг runtime-анимаций и visual effects
 
-T373 [ ] [MVP] Написать test `AnimationPlayer_StartsWithoutActiveAnimations`.
-T374 [ ] [MVP] Создать папку `Animation/Engine/` в `Match3.Presentation`.
-T375 [ ] [MVP] Создать интерфейс `IAnimation`.
-T376 [ ] [MVP] Создать `AnimationHandle`.
-T377 [ ] [MVP] Создать каркас `AnimationPlayer`.
-T378 [ ] [MVP] Прогнать tests.
-T379 [ ] [MVP] Написать test `SequenceAnimation_RunsAppendedAnimationsInOrder`.
-T380 [ ] [MVP] Создать `SequenceAnimation`.
-T381 [ ] [MVP] Реализовать `Append(...)` для последовательного выполнения.
-T382 [ ] [MVP] Прогнать tests.
-T383 [ ] [MVP] Написать test `ParallelAnimation_CompletesAfterLongestChild`.
-T384 [ ] [MVP] Создать `ParallelAnimation`.
-T385 [ ] [MVP] Реализовать параллельное обновление дочерних анимаций.
-T386 [ ] [MVP] Прогнать tests.
-T387 [ ] [MVP] Написать test `DelayAnimation_CompletesOnlyAfterConfiguredDuration`.
-T388 [ ] [MVP] Создать `DelayAnimation`.
-T389 [ ] [MVP] Реализовать ожидание по времени.
-T390 [ ] [MVP] Прогнать tests.
-T391 [ ] [MVP] Написать test `CallbackAnimation_InvokesActionOnlyOnce`.
-T392 [ ] [MVP] Создать `CallbackAnimation`.
-T393 [ ] [MVP] Реализовать single-shot callback при проигрывании.
-T394 [ ] [MVP] Прогнать tests.
-T395 [ ] [MVP] Написать test `PropertyTween_InterpolatesFloatValue`.
-T396 [ ] [MVP] Создать enum `AnimationChannel`.
-T397 [ ] [MVP] Создать базовый `PropertyTween<T>`.
-T398 [ ] [MVP] Реализовать interpolation для float-based tween.
-T399 [ ] [MVP] Прогнать tests.
-T400 [ ] [MVP] Написать test `AnimationPlayer_RejectsConflictingTweens_OnSameNodeAndChannel`.
-T401 [ ] [MVP] Создать enum `ChannelConflictPolicy`.
-T402 [ ] [MVP] Реализовать в `AnimationPlayer` резервирование канала по `node + channel`.
-T403 [ ] [MVP] Прогнать tests.
-T404 [ ] [MVP] Написать test `SequenceAnimation_JoinRunsAnimationsInParallelWithinSingleStep`.
-T405 [ ] [MVP] Добавить поддержку `Join(...)` в `SequenceAnimation`.
-T406 [ ] [MVP] Реализовать группировку параллельных шагов внутри sequence.
-T407 [ ] [MVP] Прогнать tests.
-T408 [ ] [MVP] Подключить `AnimationPlayer` к render loop без удаления старой системы.
-T409 [ ] [MVP] Написать test `PieceNode_KeepsStableId_WhenLogicalCellChanges`.
-T410 [ ] [MVP] Создать интерфейс `IAnimatableNode`.
-T411 [ ] [MVP] Создать value object `NodeId`.
-T412 [ ] [MVP] Создать `PieceNode`.
-T413 [ ] [MVP] Прогнать tests.
-T414 [ ] [MVP] Написать test `BoardViewState_CanResolvePieceNodeByGridPosition`.
-T415 [ ] [MVP] Создать `BoardViewState`.
-T416 [ ] [MVP] Реализовать хранение активных `PieceNode`.
-T417 [ ] [MVP] Реализовать поиск узла по логической клетке.
-T418 [ ] [MVP] Прогнать tests.
+T373 [x] [MVP] Написать test `AnimationPlayer_StartsWithoutActiveAnimations`.
+T374 [x] [MVP] Создать папку `Animation/Engine/` в `Match3.Presentation`.
+T375 [x] [MVP] Создать интерфейс `IAnimation`.
+T376 [x] [MVP] Создать `AnimationHandle`.
+T377 [x] [MVP] Создать каркас `AnimationPlayer`.
+T378 [x] [MVP] Прогнать tests.
+T379 [x] [MVP] Написать test `SequenceAnimation_RunsAppendedAnimationsInOrder`.
+T380 [x] [MVP] Создать `SequenceAnimation`.
+T381 [x] [MVP] Реализовать `Append(...)` для последовательного выполнения.
+T382 [x] [MVP] Прогнать tests.
+T383 [x] [MVP] Написать test `ParallelAnimation_CompletesAfterLongestChild`.
+T384 [x] [MVP] Создать `ParallelAnimation`.
+T385 [x] [MVP] Реализовать параллельное обновление дочерних анимаций.
+T386 [x] [MVP] Прогнать tests.
+T387 [x] [MVP] Написать test `DelayAnimation_CompletesOnlyAfterConfiguredDuration`.
+T388 [x] [MVP] Создать `DelayAnimation`.
+T389 [x] [MVP] Реализовать ожидание по времени.
+T390 [x] [MVP] Прогнать tests.
+T391 [x] [MVP] Написать test `CallbackAnimation_InvokesActionOnlyOnce`.
+T392 [x] [MVP] Создать `CallbackAnimation`.
+T393 [x] [MVP] Реализовать single-shot callback при проигрывании.
+T394 [x] [MVP] Прогнать tests.
+T395 [x] [MVP] Написать test `PropertyTween_InterpolatesFloatValue`.
+T396 [x] [MVP] Создать enum `AnimationChannel`.
+T397 [x] [MVP] Создать базовый `PropertyTween<T>`.
+T398 [x] [MVP] Реализовать interpolation для float-based tween.
+T399 [x] [MVP] Прогнать tests.
+T400 [x] [MVP] Написать test `AnimationPlayer_RejectsConflictingTweens_OnSameNodeAndChannel`.
+T401 [x] [MVP] Создать enum `ChannelConflictPolicy`.
+T402 [x] [MVP] Реализовать в `AnimationPlayer` резервирование канала по `node + channel`.
+T403 [x] [MVP] Прогнать tests.
+T404 [x] [MVP] Написать test `SequenceAnimation_JoinRunsAnimationsInParallelWithinSingleStep`.
+T405 [x] [MVP] Добавить поддержку `Join(...)` в `SequenceAnimation`.
+T406 [x] [MVP] Реализовать группировку параллельных шагов внутри sequence.
+T407 [x] [MVP] Прогнать tests.
+T408 [x] [MVP] Подключить `AnimationPlayer` к render loop без удаления старой системы.
+T409 [x] [MVP] Написать test `PieceNode_KeepsStableId_WhenLogicalCellChanges`.
+T410 [x] [MVP] Создать интерфейс `IAnimatableNode`.
+T411 [x] [MVP] Создать value object `NodeId`.
+T412 [x] [MVP] Создать `PieceNode`.
+T413 [x] [MVP] Прогнать tests.
+T414 [x] [MVP] Написать test `BoardViewState_CanResolvePieceNodeByGridPosition`.
+T415 [x] [MVP] Создать `BoardViewState`.
+T416 [x] [MVP] Реализовать хранение активных `PieceNode`.
+T417 [x] [MVP] Реализовать поиск узла по логической клетке.
+T418 [x] [MVP] Прогнать tests.
 T419 [ ] [MVP] Написать test `Anim_MoveTo_ProducesPositionTween`.
 T420 [ ] [MVP] Создать fluent API `Anim`.
 T421 [ ] [MVP] [P] Добавить фабрику `MoveTo(...)`.

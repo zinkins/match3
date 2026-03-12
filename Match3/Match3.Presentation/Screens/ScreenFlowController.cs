@@ -4,6 +4,7 @@ using Match3.Core.GameFlow.Pipeline;
 using Match3.Core.GameFlow.Sessions;
 using Match3.Core.GameFlow.StateMachine;
 using Match3.Presentation.Animation;
+using Match3.Presentation.Animation.Engine;
 using Match3.Presentation.Input;
 using Match3.Presentation.Rendering;
 using Match3.Presentation.UI;
@@ -81,6 +82,7 @@ public sealed class ScreenFlowController
             presenter,
             board,
             new BoardInputHandler(boardTransform, new SelectionController()),
+            new AnimationPlayer(),
             new GameplayEffectsController(),
             new BoardRenderer(),
             new HudRenderer(),
@@ -88,3 +90,4 @@ public sealed class ScreenFlowController
             onOk);
     }
 }
+

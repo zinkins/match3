@@ -4,6 +4,7 @@ using Match3.Core.GameCore.ValueObjects;
 using Match3.Core.GameFlow.Sessions;
 using Match3.Presentation;
 using Match3.Presentation.Animation;
+using Match3.Presentation.Animation.Engine;
 using Match3.Presentation.Rendering;
 using Match3.Presentation.Screens;
 
@@ -45,6 +46,7 @@ public class Phase12PresentationTests
             new Match3.Presentation.Input.BoardInputHandler(
                 new BoardTransform(48f, new System.Numerics.Vector2(40f, 100f), 8, 8),
                 new Match3.Core.GameFlow.Sessions.SelectionController()),
+            new AnimationPlayer(),
             new GameplayEffectsController(),
             new BoardRenderer(),
             new HudRenderer(),

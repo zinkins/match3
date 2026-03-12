@@ -1,5 +1,6 @@
 using System;
 using Match3.Presentation.Animation;
+using Match3.Presentation.Animation.Engine;
 using Match3.Presentation.Input;
 using Match3.Presentation.Rendering;
 using Match3.Presentation.UI;
@@ -14,6 +15,7 @@ public sealed class GameplayScreen : IScreen
         GameplayPresenter presenter,
         BoardState board,
         BoardInputHandler boardInputHandler,
+        AnimationPlayer animationPlayer,
         GameplayEffectsController effectsController,
         BoardRenderer boardRenderer,
         HudRenderer hudRenderer,
@@ -23,6 +25,7 @@ public sealed class GameplayScreen : IScreen
         Presenter = presenter;
         Board = board;
         BoardInputHandler = boardInputHandler;
+        AnimationPlayer = animationPlayer ?? throw new ArgumentNullException(nameof(animationPlayer));
         EffectsController = effectsController;
         BoardRenderer = boardRenderer;
         HudRenderer = hudRenderer;
@@ -40,6 +43,8 @@ public sealed class GameplayScreen : IScreen
 
     public BoardInputHandler BoardInputHandler { get; }
 
+    public AnimationPlayer AnimationPlayer { get; }
+
     public GameplayEffectsController EffectsController { get; }
 
     public BoardRenderer BoardRenderer { get; }
@@ -56,3 +61,4 @@ public sealed class GameplayScreen : IScreen
 
     public GridPosition? SelectedCell => BoardInputHandler.SelectedCell;
 }
+
