@@ -325,6 +325,109 @@ public sealed class Phase16AnimationEngineTests
         Assert.False(player.HasBlockingAnimations);
     }
 
+    [Fact]
+    public void SwapAnimationScenario_MovesBothPiecesToTargetCells()
+    {
+        var viewState = new BoardViewState();
+        var player = new AnimationPlayer();
+        var controller = new GameplayEffectsController();
+        var from = new Match3.Core.GameCore.ValueObjects.GridPosition(0, 0);
+        var to = new Match3.Core.GameCore.ValueObjects.GridPosition(0, 1);
+        var fromNode = new PieceNode(NodeId.New(), from, new Vector2(20f, 20f), new Vector2(1f, 1f), 0f, 1f, Match3.Presentation.Rendering.PieceVisualConstants.TintRed, 0f, true);
+        var toNode = new PieceNode(NodeId.New(), to, new Vector2(68f, 20f), new Vector2(1f, 1f), 0f, 1f, Match3.Presentation.Rendering.PieceVisualConstants.TintBlue, 0f, true);
+        viewState.AddOrUpdate(fromNode);
+        viewState.AddOrUpdate(toNode);
+
+        controller.QueueSwap(viewState, player, new Match3.Core.GameCore.ValueObjects.Move(from, to), new Match3.Presentation.Rendering.BoardTransform(48f, new Vector2(20f, 20f)), rollback: false);
+
+        Assert.Equal(to, fromNode.LogicalCell);
+        Assert.Equal(from, toNode.LogicalCell);
+
+        player.Update(0.22f);
+
+        Assert.Equal(new Vector2(68f, 20f), fromNode.Position);
+        Assert.Equal(new Vector2(20f, 20f), toNode.Position);
+    }
+
+    [Fact]
+    public void DestroyerScenario_SpawnsTransientEffectNode_AndAdvancesAlongPath()
+    {
+        var controller = new GameplayEffectsController();
+        var player = new AnimationPlayer();
+        var viewState = new BoardViewState();
+        var transform = new Match3.Presentation.Rendering.BoardTransform(48f, new Vector2(20f, 20f));
+        var origin = new Match3.Core.GameCore.ValueObjects.GridPosition(0, 1);
+        var tail = new Match3.Core.GameCore.ValueObjects.GridPosition(0, 3);
+        var snapshot = new Match3.Presentation.Rendering.BoardRenderSnapshot(
+            [],
+            [
+                new Match3.Presentation.Rendering.RenderPiece(origin, Match3.Presentation.Rendering.PieceVisualConstants.ShapeSquare, Match3.Presentation.Rendering.PieceVisualConstants.TintRed, 68f, 20f, 32f, 32f),
+                new Match3.Presentation.Rendering.RenderPiece(new Match3.Core.GameCore.ValueObjects.GridPosition(0, 2), Match3.Presentation.Rendering.PieceVisualConstants.ShapeSquare, Match3.Presentation.Rendering.PieceVisualConstants.TintBlue, 116f, 20f, 32f, 32f),
+                new Match3.Presentation.Rendering.RenderPiece(tail, Match3.Presentation.Rendering.PieceVisualConstants.ShapeSquare, Match3.Presentation.Rendering.PieceVisualConstants.TintGreen, 164f, 20f, 32f, 32f)
+            ]);
+
+        controller.QueueDestroyer(viewState, player, origin, [new Match3.Core.GameCore.ValueObjects.GridPosition(0, 0), origin, new Match3.Core.GameCore.ValueObjects.GridPosition(0, 2), tail], transform);
+
+        Assert.Equal(2, viewState.EffectNodes.Count);
+
+        controller.Update(TimeSpan.FromSeconds(0.05f));
+        player.Update(0.05f);
+        var earlyPieces = controller.BuildPieces(snapshot, null, viewState);
+        var earlyDestroyerX = earlyPieces
+            .Where(piece => piece.Shape == Match3.Presentation.Rendering.PieceVisualConstants.ShapeDiamond)
+            .Max(piece => piece.X);
+
+        AdvanceRuntime(controller, player, 0.55f);
+        var latePieces = controller.BuildPieces(snapshot, null, viewState);
+        var lateDestroyerX = latePieces
+            .Where(piece => piece.Shape == Match3.Presentation.Rendering.PieceVisualConstants.ShapeDiamond)
+            .Max(piece => piece.X);
+        Assert.True(lateDestroyerX > earlyDestroyerX);
+
+        AdvanceRuntime(controller, player, 0.40f);
+        Assert.Empty(viewState.EffectNodes);
+        Assert.False(viewState.IsCellHidden(origin));
+    }
+
+    [Fact]
+    public void ExplosionScenario_HidesAffectedCells_OnlyWhileEffectIsActive()
+    {
+        var controller = new GameplayEffectsController();
+        var player = new AnimationPlayer();
+        var viewState = new BoardViewState();
+        var transform = new Match3.Presentation.Rendering.BoardTransform(48f, new Vector2(20f, 20f));
+        var affected = new Match3.Core.GameCore.ValueObjects.GridPosition(2, 2);
+        var snapshot = new Match3.Presentation.Rendering.BoardRenderSnapshot(
+            [],
+            [
+                new Match3.Presentation.Rendering.RenderPiece(new Match3.Core.GameCore.ValueObjects.GridPosition(0, 0), Match3.Presentation.Rendering.PieceVisualConstants.ShapeSquare, Match3.Presentation.Rendering.PieceVisualConstants.TintRed, 20f, 20f, 32f, 32f),
+                new Match3.Presentation.Rendering.RenderPiece(affected, Match3.Presentation.Rendering.PieceVisualConstants.ShapeSquare, Match3.Presentation.Rendering.PieceVisualConstants.TintBlue, 116f, 116f, 32f, 32f)
+            ]);
+
+        controller.QueueExplosion(viewState, player, [affected], transform);
+
+        Assert.Single(viewState.EffectNodes);
+
+        player.Update(0.05f);
+        var activePieces = controller.BuildPieces(snapshot, null, viewState);
+        Assert.DoesNotContain(activePieces, piece => piece.Position == affected);
+
+        player.Update(0.45f);
+        var restoredPieces = controller.BuildPieces(snapshot, null, viewState);
+        Assert.Contains(restoredPieces, piece => piece.Position == affected);
+        Assert.Empty(viewState.EffectNodes);
+    }
+    private static void AdvanceRuntime(GameplayEffectsController controller, AnimationPlayer player, float totalSeconds, float stepSeconds = 0.05f)
+    {
+        var remaining = totalSeconds;
+        while (remaining > 0f)
+        {
+            var delta = MathF.Min(stepSeconds, remaining);
+            controller.Update(TimeSpan.FromSeconds(delta));
+            player.Update(delta);
+            remaining -= delta;
+        }
+    }
     private static PropertyTween<float> CreateTween(
         object target,
         AnimationChannel channel,
@@ -357,3 +460,11 @@ public sealed class Phase16AnimationEngineTests
             isVisible: true);
     }
 }
+
+
+
+
+
+
+
+

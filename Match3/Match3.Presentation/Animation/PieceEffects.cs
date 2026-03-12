@@ -4,6 +4,7 @@ using System.Linq;
 using System.Numerics;
 using Match3.Core.GameCore.Pieces;
 using Match3.Core.GameCore.ValueObjects;
+using Match3.Presentation.Animation.Engine;
 using Match3.Presentation.Rendering;
 
 namespace Match3.Presentation.Animation;
@@ -267,8 +268,6 @@ public sealed class GameplayEffectsController
 
     private readonly Dictionary<GridPosition, TimedPieceEffect> cellEffects = [];
     private readonly List<TimedPieceEffect> overlayEffects = [];
-    private readonly List<TimedVisualEffect> visualEffects = [];
-    private readonly List<TimedHiddenCells> hiddenCells = [];
     private readonly List<TimedPathClearEffect> pathClearEffects = [];
     private GridPosition? lastSelectedCell;
     private float totalSeconds;
@@ -291,24 +290,6 @@ public sealed class GameplayEffectsController
             if (overlayEffects[i].IsCompleted)
             {
                 overlayEffects.RemoveAt(i);
-            }
-        }
-
-        for (var i = visualEffects.Count - 1; i >= 0; i--)
-        {
-            visualEffects[i].Update(delta);
-            if (visualEffects[i].IsCompleted)
-            {
-                visualEffects.RemoveAt(i);
-            }
-        }
-
-        for (var i = hiddenCells.Count - 1; i >= 0; i--)
-        {
-            hiddenCells[i].Update(delta);
-            if (hiddenCells[i].IsCompleted)
-            {
-                hiddenCells.RemoveAt(i);
             }
         }
 
@@ -349,11 +330,12 @@ public sealed class GameplayEffectsController
         lastSelectedCell = selectedCell;
     }
 
-    public IReadOnlyList<RenderPiece> BuildPieces(BoardRenderSnapshot snapshot, GridPosition? selectedCell)
+    public IReadOnlyList<RenderPiece> BuildPieces(BoardRenderSnapshot snapshot, GridPosition? selectedCell, BoardViewState? viewState = null)
     {
         SyncSelection(selectedCell, snapshot);
 
-        var pieces = new List<RenderPiece>(snapshot.Pieces.Count + overlayEffects.Count);
+        var effectNodeCount = viewState?.EffectNodes.Count ?? 0;
+        var pieces = new List<RenderPiece>(snapshot.Pieces.Count + overlayEffects.Count + effectNodeCount);
         foreach (var piece in snapshot.Pieces)
         {
             if (overlayEffects.Any(effect => effect.HideBasePiece && effect.Position == piece.Position && (effect.IsStarted || effect.HideBasePieceBeforeStart)))
@@ -361,7 +343,7 @@ public sealed class GameplayEffectsController
                 continue;
             }
 
-            if (hiddenCells.Any(effect => effect.Contains(piece.Position)))
+            if (viewState?.IsCellHidden(piece.Position) == true)
             {
                 continue;
             }
@@ -390,16 +372,22 @@ public sealed class GameplayEffectsController
             pieces.Add(overlay.BuildPiece());
         }
 
-        foreach (var visualEffect in visualEffects)
+        if (viewState is not null)
         {
-            pieces.Add(visualEffect.BuildPiece());
+            foreach (var effectNode in viewState.EffectNodes.Where(node => node.IsVisible))
+            {
+                pieces.Add(BuildEffectPiece(effectNode));
+            }
         }
 
         return pieces.OrderBy(piece => piece.Layer).ToArray();
     }
 
-    public void QueueDestroyer(GridPosition origin, IReadOnlyList<GridPosition> path, BoardTransform transform)
+    public void QueueDestroyer(BoardViewState viewState, AnimationPlayer animationPlayer, GridPosition origin, IReadOnlyList<GridPosition> path, BoardTransform transform)
     {
+        ArgumentNullException.ThrowIfNull(viewState);
+        ArgumentNullException.ThrowIfNull(animationPlayer);
+
         if (path.Count == 0)
         {
             return;
@@ -411,18 +399,20 @@ public sealed class GameplayEffectsController
             launchIndex = path.Count / 2;
         }
 
-        var forwardPath = BuildWorldPath(path.Skip(launchIndex), transform);
-        var backwardPath = BuildWorldPath(path.Take(launchIndex + 1).Reverse(), transform);
         var size = transform.CellSize * 0.42f;
-        pathClearEffects.Add(new TimedPathClearEffect(path.Skip(launchIndex).ToArray(), 0.8f));
-        pathClearEffects.Add(new TimedPathClearEffect(path.Take(launchIndex + 1).Reverse().ToArray(), 0.8f));
-
-        QueueDestroyerVisual(forwardPath, size);
-        QueueDestroyerVisual(backwardPath, size);
+        var forwardPath = path.Skip(launchIndex).ToArray();
+        var backwardPath = path.Take(launchIndex + 1).Reverse().ToArray();
+        pathClearEffects.Add(new TimedPathClearEffect(forwardPath, 0.8f));
+        pathClearEffects.Add(new TimedPathClearEffect(backwardPath, 0.8f));
+        QueueDestroyerVisual(viewState, animationPlayer, forwardPath, transform, size);
+        QueueDestroyerVisual(viewState, animationPlayer, backwardPath, transform, size);
     }
 
-    public void QueueExplosion(IReadOnlyList<GridPosition> area, BoardTransform transform)
+    public void QueueExplosion(BoardViewState viewState, AnimationPlayer animationPlayer, IReadOnlyList<GridPosition> area, BoardTransform transform)
     {
+        ArgumentNullException.ThrowIfNull(viewState);
+        ArgumentNullException.ThrowIfNull(animationPlayer);
+
         if (area.Count == 0)
         {
             return;
@@ -433,50 +423,76 @@ public sealed class GameplayEffectsController
         var centerWorld = transform.GridToWorld(new GridPosition((int)MathF.Round(centerRow), (int)MathF.Round(centerColumn)));
         var center = new Vector2(centerWorld.X + (transform.CellSize / 2f), centerWorld.Y + (transform.CellSize / 2f));
         var maxSize = transform.CellSize * 1.9f;
-        hiddenCells.Add(new TimedHiddenCells(area.ToArray(), 0.45f));
+        var initialPosition = new Vector2(center.X - (maxSize / 2f), center.Y - (maxSize / 2f));
+        var effectNode = new EffectNode(
+            NodeId.New(),
+            new GridPosition(-1, -1),
+            initialPosition,
+            new Vector2(0.1f, 0.1f),
+            rotation: 0f,
+            opacity: 1f,
+            tint: PieceVisualConstants.TintOrange,
+            glow: 0f,
+            isVisible: true,
+            shape: PieceVisualConstants.ShapeCircle,
+            width: maxSize,
+            height: maxSize,
+            layer: 25f);
+        viewState.AddOrUpdate(effectNode);
 
-        visualEffects.Add(new TimedVisualEffect(
-            progress =>
+        var areaCells = area.ToArray();
+        var animation = Anim.Sequence()
+            .Append(new CallbackAnimation(() => viewState.HideCells(areaCells)))
+            .Append(Anim.Parallel(
+                Anim.ScaleTo(effectNode, new Vector2(1f, 1f), 0.45f),
+                Anim.FadeTo(effectNode, 0f, 0.45f)))
+            .Append(new CallbackAnimation(() =>
             {
-                var size = maxSize * Easing.SmoothStep(progress);
-                return new RenderPiece(
-                    new GridPosition(-1, -1),
-                    PieceVisualConstants.ShapeCircle,
-                    PieceVisualConstants.TintOrange,
-                    center.X - (size / 2f),
-                    center.Y - (size / 2f),
-                    size,
-                    size,
-                    Rotation: 0f,
-                    Layer: 25f);
-            },
-            durationSeconds: 0.45f));
+                viewState.ShowCells(areaCells);
+                viewState.RemoveEffectNode(effectNode.Id);
+            }));
+
+        animationPlayer.Play(animation, ChannelConflictPolicy.Replace);
     }
 
-    private void QueueDestroyerVisual(IReadOnlyList<Vector2> worldPath, float size)
+    private void QueueDestroyerVisual(BoardViewState viewState, AnimationPlayer animationPlayer, IReadOnlyList<GridPosition> path, BoardTransform transform, float size)
     {
-        if (worldPath.Count <= 1)
+        if (path.Count <= 1)
         {
             return;
         }
 
-        var animation = new DestroyerAnimation(worldPath);
-        visualEffects.Add(new TimedVisualEffect(
-            progress =>
-            {
-                var center = animation.Evaluate(progress);
-                return new RenderPiece(
-                    new GridPosition(-1, -1),
-                    PieceVisualConstants.ShapeDiamond,
-                    PieceVisualConstants.TintWhite,
-                    center.X - (size / 2f),
-                    center.Y - (size / 2f),
-                    size,
-                    size,
-                    Rotation: progress * MathF.PI * 2f,
-                    Layer: 30f);
-            },
-            durationSeconds: 0.8f));
+        var centers = BuildWorldPath(path, transform);
+        var initialPosition = new Vector2(centers[0].X - (size / 2f), centers[0].Y - (size / 2f));
+        var effectNode = new EffectNode(
+            NodeId.New(),
+            path[0],
+            initialPosition,
+            new Vector2(1f, 1f),
+            rotation: 0f,
+            opacity: 1f,
+            tint: PieceVisualConstants.TintWhite,
+            glow: 0f,
+            isVisible: true,
+            shape: PieceVisualConstants.ShapeDiamond,
+            width: size,
+            height: size,
+            layer: 30f);
+        viewState.AddOrUpdate(effectNode);
+
+        var segmentDuration = 0.8f / (path.Count - 1);
+        var animation = Anim.Sequence();
+
+        for (var i = 1; i < path.Count; i++)
+        {
+            var targetCenter = centers[i];
+            var targetPosition = new Vector2(targetCenter.X - (size / 2f), targetCenter.Y - (size / 2f));
+            animation.Append(Anim.MoveTo(effectNode, targetPosition, segmentDuration));
+        }
+
+        animation.Append(new CallbackAnimation(() => viewState.RemoveEffectNode(effectNode.Id)));
+
+        animationPlayer.Play(animation, ChannelConflictPolicy.Replace);
     }
 
     private static IReadOnlyList<Vector2> BuildWorldPath(IEnumerable<GridPosition> path, BoardTransform transform)
@@ -488,6 +504,24 @@ public sealed class GameplayEffectsController
                 return new Vector2(world.X + (transform.CellSize / 2f), world.Y + (transform.CellSize / 2f));
             })
             .ToArray();
+    }
+
+    private static RenderPiece BuildEffectPiece(EffectNode effectNode)
+    {
+        var width = effectNode.Width * effectNode.Scale.X;
+        var height = effectNode.Height * effectNode.Scale.Y;
+        var x = effectNode.Position.X - ((width - effectNode.Width) / 2f);
+        var y = effectNode.Position.Y - ((height - effectNode.Height) / 2f);
+        return new RenderPiece(
+            effectNode.LogicalCell,
+            effectNode.Shape,
+            effectNode.Tint,
+            x,
+            y,
+            width,
+            height,
+            effectNode.Rotation,
+            effectNode.Layer);
     }
 
     public void QueueSwap(BoardRenderSnapshot snapshot, Move move, bool rollback)
@@ -540,6 +574,42 @@ public sealed class GameplayEffectsController
             hideBasePiece: true));
     }
 
+    public void QueueSwap(BoardViewState viewState, AnimationPlayer animationPlayer, Move move, BoardTransform transform, bool rollback)
+    {
+        ArgumentNullException.ThrowIfNull(viewState);
+        ArgumentNullException.ThrowIfNull(animationPlayer);
+
+        var fromNode = viewState.GetPieceNode(move.From);
+        var toNode = viewState.GetPieceNode(move.To);
+        if (fromNode is null || toNode is null)
+        {
+            return;
+        }
+
+        var fromPosition = fromNode.Position;
+        var toPosition = toNode.Position;
+        if (rollback)
+        {
+            var rollbackSequence = Anim.Sequence()
+                .Append(Anim.Parallel(
+                    Anim.MoveTo(fromNode, toPosition, 0.18f, blocksInput: true),
+                    Anim.MoveTo(toNode, fromPosition, 0.18f, blocksInput: true)))
+                .Append(Anim.Parallel(
+                    Anim.MoveTo(fromNode, fromPosition, 0.18f, blocksInput: true),
+                    Anim.MoveTo(toNode, toPosition, 0.18f, blocksInput: true)));
+            animationPlayer.Play(rollbackSequence, ChannelConflictPolicy.Replace);
+            return;
+        }
+
+        fromNode.LogicalCell = move.To;
+        toNode.LogicalCell = move.From;
+        animationPlayer.Play(
+            Anim.Parallel(
+                Anim.MoveTo(fromNode, toPosition, 0.22f, blocksInput: true),
+                Anim.MoveTo(toNode, fromPosition, 0.22f, blocksInput: true)),
+            ChannelConflictPolicy.Replace);
+    }
+
     public void QueueBoardSettle(BoardRenderSnapshot beforeSnapshot, BoardRenderSnapshot afterSnapshot, float cellSize, float initialDelaySeconds = 0f, IReadOnlyList<GridPosition>? createdBonusOrigins = null)
     {
         for (var column = 0; column < 8; column++)
@@ -557,15 +627,23 @@ public sealed class GameplayEffectsController
 
             foreach (var target in afterColumn.OrderByDescending(piece => piece.Position.Row))
             {
-                Vector2 from;
-                if (survivorMap.TryGetValue(target.Position, out var source))
+                var isSurvivor = survivorMap.TryGetValue(target.Position, out var source);
+                if (isSurvivor && source!.Position == target.Position)
                 {
-                    if (source.Position == target.Position)
-                    {
-                        continue;
-                    }
+                    continue;
+                }
 
-                    from = new Vector2(source.X, source.Y);
+                Vector2 from;
+                if (isSurvivor)
+                {
+                    from = new Vector2(source!.X, source.Y);
+                }
+                else if (createdBonusOrigins?
+                    .Where(position => position.Column == target.Position.Column && position.Row <= target.Position.Row)
+                    .OrderByDescending(position => position.Row)
+                    .FirstOrDefault() is { } createdBonusOrigin)
+                {
+                    from = new Vector2(target.X, target.Y - (cellSize * (target.Position.Row - createdBonusOrigin.Row)));
                 }
                 else
                 {
@@ -577,14 +655,13 @@ public sealed class GameplayEffectsController
                     target.Position,
                     target with { X = from.X, Y = from.Y, Layer = 15f },
                     new MovePieceEffect(from, new Vector2(target.X, target.Y)),
-                    durationSeconds: source is not null ? 0.65f : 0.75f,
-                    delaySeconds: initialDelaySeconds + (source is not null ? 0f : 0.4f),
+                    durationSeconds: isSurvivor ? 0.65f : 0.75f,
+                    delaySeconds: initialDelaySeconds + (isSurvivor ? 0f : 0.4f),
                     hideBasePiece: true,
-                    hideBasePieceBeforeStart: source is null));
+                    hideBasePieceBeforeStart: !isSurvivor));
             }
         }
     }
-
     private static Dictionary<GridPosition, RenderPiece> MatchColumnSurvivors(
         IReadOnlyList<RenderPiece> beforeColumn,
         IReadOnlyList<RenderPiece> afterColumn)

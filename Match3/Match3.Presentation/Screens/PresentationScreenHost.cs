@@ -104,7 +104,7 @@ public sealed class PresentationScreenHost : IGameScreenHost
         {
             IsSwapApplied = result.IsSwapApplied,
             QueueVisualEffects = () => QueueVisualEvents(gameplay, result.Events),
-            QueueSwapAnimation = () => gameplay.EffectsController.QueueSwap(beforeSnapshot, move.Value, rollback: !result.IsSwapApplied),
+            QueueSwapAnimation = () => gameplay.EffectsController.QueueSwap(gameplay.BoardViewState, gameplay.AnimationPlayer, move.Value, gameplay.BoardTransform, rollback: !result.IsSwapApplied),
             QueueBoardSettleAnimation = () => gameplay.EffectsController.QueueBoardSettle(
                 swappedSnapshot,
                 afterSnapshot,
@@ -139,10 +139,10 @@ public sealed class PresentationScreenHost : IGameScreenHost
             switch (domainEvent)
             {
                 case DestroyerSpawned destroyer:
-                    gameplay.EffectsController.QueueDestroyer(destroyer.Position, destroyer.Path, gameplay.BoardTransform);
+                    gameplay.EffectsController.QueueDestroyer(gameplay.BoardViewState, gameplay.AnimationPlayer, destroyer.Position, destroyer.Path, gameplay.BoardTransform);
                     break;
                 case BombExploded explosion:
-                    gameplay.EffectsController.QueueExplosion(explosion.Area, gameplay.BoardTransform);
+                    gameplay.EffectsController.QueueExplosion(gameplay.BoardViewState, gameplay.AnimationPlayer, explosion.Area, gameplay.BoardTransform);
                     break;
             }
         }

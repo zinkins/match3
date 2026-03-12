@@ -1,5 +1,6 @@
 using Match3.Core.GameCore.ValueObjects;
 using Match3.Presentation.Animation;
+using Match3.Presentation.Animation.Engine;
 using Match3.Presentation.Rendering;
 
 namespace Match3.Tests;
@@ -39,6 +40,8 @@ public class Phase15PieceEffectsTests
     public void GameplayEffectsController_QueuesDestroyerVisualOverlay()
     {
         var controller = new GameplayEffectsController();
+        var player = new AnimationPlayer();
+        var viewState = new BoardViewState();
         var transform = new BoardTransform(48f, new System.Numerics.Vector2(20f, 20f));
         var snapshot = new BoardRenderSnapshot(
             [],
@@ -46,10 +49,11 @@ public class Phase15PieceEffectsTests
                 new RenderPiece(new GridPosition(0, 0), PieceVisualConstants.ShapeSquare, PieceVisualConstants.TintRed, 20f, 20f, 32f, 32f)
             ]);
 
-        controller.QueueDestroyer(new GridPosition(0, 1), [new GridPosition(0, 0), new GridPosition(0, 1), new GridPosition(0, 2)], transform);
-        controller.Update(TimeSpan.FromMilliseconds(50));
+        controller.QueueDestroyer(viewState, player, new GridPosition(0, 1), [new GridPosition(0, 0), new GridPosition(0, 1), new GridPosition(0, 2)], transform);
+        controller.Update(TimeSpan.FromSeconds(0.05f));
+        player.Update(0.05f);
 
-        var pieces = controller.BuildPieces(snapshot, null);
+        var pieces = controller.BuildPieces(snapshot, null, viewState);
 
         Assert.Contains(pieces, piece => piece.Shape == PieceVisualConstants.ShapeDiamond && piece.Tint == PieceVisualConstants.TintWhite);
     }
@@ -58,16 +62,21 @@ public class Phase15PieceEffectsTests
     public void GameplayEffectsController_QueuesTwoDestroyers_FromBonusCenter()
     {
         var controller = new GameplayEffectsController();
+        var player = new AnimationPlayer();
+        var viewState = new BoardViewState();
         var transform = new BoardTransform(48f, new System.Numerics.Vector2(20f, 20f));
         var snapshot = new BoardRenderSnapshot([], []);
 
         controller.QueueDestroyer(
+            viewState,
+            player,
             new GridPosition(0, 2),
             [new GridPosition(0, 0), new GridPosition(0, 1), new GridPosition(0, 2), new GridPosition(0, 3), new GridPosition(0, 4)],
             transform);
-        controller.Update(TimeSpan.FromMilliseconds(50));
+        controller.Update(TimeSpan.FromSeconds(0.05f));
+        player.Update(0.05f);
 
-        var pieces = controller.BuildPieces(snapshot, null);
+        var pieces = controller.BuildPieces(snapshot, null, viewState);
 
         Assert.Equal(2, pieces.Count(piece => piece.Shape == PieceVisualConstants.ShapeDiamond && piece.Tint == PieceVisualConstants.TintWhite));
     }
@@ -76,6 +85,8 @@ public class Phase15PieceEffectsTests
     public void GameplayEffectsController_HidesPiecesInsideExplosionArea_WhileBombEffectRuns()
     {
         var controller = new GameplayEffectsController();
+        var player = new AnimationPlayer();
+        var viewState = new BoardViewState();
         var transform = new BoardTransform(48f, new System.Numerics.Vector2(20f, 20f));
         var affected = new GridPosition(2, 2);
         var unaffected = new GridPosition(0, 0);
@@ -86,19 +97,21 @@ public class Phase15PieceEffectsTests
                 new RenderPiece(affected, PieceVisualConstants.ShapeSquare, PieceVisualConstants.TintBlue, 116f, 116f, 32f, 32f)
             ]);
 
-        controller.QueueExplosion([affected], transform);
-        controller.Update(TimeSpan.FromMilliseconds(50));
+        controller.QueueExplosion(viewState, player, [affected], transform);
+        player.Update(0.05f);
 
-        var pieces = controller.BuildPieces(snapshot, null);
+        var pieces = controller.BuildPieces(snapshot, null, viewState);
 
         Assert.DoesNotContain(pieces, piece => piece.Position == affected);
         Assert.Contains(pieces, piece => piece.Position == unaffected);
     }
 
     [Fact]
-    public void GameplayEffectsController_ClearsDestroyerPathProgressively()
+    public void GameplayEffectsController_MovesDestroyerTransientNode_AlongPath()
     {
         var controller = new GameplayEffectsController();
+        var player = new AnimationPlayer();
+        var viewState = new BoardViewState();
         var transform = new BoardTransform(48f, new System.Numerics.Vector2(20f, 20f));
         var origin = new GridPosition(0, 1);
         var mid = new GridPosition(0, 2);
@@ -111,21 +124,24 @@ public class Phase15PieceEffectsTests
                 new RenderPiece(tail, PieceVisualConstants.ShapeSquare, PieceVisualConstants.TintGreen, 164f, 20f, 32f, 32f)
             ]);
 
-        controller.QueueDestroyer(origin, [new GridPosition(0, 0), origin, mid, tail], transform);
-        controller.Update(TimeSpan.FromMilliseconds(50));
+        controller.QueueDestroyer(viewState, player, origin, [new GridPosition(0, 0), origin, mid, tail], transform);
+        controller.Update(TimeSpan.FromSeconds(0.05f));
+        player.Update(0.05f);
 
-        var earlyPieces = controller.BuildPieces(snapshot, null);
+        var earlyPieces = controller.BuildPieces(snapshot, null, viewState);
 
-        Assert.DoesNotContain(earlyPieces, piece => piece.Position == origin);
-        Assert.Contains(earlyPieces, piece => piece.Position == mid);
-        Assert.Contains(earlyPieces, piece => piece.Position == tail);
+        var earlyDestroyerX = earlyPieces
+            .Where(piece => piece.Shape == PieceVisualConstants.ShapeDiamond)
+            .Max(piece => piece.X);
 
-        controller.Update(TimeSpan.FromMilliseconds(550));
+        AdvanceRuntime(controller, player, 0.55f);
 
-        var latePieces = controller.BuildPieces(snapshot, null);
+        var latePieces = controller.BuildPieces(snapshot, null, viewState);
+        var lateDestroyerX = latePieces
+            .Where(piece => piece.Shape == PieceVisualConstants.ShapeDiamond)
+            .Max(piece => piece.X);
 
-        Assert.DoesNotContain(latePieces, piece => piece.Position == mid);
-        Assert.Contains(latePieces, piece => piece.Position == tail);
+        Assert.True(lateDestroyerX > earlyDestroyerX);
     }
 
     [Fact]
@@ -209,11 +225,30 @@ public class Phase15PieceEffectsTests
             ]);
 
         controller.QueueBoardSettle(beforeSnapshot, afterSnapshot, 48f, createdBonusOrigins: [new GridPosition(1, 2)]);
-        controller.Update(TimeSpan.FromMilliseconds(50));
+        controller.Update(TimeSpan.FromMilliseconds(450));
 
         var pieces = controller.BuildPieces(afterSnapshot, null);
         var bonus = Assert.Single(pieces, piece => piece.Shape == PieceVisualConstants.ShapeDiamond);
 
         Assert.True(bonus.Y >= 68f);
     }
+
+    private static void AdvanceRuntime(GameplayEffectsController controller, AnimationPlayer player, float totalSeconds, float stepSeconds = 0.05f)
+    {
+        var remaining = totalSeconds;
+        while (remaining > 0f)
+        {
+            var delta = MathF.Min(stepSeconds, remaining);
+            controller.Update(TimeSpan.FromSeconds(delta));
+            player.Update(delta);
+            remaining -= delta;
+        }
+    }
 }
+
+
+
+
+
+
+

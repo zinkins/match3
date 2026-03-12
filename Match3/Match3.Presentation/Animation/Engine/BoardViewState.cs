@@ -6,8 +6,12 @@ public sealed class BoardViewState
 {
     private readonly Dictionary<NodeId, PieceNode> nodesById = [];
     private readonly Dictionary<GridPosition, NodeId> nodeIdsByCell = [];
+    private readonly Dictionary<NodeId, EffectNode> effectNodesById = [];
+    private readonly Dictionary<GridPosition, int> hiddenCellCounts = [];
 
     public IReadOnlyCollection<PieceNode> PieceNodes => nodesById.Values;
+
+    public IReadOnlyCollection<EffectNode> EffectNodes => effectNodesById.Values;
 
     public void AddOrUpdate(PieceNode node)
     {
@@ -40,5 +44,54 @@ public sealed class BoardViewState
         _ = nodesById.Remove(id);
         _ = nodeIdsByCell.Remove(node.LogicalCell);
         return true;
+    }
+
+    public void AddOrUpdate(EffectNode node)
+    {
+        ArgumentNullException.ThrowIfNull(node);
+        effectNodesById[node.Id] = node;
+    }
+
+    public bool RemoveEffectNode(NodeId id)
+    {
+        return effectNodesById.Remove(id);
+    }
+
+    public void HideCells(IEnumerable<GridPosition> positions)
+    {
+        ArgumentNullException.ThrowIfNull(positions);
+
+        foreach (var position in positions)
+        {
+            hiddenCellCounts[position] = hiddenCellCounts.TryGetValue(position, out var count)
+                ? count + 1
+                : 1;
+        }
+    }
+
+    public void ShowCells(IEnumerable<GridPosition> positions)
+    {
+        ArgumentNullException.ThrowIfNull(positions);
+
+        foreach (var position in positions)
+        {
+            if (!hiddenCellCounts.TryGetValue(position, out var count))
+            {
+                continue;
+            }
+
+            if (count <= 1)
+            {
+                hiddenCellCounts.Remove(position);
+                continue;
+            }
+
+            hiddenCellCounts[position] = count - 1;
+        }
+    }
+
+    public bool IsCellHidden(GridPosition position)
+    {
+        return hiddenCellCounts.ContainsKey(position);
     }
 }
