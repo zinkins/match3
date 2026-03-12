@@ -19,7 +19,13 @@ public sealed class BoardViewState
 
         if (nodesById.TryGetValue(node.Id, out var existing))
         {
-            _ = nodeIdsByCell.Remove(existing.LogicalCell);
+            foreach (var staleCell in nodeIdsByCell
+                .Where(pair => pair.Value == node.Id)
+                .Select(pair => pair.Key)
+                .ToArray())
+            {
+                nodeIdsByCell.Remove(staleCell);
+            }
         }
 
         nodesById[node.Id] = node;
@@ -95,3 +101,4 @@ public sealed class BoardViewState
         return hiddenCellCounts.ContainsKey(position);
     }
 }
+

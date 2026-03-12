@@ -106,6 +106,8 @@ public sealed class PresentationScreenHost : IGameScreenHost
             QueueVisualEffects = () => QueueVisualEvents(gameplay, result.Events),
             QueueSwapAnimation = () => gameplay.EffectsController.QueueSwap(gameplay.BoardViewState, gameplay.AnimationPlayer, move.Value, gameplay.BoardTransform, rollback: !result.IsSwapApplied),
             QueueBoardSettleAnimation = () => gameplay.EffectsController.QueueBoardSettle(
+                gameplay.BoardViewState,
+                gameplay.AnimationPlayer,
                 swappedSnapshot,
                 afterSnapshot,
                 gameplay.BoardTransform.CellSize,

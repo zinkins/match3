@@ -610,6 +610,86 @@ public sealed class GameplayEffectsController
             ChannelConflictPolicy.Replace);
     }
 
+    public void QueueBoardSettle(BoardViewState viewState, AnimationPlayer animationPlayer, BoardRenderSnapshot beforeSnapshot, BoardRenderSnapshot afterSnapshot, float cellSize, float initialDelaySeconds = 0f, IReadOnlyList<GridPosition>? createdBonusOrigins = null)
+    {
+        ArgumentNullException.ThrowIfNull(viewState);
+        ArgumentNullException.ThrowIfNull(animationPlayer);
+
+        for (var column = 0; column < 8; column++)
+        {
+            var beforeColumn = beforeSnapshot.Pieces
+                .Where(piece => piece.Position.Column == column)
+                .OrderBy(piece => piece.Position.Row)
+                .ToArray();
+            var afterColumn = afterSnapshot.Pieces
+                .Where(piece => piece.Position.Column == column)
+                .OrderBy(piece => piece.Position.Row)
+                .ToArray();
+            var survivorMap = MatchColumnSurvivors(beforeColumn, afterColumn);
+            var spawnCount = 0;
+
+            foreach (var target in afterColumn.OrderByDescending(piece => piece.Position.Row))
+            {
+                var targetPosition = new Vector2(target.X, target.Y);
+                var isSurvivor = survivorMap.TryGetValue(target.Position, out var source);
+                if (isSurvivor && source!.Position == target.Position)
+                {
+                    var stationaryNode = viewState.GetPieceNode(target.Position);
+                    if (stationaryNode is null)
+                    {
+                        stationaryNode = CreatePieceNode(target, targetPosition);
+                        viewState.AddOrUpdate(stationaryNode);
+                    }
+
+                    stationaryNode.Position = targetPosition;
+                    stationaryNode.Tint = target.Tint;
+                    continue;
+                }
+
+                PieceNode node;
+                Vector2 from;
+                float durationSeconds;
+                float delaySeconds;
+
+                if (isSurvivor)
+                {
+                    node = viewState.GetPieceNode(source!.Position) ?? CreatePieceNode(source, new Vector2(source.X, source.Y));
+                    from = node.Position;
+                    durationSeconds = 0.65f;
+                    delaySeconds = initialDelaySeconds;
+                }
+                else
+                {
+                    spawnCount++;
+                    var createdBonusOrigin = createdBonusOrigins?
+                        .Where(position => position.Column == target.Position.Column && position.Row <= target.Position.Row)
+                        .OrderByDescending(position => position.Row)
+                        .FirstOrDefault();
+                    from = createdBonusOrigin is { } origin
+                        ? new Vector2(target.X, target.Y - (cellSize * (target.Position.Row - origin.Row)))
+                        : new Vector2(target.X, target.Y - (cellSize * (spawnCount + 1)));
+                    node = CreatePieceNode(target, from);
+                    durationSeconds = 0.75f;
+                    delaySeconds = initialDelaySeconds + 0.4f;
+                }
+
+                node.LogicalCell = target.Position;
+                node.Tint = target.Tint;
+                node.Position = from;
+                node.IsVisible = true;
+                viewState.AddOrUpdate(node);
+
+                var animation = Anim.Sequence();
+                if (delaySeconds > 0f)
+                {
+                    animation.Append(new DelayAnimation(delaySeconds, blocksInput: true));
+                }
+
+                animation.Append(Anim.MoveTo(node, targetPosition, durationSeconds, blocksInput: true));
+                animationPlayer.Play(animation, ChannelConflictPolicy.Replace);
+            }
+        }
+    }
     public void QueueBoardSettle(BoardRenderSnapshot beforeSnapshot, BoardRenderSnapshot afterSnapshot, float cellSize, float initialDelaySeconds = 0f, IReadOnlyList<GridPosition>? createdBonusOrigins = null)
     {
         for (var column = 0; column < 8; column++)
@@ -662,6 +742,19 @@ public sealed class GameplayEffectsController
             }
         }
     }
+    private static PieceNode CreatePieceNode(RenderPiece piece, Vector2 position)
+    {
+        return new PieceNode(
+            NodeId.New(),
+            piece.Position,
+            position,
+            new Vector2(1f, 1f),
+            piece.Rotation,
+            opacity: 1f,
+            piece.Tint,
+            glow: 0f,
+            isVisible: true);
+    }
     private static Dictionary<GridPosition, RenderPiece> MatchColumnSurvivors(
         IReadOnlyList<RenderPiece> beforeColumn,
         IReadOnlyList<RenderPiece> afterColumn)
@@ -710,3 +803,4 @@ public sealed class GameplayEffectsController
             before.Position.Row <= after.Position.Row;
     }
 }
+
