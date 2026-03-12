@@ -1,0 +1,175 @@
+# Фаза 16. Рефакторинг runtime-анимаций и visual effects
+
+T373 [ ] [MVP] Написать test `AnimationPlayer_StartsWithoutActiveAnimations`.
+T374 [ ] [MVP] Создать папку `Animation/Engine/` в `Match3.Presentation`.
+T375 [ ] [MVP] Создать интерфейс `IAnimation`.
+T376 [ ] [MVP] Создать `AnimationHandle`.
+T377 [ ] [MVP] Создать каркас `AnimationPlayer`.
+T378 [ ] [MVP] Прогнать tests.
+T379 [ ] [MVP] Написать test `SequenceAnimation_RunsAppendedAnimationsInOrder`.
+T380 [ ] [MVP] Создать `SequenceAnimation`.
+T381 [ ] [MVP] Реализовать `Append(...)` для последовательного выполнения.
+T382 [ ] [MVP] Прогнать tests.
+T383 [ ] [MVP] Написать test `ParallelAnimation_CompletesAfterLongestChild`.
+T384 [ ] [MVP] Создать `ParallelAnimation`.
+T385 [ ] [MVP] Реализовать параллельное обновление дочерних анимаций.
+T386 [ ] [MVP] Прогнать tests.
+T387 [ ] [MVP] Написать test `DelayAnimation_CompletesOnlyAfterConfiguredDuration`.
+T388 [ ] [MVP] Создать `DelayAnimation`.
+T389 [ ] [MVP] Реализовать ожидание по времени.
+T390 [ ] [MVP] Прогнать tests.
+T391 [ ] [MVP] Написать test `CallbackAnimation_InvokesActionOnlyOnce`.
+T392 [ ] [MVP] Создать `CallbackAnimation`.
+T393 [ ] [MVP] Реализовать single-shot callback при проигрывании.
+T394 [ ] [MVP] Прогнать tests.
+T395 [ ] [MVP] Написать test `PropertyTween_InterpolatesFloatValue`.
+T396 [ ] [MVP] Создать enum `AnimationChannel`.
+T397 [ ] [MVP] Создать базовый `PropertyTween<T>`.
+T398 [ ] [MVP] Реализовать interpolation для float-based tween.
+T399 [ ] [MVP] Прогнать tests.
+T400 [ ] [MVP] Написать test `AnimationPlayer_RejectsConflictingTweens_OnSameNodeAndChannel`.
+T401 [ ] [MVP] Создать enum `ChannelConflictPolicy`.
+T402 [ ] [MVP] Реализовать в `AnimationPlayer` резервирование канала по `node + channel`.
+T403 [ ] [MVP] Прогнать tests.
+T404 [ ] [MVP] Написать test `SequenceAnimation_JoinRunsAnimationsInParallelWithinSingleStep`.
+T405 [ ] [MVP] Добавить поддержку `Join(...)` в `SequenceAnimation`.
+T406 [ ] [MVP] Реализовать группировку параллельных шагов внутри sequence.
+T407 [ ] [MVP] Прогнать tests.
+T408 [ ] [MVP] Подключить `AnimationPlayer` к render loop без удаления старой системы.
+T409 [ ] [MVP] Написать test `PieceNode_KeepsStableId_WhenLogicalCellChanges`.
+T410 [ ] [MVP] Создать интерфейс `IAnimatableNode`.
+T411 [ ] [MVP] Создать value object `NodeId`.
+T412 [ ] [MVP] Создать `PieceNode`.
+T413 [ ] [MVP] Прогнать tests.
+T414 [ ] [MVP] Написать test `BoardViewState_CanResolvePieceNodeByGridPosition`.
+T415 [ ] [MVP] Создать `BoardViewState`.
+T416 [ ] [MVP] Реализовать хранение активных `PieceNode`.
+T417 [ ] [MVP] Реализовать поиск узла по логической клетке.
+T418 [ ] [MVP] Прогнать tests.
+T419 [ ] [MVP] Написать test `Anim_MoveTo_ProducesPositionTween`.
+T420 [ ] [MVP] Создать fluent API `Anim`.
+T421 [ ] [MVP] [P] Добавить фабрику `MoveTo(...)`.
+T422 [ ] [MVP] [P] Добавить фабрику `ScaleTo(...)`.
+T423 [ ] [MVP] [P] Добавить фабрику `FadeTo(...)`.
+T424 [ ] [MVP] Прогнать tests.
+T425 [ ] [MVP] Написать test `Anim_Sequence_ComposesAppendAndJoinCalls`.
+T426 [ ] [MVP] Добавить фабрику `Sequence()`.
+T427 [ ] [MVP] Добавить фабрику `Parallel(...)`.
+T428 [ ] [MVP] Реализовать fluent-композицию для `Append/Join`.
+T429 [ ] [MVP] Прогнать tests.
+T430 [ ] [MVP] Написать test `TurnAnimationBuilder_BuildsRollbackSequence_ForRejectedSwap`.
+T431 [ ] [MVP] Создать `TurnAnimationContext`.
+T432 [ ] [MVP] Создать `TurnAnimationBuilder`.
+T433 [ ] [MVP] Реализовать построение сценария для invalid swap.
+T434 [ ] [MVP] Прогнать tests.
+T435 [ ] [MVP] Написать test `TurnAnimationBuilder_BuildsSwapThenGravityThenSpawnSequence`.
+T436 [ ] [MVP] Реализовать порядок фаз `swap -> resolve -> gravity -> spawn -> settle`.
+T437 [ ] [MVP] Прогнать tests.
+T438 [ ] [MVP] Написать test `PresentationScreenHost_UsesTurnAnimationBuilder_InsteadOfManualQueueCalls`.
+T439 [ ] [MVP] Перевести `PresentationScreenHost` на вызов `TurnAnimationBuilder`.
+T440 [ ] [MVP] Удалить из `PresentationScreenHost` прямой orchestration `QueueSwap/QueueBoardSettle/QueueVisualEvents`.
+T441 [ ] [MVP] Прогнать tests.
+T442 [ ] [MVP] Написать test `AnimationPlayer_BlocksInput_WhileBlockingScenarioIsRunning`.
+T443 [ ] [MVP] Перевести policy блокировки input на `AnimationPlayer`.
+T444 [ ] [MVP] Прогнать tests.
+T445 [ ] [MVP] Написать test `PieceNodeRenderer_UsesAnimatedNodeState_ForDrawing`.
+T446 [ ] [MVP] Перевести render path на чтение состояния из `BoardViewState`.
+T447 [ ] [MVP] Прогнать tests.
+T448 [ ] [MVP] Написать test `SwapAnimationScenario_MovesBothPiecesToTargetCells`.
+T449 [ ] [MVP] Перевести `QueueSwap` на `Sequence/Parallel` поверх `PieceNode`.
+T450 [ ] [MVP] Удалить старый special-case код swap overlays.
+T451 [ ] [MVP] Прогнать tests.
+T452 [ ] [MVP] [P] Написать test `DestroyerScenario_SpawnsTransientEffectNode_AndClearsPathOverTime`.
+T453 [ ] [MVP] [P] Создать transient `EffectNode` для runtime visual effects.
+T454 [ ] [MVP] Перевести `QueueDestroyer` на сценарий поверх `EffectNode`.
+T455 [ ] [MVP] Прогнать tests.
+T456 [ ] [MVP] [P] Написать test `ExplosionScenario_HidesAffectedCells_OnlyWhileEffectIsActive`.
+T457 [ ] [MVP] Перевести `QueueExplosion` на сценарий поверх `EffectNode`.
+T458 [ ] [MVP] Удалить отдельный список `hiddenCells`.
+T459 [ ] [MVP] Прогнать tests.
+T460 [ ] [MVP] Написать test `GravityScenario_ReusesExistingPieceNodes_ForFallingPieces`.
+T461 [ ] [MVP] Перевести `QueueBoardSettle` для survivors на `MoveTo(...)` поверх `PieceNode`.
+T462 [ ] [MVP] Зафиксировать, что падение не создаёт дубликаты визуальных узлов.
+T463 [ ] [MVP] Прогнать tests.
+T464 [ ] [MVP] Написать test `SpawnScenario_CreatesNewPieceNodes_AboveBoard_AndMovesThemDown`.
+T465 [ ] [MVP] Реализовать сценарий spawn/refill через новые `PieceNode`.
+T466 [ ] [MVP] Удалить special-case логику `hideBasePieceBeforeStart`.
+T467 [ ] [MVP] Прогнать tests.
+T468 [ ] [MVP] Написать test `SelectionEffect_CanStackWithMovementWithoutOverwritingPositionChannel`.
+T469 [ ] [MVP] Перевести selection/highlight effect на channel-based tweens.
+T470 [ ] [MVP] Прогнать tests.
+T471 [ ] [MVP] Написать test `CreatedBonusScenario_StartsFromCreationCell_InsteadOfSpawnLane`.
+T472 [ ] [MVP] Перевести анимацию создания бонуса на `TurnAnimationBuilder`.
+T473 [ ] [MVP] Прогнать tests.
+T474 [ ] [MVP] Написать test `GameplayScreen_ShowsGameOverOnlyAfterBlockingScenarioCompletes`.
+T475 [ ] [MVP] Перевести логику `ShouldShowGameOverOverlay` на состояние `AnimationPlayer`.
+T476 [ ] [MVP] Прогнать tests.
+T477 [ ] [MVP] Удалить `AnimationQueue`.
+T478 [ ] [MVP] Удалить `GameplayEffectsController`.
+T479 [ ] [MVP] Очистить `GameplayScreen` от ссылок на старую animation system.
+T480 [ ] [MVP] Прогнать tests.
+T481 [ ] [Nice] [P] Проверить визуально `swap` после миграции на новый runtime.
+T482 [ ] [Nice] [P] Проверить визуально `destroyer` и `explosion` после миграции на новый runtime.
+T483 [ ] [Nice] [P] Проверить визуально `fall` и `spawn` после миграции на новый runtime.
+T484 [ ] [Nice] Проверить визуально, что последовательность фаз хода считывается однозначно.
+T485 [ ] [MVP] Написать test `TurnAnimationBuilder_BuildsDistinctPhaseBoundaries_ForCascadeStep`.
+T486 [ ] [MVP] Добавить в `TurnAnimationBuilder` явное представление phase boundaries.
+T487 [ ] [MVP] Прогнать tests.
+T488 [ ] [MVP] Написать test `CascadeScenario_WaitsForPreviousSpawnBeforeStartingNextResolve`.
+T489 [ ] [MVP] Реализовать последовательный запуск каскадов через общий scenario.
+T490 [ ] [MVP] Прогнать tests.
+T491 [ ] [MVP] Написать test `ChainReactionScenario_PlaysBonusEffectsInDeterministicOrder`.
+T492 [ ] [MVP] Зафиксировать порядок визуализации chain reaction бонусов.
+T493 [ ] [MVP] Прогнать tests.
+T494 [ ] [Nice] [P] Написать test `AnimationPlayer_CanCancelTransientEffectHandle`.
+T495 [ ] [Nice] Добавить отмену анимации через `AnimationHandle`.
+T496 [ ] [Nice] Прогнать tests.
+T497 [ ] [Nice] [P] Написать test `AnimationPlayer_ReleasesReservedChannel_WhenAnimationIsCancelled`.
+T498 [ ] [Nice] Освобождать channel reservations при отмене и завершении анимации.
+T499 [ ] [Nice] Прогнать tests.
+T500 [ ] [MVP] Написать test `AnimationPlayer_DoesNotLeakCompletedTransientNodes`.
+T501 [ ] [MVP] Добавить cleanup policy для завершённых transient `EffectNode`.
+T502 [ ] [MVP] Прогнать tests.
+T503 [ ] [MVP] Написать test `BoardViewState_RemovesConsumedPieceNodes_AfterResolvePhase`.
+T504 [ ] [MVP] Реализовать удаление визуальных узлов уничтоженных элементов после завершения resolve phase.
+T505 [ ] [MVP] Прогнать tests.
+T506 [ ] [MVP] Написать test `BoardViewState_CreatesNodesForPostCascadeBoardState_WithoutFullReset`.
+T507 [ ] [MVP] Зафиксировать инкрементальное обновление `BoardViewState` между каскадами.
+T508 [ ] [MVP] Прогнать tests.
+T509 [ ] [Nice] [P] Написать test `AnimationPlayer_ExposesCurrentBlockingState_ForUiAndFlowControl`.
+T510 [ ] [Nice] [P] Добавить read-only API состояния player для UI и screen flow.
+T511 [ ] [Nice] Прогнать tests.
+T512 [ ] [Nice] [P] Написать test `AnimationDebugSnapshot_ListsActiveAnimationsAndReservedChannels`.
+T513 [ ] [Nice] [P] Создать debug snapshot для диагностики активных анимаций.
+T514 [ ] [Nice] Прогнать tests.
+T515 [ ] [Nice] [P] Написать test `AnimationDebugSnapshot_ContainsPhaseName_ForCurrentScenarioStep`.
+T516 [ ] [Nice] [P] Добавить имена фаз в debug metadata сценария.
+T517 [ ] [Nice] Прогнать tests.
+T518 [ ] [MVP] Написать test `TurnAnimationBuilder_DoesNotScheduleSpawnForCreatedBonusCell`.
+T519 [ ] [MVP] Зафиксировать правило приоритета created bonus над обычным spawn.
+T520 [ ] [MVP] Прогнать tests.
+T521 [ ] [MVP] Написать test `TurnAnimationBuilder_PreservesVisualContinuity_ForBonusActivatedByDestroyer`.
+T522 [ ] [MVP] Реализовать непрерывность визуального объекта при активации бонуса destroyer-ом.
+T523 [ ] [MVP] Прогнать tests.
+T524 [ ] [MVP] Написать test `SelectionEffect_IsSuppressed_WhenPieceNodeIsConsumedByResolvePhase`.
+T525 [ ] [MVP] Убрать lingering selection/highlight с уничтоженных узлов.
+T526 [ ] [MVP] Прогнать tests.
+T527 [ ] [Nice] [P] Написать test `AnimationPlayer_SkipsZeroDurationAnimationsWithoutBreakingSequence`.
+T528 [ ] [Nice] Обработать zero-duration animations и callbacks внутри sequence.
+T529 [ ] [Nice] Прогнать tests.
+T530 [ ] [Nice] [P] Написать test `AnimationPlayer_UsesConfiguredDurations_ForSwapFallSpawnAndBonusPhases`.
+T531 [ ] [Nice] [P] Централизовать animation timings в одном runtime-конфиге presentation слоя.
+T532 [ ] [Nice] Прогнать tests.
+T533 [ ] [MVP] Написать test `PresentationScreenHost_DoesNotAcceptBoardInput_DuringCascadeScenario`.
+T534 [ ] [MVP] Зафиксировать блокировку ввода на весь blocking scenario, а не на отдельные legacy overlays.
+T535 [ ] [MVP] Прогнать tests.
+T536 [ ] [MVP] Написать test `ScreenFlowController_WaitsForAnimationPlayerBeforeShowingGameOver`.
+T537 [ ] [MVP] Перевести `ScreenFlowController` на состояние нового animation runtime.
+T538 [ ] [MVP] Прогнать tests.
+T539 [ ] [MVP] Удалить legacy tests, проверяющие `AnimationQueue`, после замены на новый runtime.
+T540 [ ] [MVP] Обновить tests под `AnimationPlayer` и `TurnAnimationBuilder`.
+T541 [ ] [MVP] Прогнать tests.
+T542 [ ] [Nice] [P] Обновить `docs/Architecture.md` описанием новой animation architecture.
+T543 [ ] [Nice] [P] Обновить `docs/SolutionStructure.md` новыми папками и ответственностями animation layer.
+T544 [ ] [Nice] [P] Добавить краткую памятку по использованию `Anim.Sequence/Join` для новых эффектов.
+T545 [ ] [MVP] Выполнить финальный manual smoke test полного хода: swap -> resolve -> bonus -> fall -> spawn -> cascade.

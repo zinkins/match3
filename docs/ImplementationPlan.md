@@ -414,129 +414,28 @@ T325 [x] Проверить компиляцию `iOS`.
 
 ## Фаза 15. Runtime rendering и screen loop
 
-T326 [x] Написать test `BoardRenderer_ProducesRenderableBoardSnapshot`.
-T327 [x] Дополнить `BoardRenderer` построением render snapshot для всего поля.
-T328 [x] Прогнать tests.
-T329 [x] Написать test `HudRenderer_ProducesHudSnapshot`.
-T330 [x] Дополнить `HudRenderer` render snapshot для score и timer.
-T331 [x] Прогнать tests.
-T332 [x] Создать `SpriteBatchRenderer`.
-T333 [x] Реализовать отрисовку квадрата клетки и элемента через `SpriteBatch`.
-T334 [x] Выполнить manual smoke check рендера одной клетки.
-T335 [x] Реализовать отрисовку полного поля 8x8 через `BoardRenderer`.
-T336 [x] Выполнить manual smoke check полного поля.
-T337 [x] Реализовать отрисовку HUD через `HudRenderer`.
-T338 [x] Выполнить manual smoke check HUD.
-T339 [x] Реализовать отрисовку `MainMenuScreen`.
-T340 [x] Проверить manual render `MainMenuScreen`.
-T341 [x] Реализовать отрисовку `GameplayScreen`.
-T342 [x] Проверить manual render `GameplayScreen`.
-T343 [x] Реализовать отрисовку `Game Over` overlay на `GameplayScreen`.
-T344 [x] Проверить manual render `Game Over` overlay.
-T345 [x] Подключить screen update/draw loop в `Match3Game`.
-T346 [x] Проверить переходы экранов в runtime.
-T347 [x] Подключить render selection highlight.
-T348 [x] Проверить visual selection highlight вручную.
-T349 [x] Подключить проигрывание animation queue к render loop.
-T350 [ ] Проверить визуально swap/fall/spawn/destroyer animations вручную.
-T350a [x] Реализовать визуальный рендер `Line` bonus как приплюснутого ромба с направлением по оси действия.
-T350b [x] Реализовать визуальный рендер `Bomb` bonus как круга.
-T350c [ ] Проверить визуально отличие бонусов от обычных элементов.
-T351 [x] Написать test `MouseInputRouter_MapsLeftClickToBoardSelection`.
-T352 [x] Создать `MouseInputRouter`.
-T353 [x] Реализовать runtime обработку mouse input для игрового поля.
-T354 [x] Прогнать tests.
-T355 [x] Написать test `TouchInputRouter_MapsTapToBoardSelection`.
-T356 [x] Создать `TouchInputRouter`.
-T357 [x] Реализовать runtime обработку touch input для игрового поля.
-T358 [x] Прогнать tests.
-T359 [x] Подключить input routing к `GameplayScreen`.
-T360 [ ] Проверить manual input на игровом поле для desktop и mobile.
-T361 [x] Реализовать обработку input для кнопки `Play`.
-T362 [x] Реализовать обработку input для кнопки `Ok`.
-T363 [ ] Проверить manual input для menu/game over экранов.
-T364 [x] Написать test `LayoutCalculator_ProducesStableGameplayLayout_ForDifferentViewportSizes`.
-T365 [x] Создать `LayoutCalculator`.
-T366 [x] Реализовать адаптивный layout поля и HUD для разных desktop resolution.
-T367 [x] Прогнать tests.
-T368 [x] Написать test `LayoutCalculator_ProducesStableGameplayLayout_ForSupportedMobileOrientations`.
-T369 [x] Реализовать адаптацию layout для mobile landscape orientations.
-T370 [x] Прогнать tests.
-T371 [x] Реализовать layout policy с учетом safe area и отступов экрана для menu/game over/gameplay экранов.
-T372 [ ] Проверить manual smoke test UI на нескольких aspect ratio.
+Подробный backlog вынесен в [ImplementationPlan.Phase15.md](/F:/work/Match3/docs/ImplementationPlan.Phase15.md).
 
 ---
 
-## Фаза 16. Конфигурация и настраиваемые параметры
+## Фаза 16. Рефакторинг runtime-анимаций и visual effects
 
-T373 [ ] Написать test `BoardSize_CannotBeCreated_WithNonPositiveDimensions`.
-T374 [ ] Создать value object `BoardSize`.
-T375 [ ] Реализовать инварианты `BoardSize`.
-T376 [ ] Прогнать tests.
-T377 [ ] Написать test `GameConfig_LoadsBoardSizeFromFile`.
-T378 [ ] Создать `GameConfig`.
-T379 [ ] Создать файл конфигурации приложения.
-T380 [ ] Реализовать чтение `BoardSize` из конфигурации.
-T381 [ ] Прогнать tests.
-T382 [ ] Написать test `GameConfig_LoadsGameplayTimingValues`.
-T383 [ ] Добавить в конфиг timer/cell size/animation duration.
-T384 [ ] Реализовать чтение gameplay/render параметров из файла.
-T385 [ ] Прогнать tests.
-T386 [ ] Перевести `BoardState` на использование `BoardSize`.
-T387 [ ] Перевести `BoardTransform` на размеры из конфига.
-T388 [ ] Перевести `GameSession` на стартовый timer из конфига.
-T389 [ ] Прогнать tests.
-T390 [ ] Подключить загрузку конфига в platform startup.
-T391 [ ] Проверить runtime override параметров через конфиг файл.
+Подробный backlog вынесен в [ImplementationPlan.Phase16.md](/F:/work/Match3/docs/ImplementationPlan.Phase16.md).
 
 ---
 
-## Фаза 17. DI container и composition root
+## Фаза 17. Конфигурация и настраиваемые параметры
 
-T392 [ ] Написать test `ServiceRegistration_CanResolveGameplayScreen`.
-T393 [ ] Подключить `Microsoft.Extensions.DependencyInjection`.
-T394 [ ] Создать `AddMatch3Core(...)`.
-T395 [ ] Создать `AddMatch3Presentation(...)`.
-T396 [ ] Прогнать tests.
-T397 [ ] Зарегистрировать config как `Singleton`.
-T398 [ ] Зарегистрировать stateless services как `Singleton`.
-T399 [ ] Зарегистрировать session state как scoped lifetime.
-T400 [ ] Прогнать tests.
-T401 [ ] Перевести platform composition root на `IServiceCollection`.
-T402 [ ] Создать session scope для игрового матча.
-T403 [ ] Подключить пересоздание session scope при старте новой игры.
-T404 [ ] Прогнать tests.
-T405 [ ] Проверить, что `Game Core` не зависит от DI-контейнера.
-T406 [ ] Проверить, что platform projects остаются composition root.
+Подробный backlog вынесен в [ImplementationPlan.Phase17.md](/F:/work/Match3/docs/ImplementationPlan.Phase17.md).
 
 ---
 
-## Фаза 18. Финализация и проверка по ТЗ
+## Фаза 18. DI container и composition root
 
-T407 [ ] Прогнать полный test suite.
-T408 [ ] Выполнить manual smoke test в `DesktopGL`.
-T409 [ ] Отдельно проверить сценарий истечения timer во время `Swapping`.
-T410 [ ] Отдельно проверить сценарий истечения timer во время `Resolving`.
-T411 [ ] Отдельно проверить сценарий истечения timer во время `ApplyingGravity`.
-T412 [ ] Отдельно проверить сценарий истечения timer во время `Refilling`.
-T413 [ ] Отдельно проверить `Main Menu` с одной кнопкой `Play`.
-T414 [ ] Отдельно проверить `Game Over` с одной кнопкой `Ok`.
-T415 [ ] Отдельно проверить отображение score на игровом экране.
-T416 [ ] Отдельно проверить отображение remaining time на игровом экране.
-T417 [ ] Отдельно проверить reset selection для non-adjacent second click.
-T418 [ ] Отдельно проверить создание `Line` на last moved cell.
-T419 [ ] Отдельно проверить создание `Bomb` на last moved cell.
-T420 [ ] Отдельно проверить создание `Bomb` в точке пересечения match groups.
-T421 [ ] Отдельно проверить анимацию движения `Destroyer`.
-T422 [ ] Отдельно проверить UI на desktop/mobile viewport с разным aspect ratio.
-T423 [ ] Отдельно проверить supported mobile orientations.
-T424 [ ] Отдельно проверить mouse input на desktop.
-T425 [ ] Отдельно проверить touch input на mobile.
-T426 [ ] Сверить реализацию с `GameDesignDocument.md`.
-T427 [ ] Сверить реализацию с `Architecture.md`.
-T428 [ ] Сверить реализацию с `ADR-001-architecture.md`.
-T429 [ ] Сверить реализацию с `TZ.txt`.
-T430 [ ] Обновить `README.md`, если фактическая структура solution изменилась.
-T431 [ ] Обновить `AGENTS.md`, если workflow contributors изменился.
-T432 [ ] Обновить `SolutionStructure.md`, если решение было скорректировано по ходу реализации.
-T433 [ ] Подготовить итоговый список реализованных фич и покрытых tests для demo.
+Подробный backlog вынесен в [ImplementationPlan.Phase18.md](/F:/work/Match3/docs/ImplementationPlan.Phase18.md).
+
+---
+
+## Фаза 19. Финализация и проверка по ТЗ
+
+Подробный backlog вынесен в [ImplementationPlan.Phase19.md](/F:/work/Match3/docs/ImplementationPlan.Phase19.md).
