@@ -48,7 +48,11 @@ public sealed class BoardViewState
         }
 
         _ = nodesById.Remove(id);
-        _ = nodeIdsByCell.Remove(node.LogicalCell);
+        if (nodeIdsByCell.TryGetValue(node.LogicalCell, out var mappedId) && mappedId == id)
+        {
+            _ = nodeIdsByCell.Remove(node.LogicalCell);
+        }
+
         return true;
     }
 

@@ -100,6 +100,8 @@ public sealed class PresentationScreenHost : IGameScreenHost
         var swappedBoard = beforeBoard.Clone();
         ApplySwap(swappedBoard, move.Value);
         var swappedSnapshot = gameplay.BoardRenderer.BuildSnapshot(swappedBoard, gameplay.BoardTransform);
+        var createdBonusOrigins = GetCreatedBonusOrigins(result.Events);
+        var createdBonusTargets = GetCreatedBonusTargets(afterSnapshot, createdBonusOrigins);
         var animation = gameplay.TurnAnimationBuilder.Build(new TurnAnimationContext
         {
             IsSwapApplied = result.IsSwapApplied,
@@ -111,7 +113,7 @@ public sealed class PresentationScreenHost : IGameScreenHost
                 afterSnapshot,
                 gameplay.BoardTransform.CellSize,
                 GetSettleDelaySeconds(result.Events),
-                GetCreatedBonusOrigins(result.Events)),
+                createdBonusOrigins),
             QueueBoardSettleAnimation = () => gameplay.EffectsController.QueueBoardSettle(
                 gameplay.BoardViewState,
                 gameplay.AnimationPlayer,
@@ -119,7 +121,7 @@ public sealed class PresentationScreenHost : IGameScreenHost
                 afterSnapshot,
                 gameplay.BoardTransform.CellSize,
                 GetSettleDelaySeconds(result.Events),
-                GetCreatedBonusOrigins(result.Events)),
+                createdBonusTargets),
             SwapDurationSeconds = result.IsSwapApplied ? 0.22f : 0.36f,
             SettleDelaySeconds = GetSettleDelaySeconds(result.Events),
             SettleDurationSeconds = 1.15f

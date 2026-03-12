@@ -261,6 +261,7 @@ public sealed class GameplayEffectsController
     private readonly Dictionary<GridPosition, TimedPieceEffect> cellEffects = [];
     private readonly List<TimedPieceEffect> overlayEffects = [];
     private GridPosition? lastSelectedCell;
+    private GridPosition? suppressedSelectedCell;
 
     public bool HasActiveBlockingEffects => overlayEffects.Count > 0;
 
@@ -290,9 +291,10 @@ public sealed class GameplayEffectsController
 
     public void SyncSelection(GridPosition? selectedCell, BoardRenderSnapshot snapshot, BoardViewState? viewState, AnimationPlayer? animationPlayer)
     {
-        if (lastSelectedCell == selectedCell || viewState is null || animationPlayer is null)
+        var effectiveSelectedCell = NormalizeSelectedCell(selectedCell);
+        if (lastSelectedCell == effectiveSelectedCell || viewState is null || animationPlayer is null)
         {
-            lastSelectedCell = selectedCell;
+            lastSelectedCell = effectiveSelectedCell;
             return;
         }
 
@@ -318,7 +320,7 @@ public sealed class GameplayEffectsController
             }
         }
 
-        if (selectedCell is { } current && viewState.GetPieceNode(current) is { } selectedNode)
+        if (effectiveSelectedCell is { } current && viewState.GetPieceNode(current) is { } selectedNode)
         {
             animationPlayer.Play(
                 Anim.Parallel(
@@ -327,12 +329,13 @@ public sealed class GameplayEffectsController
                 ChannelConflictPolicy.Replace);
         }
 
-        lastSelectedCell = selectedCell;
+        lastSelectedCell = effectiveSelectedCell;
     }
 
     public IReadOnlyList<RenderPiece> BuildPieces(BoardRenderSnapshot snapshot, GridPosition? selectedCell, BoardViewState? viewState = null, AnimationPlayer? animationPlayer = null)
     {
-        SyncSelection(selectedCell, snapshot, viewState, animationPlayer);
+        var effectiveSelectedCell = NormalizeSelectedCell(selectedCell);
+        SyncSelection(effectiveSelectedCell, snapshot, viewState, animationPlayer);
 
         var effectNodeCount = viewState?.EffectNodes.Count ?? 0;
         var pieces = new List<RenderPiece>(snapshot.Pieces.Count + overlayEffects.Count + effectNodeCount);
@@ -349,7 +352,7 @@ public sealed class GameplayEffectsController
             }
 
             var current = piece;
-            if (selectedCell == piece.Position)
+            if (effectiveSelectedCell == piece.Position)
             {
                 current = current with { Layer = 10f };
             }
@@ -375,6 +378,18 @@ public sealed class GameplayEffectsController
         }
 
         return pieces.OrderBy(piece => piece.Layer).ToArray();
+    }
+
+    private GridPosition? NormalizeSelectedCell(GridPosition? selectedCell)
+    {
+        if (suppressedSelectedCell is { } suppressed && selectedCell != suppressed)
+        {
+            suppressedSelectedCell = null;
+        }
+
+        return selectedCell == suppressedSelectedCell
+            ? null
+            : selectedCell;
     }
 
     public void QueueDestroyer(BoardViewState viewState, AnimationPlayer animationPlayer, GridPosition origin, IReadOnlyList<GridPosition> path, BoardTransform transform)
@@ -616,6 +631,9 @@ public sealed class GameplayEffectsController
         ArgumentNullException.ThrowIfNull(viewState);
         ArgumentNullException.ThrowIfNull(animationPlayer);
 
+        var selectedNodeIdBeforeSettle = lastSelectedCell is { } selectedCellBeforeSettle && viewState.GetPieceNode(selectedCellBeforeSettle) is { } selectedNodeBeforeSettle
+            ? selectedNodeBeforeSettle.Id
+            : (NodeId?)null;
         var retainedNodeIds = new HashSet<NodeId>();
         for (var column = 0; column < 8; column++)
         {
@@ -700,8 +718,15 @@ public sealed class GameplayEffectsController
             }
         }
 
+        if (lastSelectedCell is { } selectedCell && selectedNodeIdBeforeSettle is { } selectedNodeId && !retainedNodeIds.Contains(selectedNodeId))
+        {
+            suppressedSelectedCell = selectedCell;
+            lastSelectedCell = null;
+        }
+
         viewState.RemoveNodesExcept(retainedNodeIds);
     }
+
     public void QueueCreatedBonuses(BoardViewState viewState, AnimationPlayer animationPlayer, BoardRenderSnapshot afterSnapshot, float cellSize, float initialDelaySeconds = 0f, IReadOnlyList<GridPosition>? createdBonusOrigins = null)
     {
         ArgumentNullException.ThrowIfNull(viewState);
@@ -808,6 +833,3 @@ public sealed class GameplayEffectsController
             before.Position.Row <= after.Position.Row;
     }
 }
-
-
-

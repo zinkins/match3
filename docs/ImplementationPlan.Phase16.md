@@ -150,15 +150,15 @@ T514 [ ] [Nice] Прогнать tests.
 T515 [ ] [Nice] [P] Написать test `AnimationDebugSnapshot_ContainsPhaseName_ForCurrentScenarioStep`.
 T516 [ ] [Nice] [P] Добавить имена фаз в debug metadata сценария.
 T517 [ ] [Nice] Прогнать tests.
-T518 [ ] [MVP] Написать test `TurnAnimationBuilder_DoesNotScheduleSpawnForCreatedBonusCell`.
-T519 [ ] [MVP] Зафиксировать правило приоритета created bonus над обычным spawn.
-T520 [ ] [MVP] Прогнать tests.
+T518 [x] [MVP] Написать test `TurnAnimationBuilder_DoesNotScheduleSpawnForCreatedBonusCell`.
+T519 [x] [MVP] Зафиксировать правило приоритета created bonus над обычным spawn.
+T520 [x] [MVP] Прогнать tests.
 T521 [ ] [MVP] Написать test `TurnAnimationBuilder_PreservesVisualContinuity_ForBonusActivatedByDestroyer`.
 T522 [ ] [MVP] Реализовать непрерывность визуального объекта при активации бонуса destroyer-ом.
 T523 [ ] [MVP] Прогнать tests.
-T524 [ ] [MVP] Написать test `SelectionEffect_IsSuppressed_WhenPieceNodeIsConsumedByResolvePhase`.
-T525 [ ] [MVP] Убрать lingering selection/highlight с уничтоженных узлов.
-T526 [ ] [MVP] Прогнать tests.
+T524 [x] [MVP] Написать test `SelectionEffect_IsSuppressed_WhenPieceNodeIsConsumedByResolvePhase`.
+T525 [x] [MVP] Убрать lingering selection/highlight с уничтоженных узлов.
+T526 [x] [MVP] Прогнать tests.
 T527 [ ] [Nice] [P] Написать test `AnimationPlayer_SkipsZeroDurationAnimationsWithoutBreakingSequence`.
 T528 [ ] [Nice] Обработать zero-duration animations и callbacks внутри sequence.
 T529 [ ] [Nice] Прогнать tests.
