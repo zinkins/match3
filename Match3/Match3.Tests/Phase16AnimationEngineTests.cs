@@ -257,6 +257,7 @@ public sealed class Phase16AnimationEngineTests
             IsSwapApplied = false,
             QueueVisualEffects = () => calls.Add("visual"),
             QueueSwapAnimation = () => calls.Add("swap"),
+            QueueCreatedBonusAnimation = () => calls.Add("bonus"),
             QueueBoardSettleAnimation = () => calls.Add("settle"),
             SwapDurationSeconds = 0.36f
         });
@@ -270,10 +271,11 @@ public sealed class Phase16AnimationEngineTests
 
         Assert.True(animation.IsCompleted);
         Assert.DoesNotContain("settle", calls);
+        Assert.DoesNotContain("bonus", calls);
     }
 
     [Fact]
-    public void TurnAnimationBuilder_BuildsSwapThenSettleSequence_ForAppliedSwap()
+    public void TurnAnimationBuilder_BuildsSwapThenCreatedBonusThenSettleSequence_ForAppliedSwap()
     {
         var calls = new List<string>();
         var builder = new TurnAnimationBuilder();
@@ -282,6 +284,7 @@ public sealed class Phase16AnimationEngineTests
             IsSwapApplied = true,
             QueueVisualEffects = () => calls.Add("visual"),
             QueueSwapAnimation = () => calls.Add("swap"),
+            QueueCreatedBonusAnimation = () => calls.Add("bonus"),
             QueueBoardSettleAnimation = () => calls.Add("settle"),
             SwapDurationSeconds = 0.22f,
             SettleDelaySeconds = 0.8f,
@@ -295,13 +298,36 @@ public sealed class Phase16AnimationEngineTests
         Assert.DoesNotContain("settle", calls);
 
         animation.Update(0.01f);
-        Assert.Equal(["visual", "swap", "settle"], calls);
+        Assert.Equal(["visual", "swap", "bonus", "settle"], calls);
         Assert.False(animation.IsCompleted);
 
         animation.Update(1.95f);
         Assert.True(animation.IsCompleted);
     }
 
+    [Fact]
+    public void CreatedBonusScenario_StartsFromCreationCell_InsteadOfSpawnLane()
+    {
+        var controller = new GameplayEffectsController();
+        var player = new AnimationPlayer();
+        var viewState = new BoardViewState();
+        var renderer = new Match3.Presentation.Rendering.PieceNodeRenderer();
+        var afterSnapshot = new Match3.Presentation.Rendering.BoardRenderSnapshot(
+            [],
+            [
+                new Match3.Presentation.Rendering.RenderPiece(new Match3.Core.GameCore.ValueObjects.GridPosition(3, 2), Match3.Presentation.Rendering.PieceVisualConstants.ShapeDiamond, Match3.Presentation.Rendering.PieceVisualConstants.TintRed, 116f, 164f, 32f, 32f)
+            ]);
+
+        controller.QueueCreatedBonuses(viewState, player, afterSnapshot, 48f, createdBonusOrigins: [new Match3.Core.GameCore.ValueObjects.GridPosition(1, 2)]);
+        player.Update(0.05f);
+
+        var nodeSnapshot = renderer.BuildSnapshot(afterSnapshot, viewState);
+        var pieces = controller.BuildPieces(nodeSnapshot, null, viewState, player);
+        var bonus = Assert.Single(pieces, piece => piece.Shape == Match3.Presentation.Rendering.PieceVisualConstants.ShapeDiamond);
+
+        Assert.True(bonus.Y >= 68f);
+        Assert.True(bonus.Y < 164f);
+    }
     [Fact]
     public void AnimationPlayer_BlocksInput_WhileBlockingScenarioIsRunning()
     {
@@ -311,6 +337,7 @@ public sealed class Phase16AnimationEngineTests
             IsSwapApplied = false,
             QueueVisualEffects = static () => { },
             QueueSwapAnimation = static () => { },
+            QueueCreatedBonusAnimation = static () => { },
             QueueBoardSettleAnimation = static () => { },
             SwapDurationSeconds = 0.36f
         });

@@ -239,7 +239,9 @@ public class Phase15PieceEffectsTests
                 new RenderPiece(new GridPosition(3, 2), PieceVisualConstants.ShapeDiamond, PieceVisualConstants.TintRed, 116f, 164f, 32f, 32f)
             ]);
 
-        controller.QueueBoardSettle(viewState, player, beforeSnapshot, afterSnapshot, 48f, createdBonusOrigins: [new GridPosition(1, 2)]);
+        var createdBonusTargets = new[] { new GridPosition(3, 2) };
+        controller.QueueCreatedBonuses(viewState, player, afterSnapshot, 48f, createdBonusOrigins: [new GridPosition(1, 2)]);
+        controller.QueueBoardSettle(viewState, player, beforeSnapshot, afterSnapshot, 48f, excludedTargets: createdBonusTargets);
         player.Update(0.45f);
 
         var nodeSnapshot = renderer.BuildSnapshot(afterSnapshot, viewState);

@@ -611,7 +611,7 @@ public sealed class GameplayEffectsController
             ChannelConflictPolicy.Replace);
     }
 
-    public void QueueBoardSettle(BoardViewState viewState, AnimationPlayer animationPlayer, BoardRenderSnapshot beforeSnapshot, BoardRenderSnapshot afterSnapshot, float cellSize, float initialDelaySeconds = 0f, IReadOnlyList<GridPosition>? createdBonusOrigins = null)
+    public void QueueBoardSettle(BoardViewState viewState, AnimationPlayer animationPlayer, BoardRenderSnapshot beforeSnapshot, BoardRenderSnapshot afterSnapshot, float cellSize, float initialDelaySeconds = 0f, IReadOnlyList<GridPosition>? excludedTargets = null)
     {
         ArgumentNullException.ThrowIfNull(viewState);
         ArgumentNullException.ThrowIfNull(animationPlayer);
@@ -661,14 +661,13 @@ public sealed class GameplayEffectsController
                 }
                 else
                 {
+                    if (excludedTargets?.Contains(target.Position) == true)
+                    {
+                        continue;
+                    }
+
                     spawnCount++;
-                    var createdBonusOrigin = createdBonusOrigins?
-                        .Where(position => position.Column == target.Position.Column && position.Row <= target.Position.Row)
-                        .OrderByDescending(position => position.Row)
-                        .FirstOrDefault();
-                    from = createdBonusOrigin is { } origin
-                        ? new Vector2(target.X, target.Y - (cellSize * (target.Position.Row - origin.Row)))
-                        : new Vector2(target.X, target.Y - (cellSize * (spawnCount + 1)));
+                    from = new Vector2(target.X, target.Y - (cellSize * (spawnCount + 1)));
                     node = CreatePieceNode(target, from);
                     durationSeconds = 0.75f;
                     delaySeconds = initialDelaySeconds + 0.4f;
@@ -690,6 +689,51 @@ public sealed class GameplayEffectsController
                 animationPlayer.Play(animation, ChannelConflictPolicy.Replace);
             }
         }
+    }
+    public void QueueCreatedBonuses(BoardViewState viewState, AnimationPlayer animationPlayer, BoardRenderSnapshot afterSnapshot, float cellSize, float initialDelaySeconds = 0f, IReadOnlyList<GridPosition>? createdBonusOrigins = null)
+    {
+        ArgumentNullException.ThrowIfNull(viewState);
+        ArgumentNullException.ThrowIfNull(animationPlayer);
+
+        if (createdBonusOrigins is null || createdBonusOrigins.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var target in afterSnapshot.Pieces.Where(IsBonusPiece))
+        {
+            var createdBonusOrigin = createdBonusOrigins
+                .Where(position => position.Column == target.Position.Column && position.Row <= target.Position.Row)
+                .OrderByDescending(position => position.Row)
+                .FirstOrDefault();
+            if (createdBonusOrigin == default && !createdBonusOrigins.Contains(createdBonusOrigin))
+            {
+                continue;
+            }
+
+            var from = new Vector2(target.X, target.Y - (cellSize * (target.Position.Row - createdBonusOrigin.Row)));
+            var targetPosition = new Vector2(target.X, target.Y);
+            var node = viewState.GetPieceNode(target.Position) ?? CreatePieceNode(target, from);
+            node.LogicalCell = target.Position;
+            node.Position = from;
+            node.Tint = target.Tint;
+            node.IsVisible = true;
+            viewState.AddOrUpdate(node);
+
+            var animation = Anim.Sequence();
+            if (initialDelaySeconds > 0f)
+            {
+                animation.Append(new DelayAnimation(initialDelaySeconds, blocksInput: true));
+            }
+
+            animation.Append(Anim.MoveTo(node, targetPosition, 0.75f, blocksInput: true));
+            animationPlayer.Play(animation, ChannelConflictPolicy.Replace);
+        }
+    }
+    private static bool IsBonusPiece(RenderPiece piece)
+    {
+        return piece.Shape == PieceVisualConstants.ShapeDiamond ||
+            piece.Shape == PieceVisualConstants.ShapeCircle;
     }
     private static PieceNode CreatePieceNode(RenderPiece piece, Vector2 position)
     {

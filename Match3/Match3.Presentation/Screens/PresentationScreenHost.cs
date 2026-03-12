@@ -105,6 +105,13 @@ public sealed class PresentationScreenHost : IGameScreenHost
             IsSwapApplied = result.IsSwapApplied,
             QueueVisualEffects = () => QueueVisualEvents(gameplay, result.Events),
             QueueSwapAnimation = () => gameplay.EffectsController.QueueSwap(gameplay.BoardViewState, gameplay.AnimationPlayer, move.Value, gameplay.BoardTransform, rollback: !result.IsSwapApplied),
+            QueueCreatedBonusAnimation = () => gameplay.EffectsController.QueueCreatedBonuses(
+                gameplay.BoardViewState,
+                gameplay.AnimationPlayer,
+                afterSnapshot,
+                gameplay.BoardTransform.CellSize,
+                GetSettleDelaySeconds(result.Events),
+                GetCreatedBonusOrigins(result.Events)),
             QueueBoardSettleAnimation = () => gameplay.EffectsController.QueueBoardSettle(
                 gameplay.BoardViewState,
                 gameplay.AnimationPlayer,
@@ -150,6 +157,19 @@ public sealed class PresentationScreenHost : IGameScreenHost
         }
     }
 
+    private static IReadOnlyList<GridPosition> GetCreatedBonusTargets(BoardRenderSnapshot snapshot, IReadOnlyList<GridPosition> createdBonusOrigins)
+    {
+        if (createdBonusOrigins.Count == 0)
+        {
+            return [];
+        }
+
+        return snapshot.Pieces
+            .Where(piece => piece.Shape == PieceVisualConstants.ShapeDiamond || piece.Shape == PieceVisualConstants.ShapeCircle)
+            .Where(piece => createdBonusOrigins.Any(origin => origin.Column == piece.Position.Column && origin.Row <= piece.Position.Row))
+            .Select(piece => piece.Position)
+            .ToArray();
+    }
     private static IReadOnlyList<GridPosition> GetCreatedBonusOrigins(IReadOnlyList<IDomainEvent> events)
     {
         return events

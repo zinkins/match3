@@ -103,9 +103,9 @@ T467 [x] [MVP] Прогнать tests.
 T468 [x] [MVP] Написать test `SelectionEffect_CanStackWithMovementWithoutOverwritingPositionChannel`.
 T469 [x] [MVP] Перевести selection/highlight effect на channel-based tweens.
 T470 [x] [MVP] Прогнать tests.
-T471 [ ] [MVP] Написать test `CreatedBonusScenario_StartsFromCreationCell_InsteadOfSpawnLane`.
-T472 [ ] [MVP] Перевести анимацию создания бонуса на `TurnAnimationBuilder`.
-T473 [ ] [MVP] Прогнать tests.
+T471 [x] [MVP] Написать test `CreatedBonusScenario_StartsFromCreationCell_InsteadOfSpawnLane`.
+T472 [x] [MVP] Перевести анимацию создания бонуса на `TurnAnimationBuilder`.
+T473 [x] [MVP] Прогнать tests.
 T474 [ ] [MVP] Написать test `GameplayScreen_ShowsGameOverOnlyAfterBlockingScenarioCompletes`.
 T475 [ ] [MVP] Перевести логику `ShouldShowGameOverOverlay` на состояние `AnimationPlayer`.
 T476 [ ] [MVP] Прогнать tests.

@@ -19,8 +19,8 @@ public sealed class TurnAnimationBuilder : ITurnAnimationBuilder
         }
 
         return sequence
+            .Append(new CallbackAnimation(context.QueueCreatedBonusAnimation))
             .Append(new CallbackAnimation(context.QueueBoardSettleAnimation))
             .Append(new DelayAnimation(context.SettleDelaySeconds + context.SettleDurationSeconds, blocksInput: true));
     }
 }
-
