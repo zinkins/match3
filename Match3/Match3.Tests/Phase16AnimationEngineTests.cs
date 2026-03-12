@@ -1,4 +1,5 @@
 using Match3.Presentation.Animation.Engine;
+using System.Numerics;
 
 namespace Match3.Tests;
 
@@ -177,6 +178,74 @@ public sealed class Phase16AnimationEngineTests
         Assert.Same(node, resolved);
     }
 
+    [Fact]
+    public void Anim_MoveTo_ProducesPositionTween()
+    {
+        var node = CreateNode();
+        var tween = Anim.MoveTo(node, new Vector2(30f, 45f), 1f);
+
+        tween.Update(0.5f);
+
+        Assert.Equal(new Vector2(20f, 32.5f), node.Position);
+        Assert.False(tween.IsCompleted);
+        Assert.Contains(tween.ActiveBindings, binding => ReferenceEquals(binding.Target, node) && binding.Channel == AnimationChannel.Position);
+    }
+
+    [Fact]
+    public void Anim_ScaleTo_ProducesScaleTween()
+    {
+        var node = CreateNode();
+        var tween = Anim.ScaleTo(node, new Vector2(2f, 3f), 1f);
+
+        tween.Update(1f);
+
+        Assert.Equal(new Vector2(2f, 3f), node.Scale);
+        Assert.True(tween.IsCompleted);
+    }
+
+    [Fact]
+    public void Anim_FadeTo_ProducesOpacityTween()
+    {
+        var node = CreateNode();
+        var tween = Anim.FadeTo(node, 0.25f, 1f);
+
+        tween.Update(1f);
+
+        Assert.Equal(0.25f, node.Opacity, 3);
+        Assert.True(tween.IsCompleted);
+    }
+
+    [Fact]
+    public void Anim_Sequence_ComposesAppendAndJoinCalls()
+    {
+        var calls = new List<string>();
+        var sequence = Anim.Sequence()
+            .Append(new DelayAnimation(0.1f))
+            .Join(new DelayAnimation(0.2f))
+            .Append(new CallbackAnimation(() => calls.Add("Done")));
+
+        sequence.Update(0.2f);
+
+        Assert.Equal(["Done"], calls);
+        Assert.True(sequence.IsCompleted);
+    }
+
+    [Fact]
+    public void Anim_Parallel_ComposesProvidedAnimations()
+    {
+        var calls = new List<string>();
+        var parallel = Anim.Parallel(
+            new DelayAnimation(0.1f),
+            new CallbackAnimation(() => calls.Add("Now")));
+
+        parallel.Update(0f);
+        Assert.Equal(["Now"], calls);
+        Assert.False(parallel.IsCompleted);
+
+        parallel.Update(0.1f);
+        Assert.True(parallel.IsCompleted);
+    }
+
     private static PropertyTween<float> CreateTween(
         object target,
         AnimationChannel channel,
@@ -193,5 +262,19 @@ public sealed class Phase16AnimationEngineTests
             to,
             1f,
             static (from, targetValue, progress) => from + ((targetValue - from) * progress));
+    }
+
+    private static PieceNode CreateNode()
+    {
+        return new PieceNode(
+            NodeId.New(),
+            new Match3.Core.GameCore.ValueObjects.GridPosition(0, 0),
+            new Vector2(10f, 20f),
+            new Vector2(1f, 1f),
+            rotation: 0f,
+            opacity: 1f,
+            tint: Match3.Presentation.Rendering.PieceVisualConstants.TintRed,
+            glow: 0f,
+            isVisible: true);
     }
 }

@@ -46,17 +46,17 @@ T415 [x] [MVP] Создать `BoardViewState`.
 T416 [x] [MVP] Реализовать хранение активных `PieceNode`.
 T417 [x] [MVP] Реализовать поиск узла по логической клетке.
 T418 [x] [MVP] Прогнать tests.
-T419 [ ] [MVP] Написать test `Anim_MoveTo_ProducesPositionTween`.
-T420 [ ] [MVP] Создать fluent API `Anim`.
-T421 [ ] [MVP] [P] Добавить фабрику `MoveTo(...)`.
-T422 [ ] [MVP] [P] Добавить фабрику `ScaleTo(...)`.
-T423 [ ] [MVP] [P] Добавить фабрику `FadeTo(...)`.
-T424 [ ] [MVP] Прогнать tests.
-T425 [ ] [MVP] Написать test `Anim_Sequence_ComposesAppendAndJoinCalls`.
-T426 [ ] [MVP] Добавить фабрику `Sequence()`.
-T427 [ ] [MVP] Добавить фабрику `Parallel(...)`.
-T428 [ ] [MVP] Реализовать fluent-композицию для `Append/Join`.
-T429 [ ] [MVP] Прогнать tests.
+T419 [x] [MVP] Написать test `Anim_MoveTo_ProducesPositionTween`.
+T420 [x] [MVP] Создать fluent API `Anim`.
+T421 [x] [MVP] [P] Добавить фабрику `MoveTo(...)`.
+T422 [x] [MVP] [P] Добавить фабрику `ScaleTo(...)`.
+T423 [x] [MVP] [P] Добавить фабрику `FadeTo(...)`.
+T424 [x] [MVP] Прогнать tests.
+T425 [x] [MVP] Написать test `Anim_Sequence_ComposesAppendAndJoinCalls`.
+T426 [x] [MVP] Добавить фабрику `Sequence()`.
+T427 [x] [MVP] Добавить фабрику `Parallel(...)`.
+T428 [x] [MVP] Реализовать fluent-композицию для `Append/Join`.
+T429 [x] [MVP] Прогнать tests.
 T430 [ ] [MVP] Написать test `TurnAnimationBuilder_BuildsRollbackSequence_ForRejectedSwap`.
 T431 [ ] [MVP] Создать `TurnAnimationContext`.
 T432 [ ] [MVP] Создать `TurnAnimationBuilder`.
