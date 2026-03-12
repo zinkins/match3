@@ -94,7 +94,7 @@ public sealed class SpriteBatchRenderer
     {
         var boardSnapshot = screen.BoardRenderer.BuildSnapshot(screen.Board, screen.BoardTransform);
         var nodeSnapshot = screen.PieceNodeRenderer.BuildSnapshot(boardSnapshot, screen.BoardViewState);
-        var renderedPieces = screen.EffectsController.BuildPieces(nodeSnapshot, screen.SelectedCell, screen.BoardViewState);
+        var renderedPieces = screen.EffectsController.BuildPieces(nodeSnapshot, screen.SelectedCell, screen.BoardViewState, screen.AnimationPlayer);
         DrawCells(canvas, boardSnapshot);
         DrawSelectionHighlight(canvas, screen);
         DrawPieces(canvas, renderedPieces);
@@ -111,4 +111,5 @@ public sealed class SpriteBatchRenderer
         return text.Length * 16f;
     }
 }
+
 

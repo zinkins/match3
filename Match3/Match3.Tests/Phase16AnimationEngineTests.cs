@@ -388,6 +388,34 @@ public sealed class Phase16AnimationEngineTests
     }
 
     [Fact]
+    public void SelectionEffect_CanStackWithMovementWithoutOverwritingPositionChannel()
+    {
+        var controller = new GameplayEffectsController();
+        var player = new AnimationPlayer();
+        var viewState = new BoardViewState();
+        var cell = new Match3.Core.GameCore.ValueObjects.GridPosition(0, 0);
+        var snapshot = new Match3.Presentation.Rendering.BoardRenderSnapshot(
+            [],
+            [
+                new Match3.Presentation.Rendering.RenderPiece(cell, Match3.Presentation.Rendering.PieceVisualConstants.ShapeSquare, Match3.Presentation.Rendering.PieceVisualConstants.TintRed, 20f, 20f, 32f, 32f)
+            ]);
+        var node = new PieceNode(NodeId.New(), cell, new Vector2(20f, 20f), new Vector2(1f, 1f), 0f, 1f, Match3.Presentation.Rendering.PieceVisualConstants.TintRed, 0f, true);
+        viewState.AddOrUpdate(node);
+
+        controller.BuildPieces(snapshot, cell, viewState, player);
+        player.Update(0.12f);
+
+        Assert.True(node.Scale.X > 1f);
+        Assert.True(node.Rotation > 0f);
+
+        player.Play(Anim.MoveTo(node, new Vector2(68f, 20f), 0.22f), ChannelConflictPolicy.Replace);
+        player.Update(0.22f);
+
+        Assert.Equal(new Vector2(68f, 20f), node.Position);
+        Assert.True(node.Scale.X > 1f);
+        Assert.True(node.Rotation > 0f);
+    }
+    [Fact]
     public void GravityScenario_ReusesExistingPieceNodes_ForFallingPieces()
     {
         var controller = new GameplayEffectsController();

@@ -36,6 +36,21 @@ public static class Anim
             blocksInput);
     }
 
+    public static PropertyTween<float> RotateTo(IAnimatableNode node, float to, float durationSeconds, bool blocksInput = false)
+    {
+        ArgumentNullException.ThrowIfNull(node);
+
+        return new PropertyTween<float>(
+            node,
+            AnimationChannel.Rotation,
+            () => node.Rotation,
+            value => node.Rotation = value,
+            node.Rotation,
+            to,
+            durationSeconds,
+            static (from, target, progress) => from + ((target - from) * progress),
+            blocksInput);
+    }
     public static PropertyTween<float> FadeTo(IAnimatableNode node, float to, float durationSeconds, bool blocksInput = false)
     {
         ArgumentNullException.ThrowIfNull(node);
@@ -62,3 +77,4 @@ public static class Anim
         return new ParallelAnimation(animations);
     }
 }
+

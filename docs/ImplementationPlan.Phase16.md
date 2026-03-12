@@ -100,9 +100,9 @@ T464 [x] [MVP] Написать test `SpawnScenario_CreatesNewPieceNodes_AboveBo
 T465 [x] [MVP] Реализовать сценарий spawn/refill через новые `PieceNode`.
 T466 [x] [MVP] Удалить special-case логику `hideBasePieceBeforeStart`.
 T467 [x] [MVP] Прогнать tests.
-T468 [ ] [MVP] Написать test `SelectionEffect_CanStackWithMovementWithoutOverwritingPositionChannel`.
-T469 [ ] [MVP] Перевести selection/highlight effect на channel-based tweens.
-T470 [ ] [MVP] Прогнать tests.
+T468 [x] [MVP] Написать test `SelectionEffect_CanStackWithMovementWithoutOverwritingPositionChannel`.
+T469 [x] [MVP] Перевести selection/highlight effect на channel-based tweens.
+T470 [x] [MVP] Прогнать tests.
 T471 [ ] [MVP] Написать test `CreatedBonusScenario_StartsFromCreationCell_InsteadOfSpawnLane`.
 T472 [ ] [MVP] Перевести анимацию создания бонуса на `TurnAnimationBuilder`.
 T473 [ ] [MVP] Прогнать tests.

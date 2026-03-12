@@ -258,21 +258,15 @@ public sealed class TimedPathClearEffect(IReadOnlyList<GridPosition> path, float
 
 public sealed class GameplayEffectsController
 {
-    private readonly CompositePieceEffect selectedEffect = new(
-        new PulseScaleEffect(0.12f),
-        new RotationEffect(0.18f));
-
     private readonly Dictionary<GridPosition, TimedPieceEffect> cellEffects = [];
     private readonly List<TimedPieceEffect> overlayEffects = [];
     private GridPosition? lastSelectedCell;
-    private float totalSeconds;
 
     public bool HasActiveBlockingEffects => overlayEffects.Count > 0;
 
     public void Update(TimeSpan elapsed)
     {
         var delta = (float)elapsed.TotalSeconds;
-        totalSeconds += delta;
 
         foreach (var effect in cellEffects.Values)
         {
@@ -294,31 +288,51 @@ public sealed class GameplayEffectsController
         }
     }
 
-    public void SyncSelection(GridPosition? selectedCell, BoardRenderSnapshot snapshot)
+    public void SyncSelection(GridPosition? selectedCell, BoardRenderSnapshot snapshot, BoardViewState? viewState, AnimationPlayer? animationPlayer)
     {
-        if (lastSelectedCell == selectedCell)
+        if (lastSelectedCell == selectedCell || viewState is null || animationPlayer is null)
         {
+            lastSelectedCell = selectedCell;
             return;
         }
 
-        if (lastSelectedCell is { } previous &&
-            snapshot.Pieces.FirstOrDefault(piece => piece.Position == previous) is { } piece)
+        if (lastSelectedCell is { } previous)
         {
-            cellEffects[previous] = new TimedPieceEffect(
-                previous,
-                piece,
-                new SettleTransformEffect(1.12f, 0.18f),
-                durationSeconds: 0.22f,
-                delaySeconds: 0f,
-                hideBasePiece: false);
+            if (viewState.GetPieceNode(previous) is { } previousNode)
+            {
+                animationPlayer.Play(
+                    Anim.Parallel(
+                        Anim.ScaleTo(previousNode, new Vector2(1f, 1f), 0.12f),
+                        Anim.RotateTo(previousNode, 0f, 0.12f)),
+                    ChannelConflictPolicy.Replace);
+            }
+            else if (snapshot.Pieces.FirstOrDefault(piece => piece.Position == previous) is { } piece)
+            {
+                cellEffects[previous] = new TimedPieceEffect(
+                    previous,
+                    piece,
+                    new SettleTransformEffect(1.12f, 0.18f),
+                    durationSeconds: 0.22f,
+                    delaySeconds: 0f,
+                    hideBasePiece: false);
+            }
+        }
+
+        if (selectedCell is { } current && viewState.GetPieceNode(current) is { } selectedNode)
+        {
+            animationPlayer.Play(
+                Anim.Parallel(
+                    Anim.ScaleTo(selectedNode, new Vector2(1.12f, 1.12f), 0.12f),
+                    Anim.RotateTo(selectedNode, 0.18f, 0.12f)),
+                ChannelConflictPolicy.Replace);
         }
 
         lastSelectedCell = selectedCell;
     }
 
-    public IReadOnlyList<RenderPiece> BuildPieces(BoardRenderSnapshot snapshot, GridPosition? selectedCell, BoardViewState? viewState = null)
+    public IReadOnlyList<RenderPiece> BuildPieces(BoardRenderSnapshot snapshot, GridPosition? selectedCell, BoardViewState? viewState = null, AnimationPlayer? animationPlayer = null)
     {
-        SyncSelection(selectedCell, snapshot);
+        SyncSelection(selectedCell, snapshot, viewState, animationPlayer);
 
         var effectNodeCount = viewState?.EffectNodes.Count ?? 0;
         var pieces = new List<RenderPiece>(snapshot.Pieces.Count + overlayEffects.Count + effectNodeCount);
@@ -337,7 +351,6 @@ public sealed class GameplayEffectsController
             var current = piece;
             if (selectedCell == piece.Position)
             {
-                current = selectedEffect.Apply(current, new PieceEffectClock(totalSeconds, 1.5f, Loop: true));
                 current = current with { Layer = 10f };
             }
             else if (cellEffects.TryGetValue(piece.Position, out var effect) && effect.IsStarted)
@@ -739,4 +752,6 @@ public sealed class GameplayEffectsController
             before.Position.Row <= after.Position.Row;
     }
 }
+
+
 
