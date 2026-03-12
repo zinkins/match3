@@ -350,7 +350,7 @@ T274 [x] Прогнать tests.
 
 T275 [x] Создать структуру папок `Screens/`, `Rendering/`, `Animation/`, `Input/`, `UI/` в `Match3.Presentation`.
 T276 [x] [P] Создать `MainMenuScreen`.
-T277 [x] [P] Создать `GameOverScreen`.
+T277 [x] [P] Реализовать `Game Over` overlay внутри `GameplayScreen`.
 T278 [x] [P] Создать `GameplayScreen`.
 T279 [x] Создать `BoardRenderer`.
 T280 [x] Создать `HudRenderer`.
@@ -360,9 +360,9 @@ T283 [x] Создать `AnimationQueue`.
 T284 [x] Подключить `Domain Events` к `AnimationQueue`.
 T285 [x] Реализовать на `MainMenuScreen` единственную кнопку `Play`.
 T286 [x] Подключить кнопку `Play` к запуску игровой сессии.
-T287 [x] Реализовать на `GameOverScreen` сообщение `Game Over`.
-T288 [x] Реализовать на `GameOverScreen` единственную кнопку `Ok`.
-T289 [x] Подключить кнопку `Ok` к возврату в `MainMenuScreen`.
+T287 [x] Реализовать на `GameplayScreen` overlay-сообщение `Game Over`.
+T288 [x] Реализовать на `GameplayScreen` overlay с единственной кнопкой `Ok`.
+T289 [x] Подключить overlay-кнопку `Ok` к возврату в `MainMenuScreen`.
 T290 [x] Реализовать отображение score в `HudRenderer`.
 T291 [x] Реализовать отображение remaining time в `HudRenderer`.
 T292 [x] Реализовать policy: `Game Over` показывается после завершения уже начатых анимаций текущего atomic step.
@@ -431,8 +431,8 @@ T339 [x] Реализовать отрисовку `MainMenuScreen`.
 T340 [x] Проверить manual render `MainMenuScreen`.
 T341 [x] Реализовать отрисовку `GameplayScreen`.
 T342 [x] Проверить manual render `GameplayScreen`.
-T343 [x] Реализовать отрисовку `GameOverScreen`.
-T344 [x] Проверить manual render `GameOverScreen`.
+T343 [x] Реализовать отрисовку `Game Over` overlay на `GameplayScreen`.
+T344 [x] Проверить manual render `Game Over` overlay.
 T345 [x] Подключить screen update/draw loop в `Match3Game`.
 T346 [x] Проверить переходы экранов в runtime.
 T347 [x] Подключить render selection highlight.

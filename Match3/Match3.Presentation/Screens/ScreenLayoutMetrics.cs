@@ -16,6 +16,11 @@ public static class ScreenLayoutMetrics
         return Calculator.CalculateGameOverLayout(viewportWidth, viewportHeight).ButtonBounds;
     }
 
+    public static UiRect GetGameOverPopupBounds(float viewportWidth, float viewportHeight)
+    {
+        return Calculator.CalculateGameOverLayout(viewportWidth, viewportHeight).PanelBounds;
+    }
+
     public static (float X, float Y) GetMainMenuTitlePosition(float viewportWidth, float viewportHeight)
     {
         return Calculator.CalculateMainMenuLayout(viewportWidth, viewportHeight).TitlePosition;

@@ -1,6 +1,8 @@
+using System;
 using Match3.Presentation.Animation;
 using Match3.Presentation.Input;
 using Match3.Presentation.Rendering;
+using Match3.Presentation.UI;
 using Match3.Core.GameCore.Board;
 using Match3.Core.GameCore.ValueObjects;
 
@@ -15,7 +17,8 @@ public sealed class GameplayScreen : IScreen
         GameplayEffectsController effectsController,
         BoardRenderer boardRenderer,
         HudRenderer hudRenderer,
-        BoardTransform boardTransform)
+        BoardTransform boardTransform,
+        Action onOk)
     {
         Presenter = presenter;
         Board = board;
@@ -24,9 +27,12 @@ public sealed class GameplayScreen : IScreen
         BoardRenderer = boardRenderer;
         HudRenderer = hudRenderer;
         BoardTransform = boardTransform;
+        OkButton = new UiButton("Ok", onOk ?? throw new ArgumentNullException(nameof(onOk)));
     }
 
     public string Name => "Gameplay";
+
+    public string GameOverMessage => "Game Over";
 
     public GameplayPresenter Presenter { get; }
 
@@ -42,7 +48,9 @@ public sealed class GameplayScreen : IScreen
 
     public BoardTransform BoardTransform { get; }
 
-    public bool ShouldShowGameOverOverlay => Presenter.ShouldShowGameOverOverlay;
+    public UiButton OkButton { get; }
+
+    public bool ShouldShowGameOverOverlay => Presenter.IsGameOver && !EffectsController.HasActiveBlockingEffects;
 
     public AnimationQueue AnimationQueue => Presenter.AnimationQueue;
 

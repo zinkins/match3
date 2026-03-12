@@ -16,9 +16,6 @@ public sealed class SpriteBatchRenderer
             case GameplayScreen gameplay:
                 DrawGameplay(canvas, gameplay);
                 break;
-            case GameOverScreen gameOver:
-                DrawGameOver(canvas, gameOver);
-                break;
         }
     }
 
@@ -40,14 +37,6 @@ public sealed class SpriteBatchRenderer
     private static void DrawSelectionHighlight(IGameCanvas canvas, GameplayScreen screen)
     {
         // Selection is communicated by the piece transform itself to avoid a duplicate-looking base shape.
-    }
-
-    private static void DrawPieces(IGameCanvas canvas, BoardRenderSnapshot boardSnapshot)
-    {
-        foreach (var piece in boardSnapshot.Pieces)
-        {
-            canvas.DrawShape(piece.Shape, piece.X, piece.Y, piece.Width, piece.Height, piece.Tint, piece.Rotation);
-        }
     }
 
     private static void DrawPieces(IGameCanvas canvas, IReadOnlyList<RenderPiece> pieces)
@@ -89,10 +78,16 @@ public sealed class SpriteBatchRenderer
         }
     }
 
-    private static void DrawGameOverOverlay(IGameCanvas canvas)
+    private static void DrawGameOverOverlay(IGameCanvas canvas, GameplayScreen screen)
     {
-        canvas.DrawFilledRectangle(20f, 220f, canvas.ViewportWidth - 40f, 110f, PieceVisualConstants.TintOrange);
-        canvas.DrawText("Game Over", 40f, 250f, PieceVisualConstants.TintBlack);
+        var popupBounds = ScreenLayoutMetrics.GetGameOverPopupBounds(canvas.ViewportWidth, canvas.ViewportHeight);
+        canvas.DrawFilledRectangle(popupBounds.X, popupBounds.Y, popupBounds.Width, popupBounds.Height, PieceVisualConstants.TintOrange);
+
+        var titleY = popupBounds.Y + 56f;
+        var titleX = popupBounds.X + ((popupBounds.Width - EstimateTextWidth(screen.GameOverMessage)) / 2f);
+        canvas.DrawText(screen.GameOverMessage, titleX, titleY, PieceVisualConstants.TintBlack);
+
+        DrawButton(canvas, ScreenLayoutMetrics.GetGameOverOkButtonBounds(canvas.ViewportWidth, canvas.ViewportHeight), screen.OkButton.Label);
     }
 
     private static void DrawGameplay(IGameCanvas canvas, GameplayScreen screen)
@@ -106,15 +101,8 @@ public sealed class SpriteBatchRenderer
 
         if (screen.ShouldShowGameOverOverlay)
         {
-            DrawGameOverOverlay(canvas);
+            DrawGameOverOverlay(canvas, screen);
         }
-    }
-
-    private static void DrawGameOver(IGameCanvas canvas, GameOverScreen screen)
-    {
-        var titlePosition = ScreenLayoutMetrics.GetGameOverTitlePosition(canvas.ViewportWidth, canvas.ViewportHeight);
-        canvas.DrawText(screen.Message, titlePosition.X, titlePosition.Y, PieceVisualConstants.TintWhite);
-        DrawButton(canvas, ScreenLayoutMetrics.GetGameOverOkButtonBounds(canvas.ViewportWidth, canvas.ViewportHeight), screen.OkButton.Label);
     }
 
     private static float EstimateTextWidth(string text)

@@ -138,7 +138,7 @@ Match3.Presentation/
 
 - `GameplayScreen`
 - `MainMenuScreen`
-- `GameOverScreen`
+- `GameplayScreen` c `Game Over` overlay
 - `BoardRenderer`
 - `HudRenderer`
 - `AnimationQueue`

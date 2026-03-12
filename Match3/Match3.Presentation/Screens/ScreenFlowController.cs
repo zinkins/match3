@@ -20,27 +20,25 @@ public sealed class ScreenFlowController
         this.sessionFactory = sessionFactory ?? (() => new GameSession());
 
         MainMenu = new MainMenuScreen();
-        GameOver = new GameOverScreen();
-        Gameplay = CreateGameplayScreen(this.sessionFactory());
+        Gameplay = CreateGameplayScreen(this.sessionFactory(), ShowMainMenu);
         CurrentScreen = MainMenu;
 
         MainMenu.PlayRequested += StartGame;
-        GameOver.OkRequested += ShowMainMenu;
     }
 
     public MainMenuScreen MainMenu { get; }
 
     public GameplayScreen Gameplay { get; private set; }
 
-    public GameOverScreen GameOver { get; }
-
     public IScreen CurrentScreen { get; private set; }
 
     public void Tick()
     {
-        if (CurrentScreen == Gameplay && Gameplay.ShouldShowGameOverOverlay)
+        if (CurrentScreen == Gameplay &&
+            Gameplay.ShouldShowGameOverOverlay &&
+            !Gameplay.EffectsController.HasActiveBlockingEffects)
         {
-            CurrentScreen = GameOver;
+            CurrentScreen = Gameplay;
         }
     }
 
@@ -60,7 +58,7 @@ public sealed class ScreenFlowController
 
     private void StartGame()
     {
-        Gameplay = CreateGameplayScreen(sessionFactory());
+        Gameplay = CreateGameplayScreen(sessionFactory(), ShowMainMenu);
         CurrentScreen = Gameplay;
     }
 
@@ -69,7 +67,7 @@ public sealed class ScreenFlowController
         CurrentScreen = MainMenu;
     }
 
-    private static GameplayScreen CreateGameplayScreen(GameSession session)
+    private static GameplayScreen CreateGameplayScreen(GameSession session, Action onOk)
     {
         var board = new BoardGenerator().Generate();
         var boardTransform = new BoardTransform(48f, new System.Numerics.Vector2(40f, 100f), board.Height, board.Width);
@@ -86,6 +84,7 @@ public sealed class ScreenFlowController
             new GameplayEffectsController(),
             new BoardRenderer(),
             new HudRenderer(),
-            boardTransform);
+            boardTransform,
+            onOk);
     }
 }

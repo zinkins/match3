@@ -589,7 +589,7 @@ public sealed class GameplayEffectsController
         {
             for (var afterIndex = afterColumn.Count - 1; afterIndex >= 0; afterIndex--)
             {
-                lengths[beforeIndex, afterIndex] = AreSamePiece(beforeColumn[beforeIndex], afterColumn[afterIndex])
+                lengths[beforeIndex, afterIndex] = CanMatchAsFallingPiece(beforeColumn[beforeIndex], afterColumn[afterIndex])
                     ? lengths[beforeIndex + 1, afterIndex + 1] + 1
                     : Math.Max(lengths[beforeIndex + 1, afterIndex], lengths[beforeIndex, afterIndex + 1]);
             }
@@ -600,7 +600,7 @@ public sealed class GameplayEffectsController
         var j = 0;
         while (i < beforeColumn.Count && j < afterColumn.Count)
         {
-            if (AreSamePiece(beforeColumn[i], afterColumn[j]))
+            if (CanMatchAsFallingPiece(beforeColumn[i], afterColumn[j]))
             {
                 result[afterColumn[j].Position] = beforeColumn[i];
                 i++;
@@ -621,8 +621,10 @@ public sealed class GameplayEffectsController
         return result;
     }
 
-    private static bool AreSamePiece(RenderPiece before, RenderPiece after)
+    private static bool CanMatchAsFallingPiece(RenderPiece before, RenderPiece after)
     {
-        return before.Shape == after.Shape && before.Tint == after.Tint;
+        return before.Shape == after.Shape &&
+            before.Tint == after.Tint &&
+            before.Position.Row <= after.Position.Row;
     }
 }

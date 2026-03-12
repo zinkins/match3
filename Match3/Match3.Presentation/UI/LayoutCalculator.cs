@@ -53,17 +53,29 @@ public sealed class LayoutCalculator
         return new MenuLayout(
             (safeBounds.X + ((safeBounds.Width - TitleWidth) / 2f), safeBounds.Y + 24f),
             CreateCenteredButton(safeBounds, buttonY),
+            safeBounds,
             safeBounds);
     }
 
     public MenuLayout CalculateGameOverLayout(float viewportWidth, float viewportHeight)
     {
         var safeBounds = GetSafeBounds(viewportWidth, viewportHeight);
-        var buttonY = safeBounds.Y + (safeBounds.Height * 0.36f);
-        return new MenuLayout(
-            (safeBounds.X + ((safeBounds.Width - TitleWidth) / 2f), safeBounds.Y + 48f),
-            CreateCenteredButton(safeBounds, buttonY),
-            safeBounds);
+        var popupWidth = MathF.Min(safeBounds.Width * 0.72f, 520f);
+        var popupHeight = MathF.Min(safeBounds.Height * 0.82f, 500f);
+        var popupX = safeBounds.X + ((safeBounds.Width - popupWidth) / 2f);
+        var popupY = safeBounds.Y + ((safeBounds.Height - popupHeight) / 2f);
+        var popupBounds = new UiRect(popupX, popupY, popupWidth, popupHeight);
+        var buttonWidth = MathF.Min(ButtonWidth, popupBounds.Width - 48f);
+        var buttonBounds = new UiRect(
+            popupBounds.X + ((popupBounds.Width - buttonWidth) / 2f),
+            popupBounds.Y + popupBounds.Height - ButtonHeight - 24f,
+            buttonWidth,
+            ButtonHeight);
+        var titlePosition = (
+            popupBounds.X + ((popupBounds.Width - TitleWidth) / 2f),
+            popupBounds.Y + 28f);
+
+        return new MenuLayout(titlePosition, buttonBounds, safeBounds, popupBounds);
     }
 
     private static UiRect CreateCenteredButton(UiRect safeBounds, float y)
@@ -76,4 +88,4 @@ public sealed class LayoutCalculator
 
 public sealed record GameplayLayout(BoardTransform BoardTransform, UiRect HudBounds, UiRect SafeBounds);
 
-public sealed record MenuLayout((float X, float Y) TitlePosition, UiRect ButtonBounds, UiRect SafeBounds);
+public sealed record MenuLayout((float X, float Y) TitlePosition, UiRect ButtonBounds, UiRect SafeBounds, UiRect PanelBounds);

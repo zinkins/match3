@@ -52,9 +52,6 @@ public sealed class PresentationScreenHost : IGameScreenHost
             case MainMenuScreen mainMenu when ScreenLayoutMetrics.GetMainMenuPlayButtonBounds(inputState.ViewportWidth, inputState.ViewportHeight).Contains(ToNumerics(inputState.PointerPosition)):
                 mainMenu.PlayButton.Click();
                 break;
-            case GameOverScreen gameOver when ScreenLayoutMetrics.GetGameOverOkButtonBounds(inputState.ViewportWidth, inputState.ViewportHeight).Contains(ToNumerics(inputState.PointerPosition)):
-                gameOver.OkButton.Click();
-                break;
             case GameplayScreen gameplay:
                 HandleGameplayInput(inputState, gameplay);
                 break;
@@ -63,7 +60,17 @@ public sealed class PresentationScreenHost : IGameScreenHost
 
     private void HandleGameplayInput(InputState inputState, GameplayScreen gameplay)
     {
-        if (gameplay.EffectsController.HasActiveBlockingEffects)
+        if (gameplay.ShouldShowGameOverOverlay)
+        {
+            if (ScreenLayoutMetrics.GetGameOverOkButtonBounds(inputState.ViewportWidth, inputState.ViewportHeight).Contains(ToNumerics(inputState.PointerPosition)))
+            {
+                gameplay.OkButton.Click();
+            }
+
+            return;
+        }
+
+        if (!gameplay.Presenter.CanAcceptInput || gameplay.EffectsController.HasActiveBlockingEffects)
         {
             return;
         }

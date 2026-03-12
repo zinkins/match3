@@ -151,9 +151,10 @@ public class Phase15RuntimeRenderingTests
 
         flow.MainMenu.PlayButton.Click();
         flow.Tick();
+        var okBounds = ScreenLayoutMetrics.GetGameOverOkButtonBounds(800, 480);
         host.Update(
             TimeSpan.FromMilliseconds(16),
-            new InputState(true, new System.Numerics.Vector2(300f, 180f), true, false, 800, 480));
+            new InputState(true, new System.Numerics.Vector2(okBounds.X + (okBounds.Width / 2f), okBounds.Y + (okBounds.Height / 2f)), true, false, 800, 480));
 
         Assert.Same(flow.MainMenu, flow.CurrentScreen);
     }
@@ -213,6 +214,42 @@ public class Phase15RuntimeRenderingTests
             new InputState(true, new System.Numerics.Vector2(cellWorld.X + 8f, cellWorld.Y + 8f), true, false, 800, 480));
 
         Assert.NotNull(gameplay.SelectedCell);
+    }
+
+    [Fact]
+    public void PresentationScreenHost_IgnoresBoardInput_WhenSessionIsGameOver()
+    {
+        var flow = new ScreenFlowController(CreateExpiredSession);
+        var host = new PresentationScreenHost(flow, new SpriteBatchRenderer());
+        flow.MainMenu.PlayButton.Click();
+        flow.UpdateLayout(800, 480);
+        var gameplay = flow.Gameplay;
+        var cellWorld = gameplay.BoardTransform.GridToWorld(new GridPosition(0, 0));
+
+        host.Update(
+            TimeSpan.FromMilliseconds(16),
+            new InputState(true, new System.Numerics.Vector2(cellWorld.X + 8f, cellWorld.Y + 8f), true, false, 800, 480));
+
+        Assert.Null(gameplay.SelectedCell);
+    }
+
+    [Fact]
+    public void ScreenFlowController_WaitsForTransientEffects_BeforeShowingGameOver()
+    {
+        var flow = new ScreenFlowController(CreateExpiredSession);
+        flow.MainMenu.PlayButton.Click();
+        var gameplay = flow.Gameplay;
+        var snapshot = gameplay.BoardRenderer.BuildSnapshot(gameplay.Board, gameplay.BoardTransform);
+
+        gameplay.EffectsController.QueueSwap(snapshot, new Move(new GridPosition(0, 0), new GridPosition(0, 1)), rollback: false);
+
+        flow.Tick();
+        Assert.Same(gameplay, flow.CurrentScreen);
+
+        gameplay.EffectsController.Update(TimeSpan.FromSeconds(1));
+        flow.Tick();
+
+        Assert.Same(gameplay, flow.CurrentScreen);
     }
 
     private static BoardState CreateBoard()

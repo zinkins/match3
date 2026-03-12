@@ -32,6 +32,10 @@ public sealed class GameplayPresenter
 
     public TimeSpan RemainingTime => session.RemainingTime;
 
+    public bool IsGameOver => session.IsGameOver;
+
+    public bool CanAcceptInput => session.CanAcceptInput;
+
     public bool ShouldShowGameOverOverlay => session.IsGameOver && !AnimationQueue.HasRunningAnimations;
 
     public void Update(TimeSpan elapsed)

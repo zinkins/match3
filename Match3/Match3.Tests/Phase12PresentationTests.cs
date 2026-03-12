@@ -22,22 +22,36 @@ public class Phase12PresentationTests
     }
 
     [Fact]
-    public void GameOver_OkButton_ReturnsToMainMenu()
+    public void Gameplay_OkButton_ReturnsToMainMenu_AfterGameOver()
     {
         var flow = new ScreenFlowController();
 
         flow.MainMenu.PlayButton.Click();
-        flow.GameOver.OkButton.Click();
+        flow.Gameplay.OkButton.Click();
 
         Assert.Same(flow.MainMenu, flow.CurrentScreen);
     }
 
     [Fact]
-    public void GameOverScreen_HasMessageAndSingleOkButton()
+    public void GameplayScreen_HasGameOverMessageAndSingleOkButton()
     {
-        var screen = new GameOverScreen();
+        var screen = new GameplayScreen(
+            new GameplayPresenter(
+                new Match3.Core.GameFlow.Pipeline.TurnProcessor(),
+                new Match3.Core.GameFlow.StateMachine.GameplayStateMachine(),
+                new GameSession(),
+                new AnimationQueue()),
+            new BoardState(),
+            new Match3.Presentation.Input.BoardInputHandler(
+                new BoardTransform(48f, new System.Numerics.Vector2(40f, 100f), 8, 8),
+                new Match3.Core.GameFlow.Sessions.SelectionController()),
+            new GameplayEffectsController(),
+            new BoardRenderer(),
+            new HudRenderer(),
+            new BoardTransform(48f, new System.Numerics.Vector2(40f, 100f), 8, 8),
+            () => { });
 
-        Assert.Equal("Game Over", screen.Message);
+        Assert.Equal("Game Over", screen.GameOverMessage);
         Assert.Equal("Ok", screen.OkButton.Label);
     }
 

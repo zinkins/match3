@@ -150,4 +150,31 @@ public class Phase15PieceEffectsTests
 
         Assert.Contains(pieces, piece => piece.Position == new GridPosition(1, 0));
     }
+
+    [Fact]
+    public void GameplayEffectsController_DoesNotAnimatePiecesUpward_DuringSettle()
+    {
+        var controller = new GameplayEffectsController();
+        var beforeSnapshot = new BoardRenderSnapshot(
+            [],
+            [
+                new RenderPiece(new GridPosition(0, 0), PieceVisualConstants.ShapeSquare, PieceVisualConstants.TintRed, 20f, 20f, 32f, 32f),
+                new RenderPiece(new GridPosition(1, 0), PieceVisualConstants.ShapeSquare, PieceVisualConstants.TintBlue, 20f, 68f, 32f, 32f),
+                new RenderPiece(new GridPosition(2, 0), PieceVisualConstants.ShapeSquare, PieceVisualConstants.TintRed, 20f, 116f, 32f, 32f)
+            ]);
+        var afterSnapshot = new BoardRenderSnapshot(
+            [],
+            [
+                new RenderPiece(new GridPosition(1, 0), PieceVisualConstants.ShapeSquare, PieceVisualConstants.TintRed, 20f, 68f, 32f, 32f),
+                new RenderPiece(new GridPosition(2, 0), PieceVisualConstants.ShapeSquare, PieceVisualConstants.TintBlue, 20f, 116f, 32f, 32f)
+            ]);
+
+        controller.QueueBoardSettle(beforeSnapshot, afterSnapshot, 48f);
+        controller.Update(TimeSpan.FromMilliseconds(50));
+
+        var pieces = controller.BuildPieces(afterSnapshot, null);
+        var movedBluePiece = Assert.Single(pieces, piece => piece.Position == new GridPosition(2, 0) && piece.Tint == PieceVisualConstants.TintBlue);
+
+        Assert.True(movedBluePiece.Y <= 116f);
+    }
 }
