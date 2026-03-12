@@ -1,3 +1,4 @@
+using Match3.Presentation.Animation;
 using Match3.Presentation.Animation.Engine;
 using System.Numerics;
 
@@ -244,6 +245,84 @@ public sealed class Phase16AnimationEngineTests
 
         parallel.Update(0.1f);
         Assert.True(parallel.IsCompleted);
+    }
+
+    [Fact]
+    public void TurnAnimationBuilder_BuildsRollbackSequence_ForRejectedSwap()
+    {
+        var calls = new List<string>();
+        var builder = new TurnAnimationBuilder();
+        var animation = builder.Build(new TurnAnimationContext
+        {
+            IsSwapApplied = false,
+            QueueVisualEffects = () => calls.Add("visual"),
+            QueueSwapAnimation = () => calls.Add("swap"),
+            QueueBoardSettleAnimation = () => calls.Add("settle"),
+            SwapDurationSeconds = 0.36f
+        });
+
+        animation.Update(0f);
+
+        Assert.Equal(["visual", "swap"], calls);
+        Assert.False(animation.IsCompleted);
+
+        animation.Update(0.36f);
+
+        Assert.True(animation.IsCompleted);
+        Assert.DoesNotContain("settle", calls);
+    }
+
+    [Fact]
+    public void TurnAnimationBuilder_BuildsSwapThenSettleSequence_ForAppliedSwap()
+    {
+        var calls = new List<string>();
+        var builder = new TurnAnimationBuilder();
+        var animation = builder.Build(new TurnAnimationContext
+        {
+            IsSwapApplied = true,
+            QueueVisualEffects = () => calls.Add("visual"),
+            QueueSwapAnimation = () => calls.Add("swap"),
+            QueueBoardSettleAnimation = () => calls.Add("settle"),
+            SwapDurationSeconds = 0.22f,
+            SettleDelaySeconds = 0.8f,
+            SettleDurationSeconds = 1.15f
+        });
+
+        animation.Update(0f);
+        Assert.Equal(["visual", "swap"], calls);
+
+        animation.Update(0.21f);
+        Assert.DoesNotContain("settle", calls);
+
+        animation.Update(0.01f);
+        Assert.Equal(["visual", "swap", "settle"], calls);
+        Assert.False(animation.IsCompleted);
+
+        animation.Update(1.95f);
+        Assert.True(animation.IsCompleted);
+    }
+
+    [Fact]
+    public void AnimationPlayer_BlocksInput_WhileBlockingScenarioIsRunning()
+    {
+        var player = new AnimationPlayer();
+        var animation = new TurnAnimationBuilder().Build(new TurnAnimationContext
+        {
+            IsSwapApplied = false,
+            QueueVisualEffects = static () => { },
+            QueueSwapAnimation = static () => { },
+            QueueBoardSettleAnimation = static () => { },
+            SwapDurationSeconds = 0.36f
+        });
+
+        player.Play(animation);
+        player.Update(0f);
+
+        Assert.True(player.HasBlockingAnimations);
+
+        player.Update(0.36f);
+
+        Assert.False(player.HasBlockingAnimations);
     }
 
     private static PropertyTween<float> CreateTween(

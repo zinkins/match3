@@ -16,6 +16,7 @@ public sealed class GameplayScreen : IScreen
         BoardState board,
         BoardInputHandler boardInputHandler,
         AnimationPlayer animationPlayer,
+        ITurnAnimationBuilder turnAnimationBuilder,
         GameplayEffectsController effectsController,
         BoardRenderer boardRenderer,
         HudRenderer hudRenderer,
@@ -26,6 +27,7 @@ public sealed class GameplayScreen : IScreen
         Board = board;
         BoardInputHandler = boardInputHandler;
         AnimationPlayer = animationPlayer ?? throw new ArgumentNullException(nameof(animationPlayer));
+        TurnAnimationBuilder = turnAnimationBuilder ?? throw new ArgumentNullException(nameof(turnAnimationBuilder));
         EffectsController = effectsController;
         BoardRenderer = boardRenderer;
         HudRenderer = hudRenderer;
@@ -45,6 +47,8 @@ public sealed class GameplayScreen : IScreen
 
     public AnimationPlayer AnimationPlayer { get; }
 
+    public ITurnAnimationBuilder TurnAnimationBuilder { get; }
+
     public GameplayEffectsController EffectsController { get; }
 
     public BoardRenderer BoardRenderer { get; }
@@ -61,4 +65,5 @@ public sealed class GameplayScreen : IScreen
 
     public GridPosition? SelectedCell => BoardInputHandler.SelectedCell;
 }
+
 

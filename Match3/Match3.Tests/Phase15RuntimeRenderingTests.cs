@@ -8,6 +8,7 @@ using Match3.Presentation.Input;
 using Match3.Presentation.Rendering;
 using Match3.Presentation.Screens;
 using Match3.Presentation.UI;
+using Match3.Presentation.Animation.Engine;
 
 namespace Match3.Tests;
 
@@ -217,6 +218,30 @@ public class Phase15RuntimeRenderingTests
     }
 
     [Fact]
+    public void PresentationScreenHost_UsesTurnAnimationBuilder_InsteadOfManualQueueCalls()
+    {
+        var builder = new RecordingTurnAnimationBuilder();
+        var flow = new ScreenFlowController(turnAnimationBuilderFactory: () => builder);
+        var host = new PresentationScreenHost(flow, new SpriteBatchRenderer());
+        flow.MainMenu.PlayButton.Click();
+        flow.UpdateLayout(800, 480);
+        var gameplay = flow.Gameplay;
+        var firstClick = CreateBoardMoveTarget(gameplay, new GridPosition(0, 0));
+        var secondClick = CreateBoardMoveTarget(gameplay, new GridPosition(0, 1));
+
+        host.Update(
+            TimeSpan.FromMilliseconds(16),
+            new InputState(true, firstClick, true, false, 800, 480));
+
+        host.Update(
+            TimeSpan.FromMilliseconds(16),
+            new InputState(true, secondClick, true, false, 800, 480));
+
+        Assert.True(builder.WasBuildCalled);
+        Assert.True(gameplay.AnimationPlayer.HasActiveAnimations);
+    }
+
+    [Fact]
     public void PresentationScreenHost_IgnoresBoardInput_WhenSessionIsGameOver()
     {
         var flow = new ScreenFlowController(CreateExpiredSession);
@@ -300,6 +325,23 @@ public class Phase15RuntimeRenderingTests
         public void DrawText(string text, float x, float y, string tint)
         {
             Texts.Add(text);
+        }
+    }
+
+    private static System.Numerics.Vector2 CreateBoardMoveTarget(GameplayScreen gameplay, GridPosition position)
+    {
+        var cellWorld = gameplay.BoardTransform.GridToWorld(position);
+        return new System.Numerics.Vector2(cellWorld.X + 8f, cellWorld.Y + 8f);
+    }
+
+    private sealed class RecordingTurnAnimationBuilder : Match3.Presentation.Animation.ITurnAnimationBuilder
+    {
+        public bool WasBuildCalled { get; private set; }
+
+        public Match3.Presentation.Animation.Engine.IAnimation Build(Match3.Presentation.Animation.TurnAnimationContext context)
+        {
+            WasBuildCalled = true;
+            return new DelayAnimation(0.5f, blocksInput: true);
         }
     }
 }

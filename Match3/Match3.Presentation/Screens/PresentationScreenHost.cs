@@ -4,6 +4,7 @@ using Match3.Core.GameCore.Board;
 using Match3.Core.GameCore.ValueObjects;
 using Match3.Core.GameFlow.Events;
 using Match3.Core.Runtime;
+using Match3.Presentation.Animation;
 using Match3.Presentation.Input;
 using Match3.Presentation.Rendering;
 
@@ -73,7 +74,9 @@ public sealed class PresentationScreenHost : IGameScreenHost
             return;
         }
 
-        if (!gameplay.Presenter.CanAcceptInput || gameplay.EffectsController.HasActiveBlockingEffects)
+        if (!gameplay.Presenter.CanAcceptInput ||
+            gameplay.AnimationPlayer.HasBlockingAnimations ||
+            gameplay.EffectsController.HasActiveBlockingEffects)
         {
             return;
         }
@@ -94,22 +97,26 @@ public sealed class PresentationScreenHost : IGameScreenHost
         var beforeSnapshot = gameplay.BoardRenderer.BuildSnapshot(beforeBoard, gameplay.BoardTransform);
         var result = gameplay.Presenter.ProcessMove(gameplay.Board, move.Value);
         var afterSnapshot = gameplay.BoardRenderer.BuildSnapshot(gameplay.Board, gameplay.BoardTransform);
-        QueueVisualEvents(gameplay, result.Events);
-        gameplay.EffectsController.QueueSwap(beforeSnapshot, move.Value, rollback: !result.IsSwapApplied);
-        if (!result.IsSwapApplied)
-        {
-            return;
-        }
-
         var swappedBoard = beforeBoard.Clone();
         ApplySwap(swappedBoard, move.Value);
         var swappedSnapshot = gameplay.BoardRenderer.BuildSnapshot(swappedBoard, gameplay.BoardTransform);
-        gameplay.EffectsController.QueueBoardSettle(
-            swappedSnapshot,
-            afterSnapshot,
-            gameplay.BoardTransform.CellSize,
-            GetSettleDelaySeconds(result.Events),
-            GetCreatedBonusOrigins(result.Events));
+        var animation = gameplay.TurnAnimationBuilder.Build(new TurnAnimationContext
+        {
+            IsSwapApplied = result.IsSwapApplied,
+            QueueVisualEffects = () => QueueVisualEvents(gameplay, result.Events),
+            QueueSwapAnimation = () => gameplay.EffectsController.QueueSwap(beforeSnapshot, move.Value, rollback: !result.IsSwapApplied),
+            QueueBoardSettleAnimation = () => gameplay.EffectsController.QueueBoardSettle(
+                swappedSnapshot,
+                afterSnapshot,
+                gameplay.BoardTransform.CellSize,
+                GetSettleDelaySeconds(result.Events),
+                GetCreatedBonusOrigins(result.Events)),
+            SwapDurationSeconds = result.IsSwapApplied ? 0.22f : 0.36f,
+            SettleDelaySeconds = GetSettleDelaySeconds(result.Events),
+            SettleDurationSeconds = 1.15f
+        });
+
+        gameplay.AnimationPlayer.Play(animation);
     }
 
     private static System.Numerics.Vector2 ToNumerics(System.Numerics.Vector2 value)
@@ -171,4 +178,3 @@ public sealed class PresentationScreenHost : IGameScreenHost
         return delay;
     }
 }
-

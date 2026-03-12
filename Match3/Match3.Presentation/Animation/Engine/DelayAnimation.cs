@@ -1,10 +1,10 @@
 namespace Match3.Presentation.Animation.Engine;
 
-public sealed class DelayAnimation(float durationSeconds) : IAnimation
+public sealed class DelayAnimation(float durationSeconds, bool blocksInput = false) : IAnimation
 {
     public bool IsCompleted => elapsedSeconds >= durationSeconds;
 
-    public bool BlocksInput => false;
+    public bool BlocksInput { get; } = blocksInput;
 
     public IReadOnlyCollection<AnimationBinding> ActiveBindings => [];
 
@@ -20,3 +20,4 @@ public sealed class DelayAnimation(float durationSeconds) : IAnimation
         elapsedSeconds += deltaTime;
     }
 }
+

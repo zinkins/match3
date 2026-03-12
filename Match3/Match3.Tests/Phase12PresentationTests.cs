@@ -47,6 +47,7 @@ public class Phase12PresentationTests
                 new BoardTransform(48f, new System.Numerics.Vector2(40f, 100f), 8, 8),
                 new Match3.Core.GameFlow.Sessions.SelectionController()),
             new AnimationPlayer(),
+            new TurnAnimationBuilder(),
             new GameplayEffectsController(),
             new BoardRenderer(),
             new HudRenderer(),
@@ -148,3 +149,5 @@ public class Phase12PresentationTests
         return board;
     }
 }
+
+

@@ -15,10 +15,12 @@ public sealed class ScreenFlowController
 {
     private readonly LayoutCalculator layoutCalculator = new();
     private readonly Func<GameSession> sessionFactory;
+    private readonly Func<ITurnAnimationBuilder> turnAnimationBuilderFactory;
 
-    public ScreenFlowController(Func<GameSession>? sessionFactory = null)
+    public ScreenFlowController(Func<GameSession>? sessionFactory = null, Func<ITurnAnimationBuilder>? turnAnimationBuilderFactory = null)
     {
         this.sessionFactory = sessionFactory ?? (() => new GameSession());
+        this.turnAnimationBuilderFactory = turnAnimationBuilderFactory ?? (() => new TurnAnimationBuilder());
 
         MainMenu = new MainMenuScreen();
         Gameplay = CreateGameplayScreen(this.sessionFactory(), ShowMainMenu);
@@ -68,7 +70,7 @@ public sealed class ScreenFlowController
         CurrentScreen = MainMenu;
     }
 
-    private static GameplayScreen CreateGameplayScreen(GameSession session, Action onOk)
+    private GameplayScreen CreateGameplayScreen(GameSession session, Action onOk)
     {
         var board = new BoardGenerator().Generate();
         var boardTransform = new BoardTransform(48f, new System.Numerics.Vector2(40f, 100f), board.Height, board.Width);
@@ -83,6 +85,7 @@ public sealed class ScreenFlowController
             board,
             new BoardInputHandler(boardTransform, new SelectionController()),
             new AnimationPlayer(),
+            turnAnimationBuilderFactory(),
             new GameplayEffectsController(),
             new BoardRenderer(),
             new HudRenderer(),
@@ -90,4 +93,3 @@ public sealed class ScreenFlowController
             onOk);
     }
 }
-
