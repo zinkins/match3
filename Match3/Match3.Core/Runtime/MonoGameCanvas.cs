@@ -11,6 +11,7 @@ public sealed class MonoGameCanvas : IGameCanvas, IDisposable
     private readonly SpriteBatch spriteBatch;
     private readonly Texture2D pixel;
     private readonly Texture2D circle;
+    private readonly Texture2D diamond;
     private readonly SpriteFont font;
 
     public MonoGameCanvas(GraphicsDevice graphicsDevice, ContentManager content)
@@ -20,6 +21,7 @@ public sealed class MonoGameCanvas : IGameCanvas, IDisposable
         pixel = new Texture2D(graphicsDevice, 1, 1);
         pixel.SetData([Color.White]);
         circle = CreateCircleTexture(graphicsDevice, 64);
+        diamond = CreateDiamondTexture(graphicsDevice, 64);
         font = content.Load<SpriteFont>("Fonts/Hud");
     }
 
@@ -53,7 +55,7 @@ public sealed class MonoGameCanvas : IGameCanvas, IDisposable
         }
         else if (shape == "Diamond")
         {
-            rotation += MathF.PI / 4f;
+            texture = diamond;
         }
 
         var center = new Vector2(x + (width / 2f), y + (height / 2f));
@@ -70,6 +72,7 @@ public sealed class MonoGameCanvas : IGameCanvas, IDisposable
     public void Dispose()
     {
         circle.Dispose();
+        diamond.Dispose();
         pixel.Dispose();
         spriteBatch.Dispose();
     }
@@ -87,6 +90,29 @@ public sealed class MonoGameCanvas : IGameCanvas, IDisposable
             {
                 var index = (y * diameter) + x;
                 data[index] = Vector2.Distance(new Vector2(x, y), center) <= radius
+                    ? Color.White
+                    : Color.Transparent;
+            }
+        }
+
+        texture.SetData(data);
+        return texture;
+    }
+
+    private static Texture2D CreateDiamondTexture(GraphicsDevice graphicsDevice, int size)
+    {
+        var texture = new Texture2D(graphicsDevice, size, size);
+        var data = new Color[size * size];
+        var half = (size - 1) / 2f;
+
+        for (var y = 0; y < size; y++)
+        {
+            for (var x = 0; x < size; x++)
+            {
+                var index = (y * size) + x;
+                var dx = MathF.Abs(x - half) / half;
+                var dy = MathF.Abs(y - half) / half;
+                data[index] = dx + dy <= 1f
                     ? Color.White
                     : Color.Transparent;
             }
