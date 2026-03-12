@@ -39,7 +39,7 @@ public sealed class ScreenFlowController
     {
         if (CurrentScreen == Gameplay &&
             Gameplay.ShouldShowGameOverOverlay &&
-            !Gameplay.EffectsController.HasActiveBlockingEffects)
+            !Gameplay.AnimationPlayer.HasBlockingAnimations)
         {
             CurrentScreen = Gameplay;
         }

@@ -65,7 +65,7 @@ public sealed class GameplayScreen : IScreen
 
     public UiButton OkButton { get; }
 
-    public bool ShouldShowGameOverOverlay => Presenter.IsGameOver && !EffectsController.HasActiveBlockingEffects;
+    public bool ShouldShowGameOverOverlay => Presenter.IsGameOver && !AnimationPlayer.HasBlockingAnimations;
 
     public AnimationQueue AnimationQueue => Presenter.AnimationQueue;
 

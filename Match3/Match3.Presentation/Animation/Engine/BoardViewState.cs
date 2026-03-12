@@ -52,6 +52,17 @@ public sealed class BoardViewState
         return true;
     }
 
+    public void RemoveNodesExcept(IEnumerable<NodeId> retainedIds)
+    {
+        ArgumentNullException.ThrowIfNull(retainedIds);
+
+        var retained = retainedIds.ToHashSet();
+        foreach (var nodeId in nodesById.Keys.Where(id => !retained.Contains(id)).ToArray())
+        {
+            RemoveNode(nodeId);
+        }
+    }
+
     public void AddOrUpdate(EffectNode node)
     {
         ArgumentNullException.ThrowIfNull(node);
@@ -101,4 +112,3 @@ public sealed class BoardViewState
         return hiddenCellCounts.ContainsKey(position);
     }
 }
-

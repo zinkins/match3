@@ -616,6 +616,7 @@ public sealed class GameplayEffectsController
         ArgumentNullException.ThrowIfNull(viewState);
         ArgumentNullException.ThrowIfNull(animationPlayer);
 
+        var retainedNodeIds = new HashSet<NodeId>();
         for (var column = 0; column < 8; column++)
         {
             var beforeColumn = beforeSnapshot.Pieces
@@ -644,6 +645,7 @@ public sealed class GameplayEffectsController
 
                     stationaryNode.Position = targetPosition;
                     stationaryNode.Tint = target.Tint;
+                    retainedNodeIds.Add(stationaryNode.Id);
                     continue;
                 }
 
@@ -663,6 +665,13 @@ public sealed class GameplayEffectsController
                 {
                     if (excludedTargets?.Contains(target.Position) == true)
                     {
+                        if (viewState.GetPieceNode(target.Position) is { } existingExcludedNode)
+                        {
+                            existingExcludedNode.Position = targetPosition;
+                            existingExcludedNode.Tint = target.Tint;
+                            retainedNodeIds.Add(existingExcludedNode.Id);
+                        }
+
                         continue;
                     }
 
@@ -678,6 +687,7 @@ public sealed class GameplayEffectsController
                 node.Position = from;
                 node.IsVisible = true;
                 viewState.AddOrUpdate(node);
+                retainedNodeIds.Add(node.Id);
 
                 var animation = Anim.Sequence();
                 if (delaySeconds > 0f)
@@ -689,6 +699,8 @@ public sealed class GameplayEffectsController
                 animationPlayer.Play(animation, ChannelConflictPolicy.Replace);
             }
         }
+
+        viewState.RemoveNodesExcept(retainedNodeIds);
     }
     public void QueueCreatedBonuses(BoardViewState viewState, AnimationPlayer animationPlayer, BoardRenderSnapshot afterSnapshot, float cellSize, float initialDelaySeconds = 0f, IReadOnlyList<GridPosition>? createdBonusOrigins = null)
     {

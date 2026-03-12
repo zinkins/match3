@@ -276,6 +276,36 @@ public class Phase15RuntimeRenderingTests
     }
 
     [Fact]
+    public void PresentationScreenHost_DoesNotAcceptBoardInput_DuringCascadeScenario()
+    {
+        var builder = new RecordingTurnAnimationBuilder();
+        var flow = new ScreenFlowController(turnAnimationBuilderFactory: () => builder);
+        var host = new PresentationScreenHost(flow, new SpriteBatchRenderer());
+        flow.MainMenu.PlayButton.Click();
+        flow.UpdateLayout(800, 480);
+        var gameplay = flow.Gameplay;
+        var firstClick = CreateBoardMoveTarget(gameplay, new GridPosition(0, 0));
+        var secondClick = CreateBoardMoveTarget(gameplay, new GridPosition(0, 1));
+        var thirdClick = CreateBoardMoveTarget(gameplay, new GridPosition(1, 0));
+
+        host.Update(
+            TimeSpan.FromMilliseconds(16),
+            new InputState(true, firstClick, true, false, 800, 480));
+
+        host.Update(
+            TimeSpan.FromMilliseconds(16),
+            new InputState(true, secondClick, true, false, 800, 480));
+
+        Assert.True(gameplay.AnimationPlayer.HasBlockingAnimations);
+
+        host.Update(
+            TimeSpan.FromMilliseconds(16),
+            new InputState(true, thirdClick, true, false, 800, 480));
+
+        Assert.Null(gameplay.SelectedCell);
+    }
+
+    [Fact]
     public void PresentationScreenHost_IgnoresBoardInput_WhenSessionIsGameOver()
     {
         var flow = new ScreenFlowController(CreateExpiredSession);
@@ -293,21 +323,21 @@ public class Phase15RuntimeRenderingTests
     }
 
     [Fact]
-    public void ScreenFlowController_WaitsForTransientEffects_BeforeShowingGameOver()
+    public void ScreenFlowController_WaitsForAnimationPlayerBeforeShowingGameOver()
     {
         var flow = new ScreenFlowController(CreateExpiredSession);
         flow.MainMenu.PlayButton.Click();
         var gameplay = flow.Gameplay;
-        var snapshot = gameplay.BoardRenderer.BuildSnapshot(gameplay.Board, gameplay.BoardTransform);
-
-        gameplay.EffectsController.QueueSwap(snapshot, new Move(new GridPosition(0, 0), new GridPosition(0, 1)), rollback: false);
+        gameplay.AnimationPlayer.Play(new DelayAnimation(0.5f, blocksInput: true));
 
         flow.Tick();
+        Assert.False(gameplay.ShouldShowGameOverOverlay);
         Assert.Same(gameplay, flow.CurrentScreen);
 
-        gameplay.EffectsController.Update(TimeSpan.FromSeconds(1));
+        gameplay.AnimationPlayer.Update(0.5f);
         flow.Tick();
 
+        Assert.True(gameplay.ShouldShowGameOverOverlay);
         Assert.Same(gameplay, flow.CurrentScreen);
     }
 
