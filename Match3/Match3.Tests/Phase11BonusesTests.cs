@@ -225,6 +225,27 @@ public class Phase11BonusesTests
     }
 
     [Fact]
+    public void BonusActivationResolver_ClearsAreaAroundChainedBomb()
+    {
+        var board = CreateFilledBoard();
+        var resolver = new BonusActivationResolver();
+        var rootBomb = new BombBonus(new GridPosition(3, 3), PieceColor.Red);
+        var triggeredBomb = new BombBonus(new GridPosition(3, 4), PieceColor.Blue);
+        board.SetBonus(rootBomb.Position, rootBomb);
+        board.SetBonus(triggeredBomb.Position, triggeredBomb);
+
+        resolver.Resolve(board, rootBomb);
+
+        for (var row = 2; row <= 4; row++)
+        {
+            for (var column = 3; column <= 5; column++)
+            {
+                Assert.Null(board.GetPiece(new GridPosition(row, column)));
+            }
+        }
+    }
+
+    [Fact]
     public void TurnProcessor_CreatesLineBonus_OnBoard_WhenMoveFormsMatchOfFour()
     {
         var board = CreateBoardForLineBonusCreation();
@@ -265,6 +286,28 @@ public class Phase11BonusesTests
             new GameplayStateMachine());
 
         Assert.Contains(result.Events, e => e is LineBonusCreated);
+    }
+
+    [Fact]
+    public void TurnProcessor_KeepsNewlyCreatedBonus_OnBoard_WhenCascadeWouldImmediatelyMatchIt()
+    {
+        var board = CreateBoardForFreshBonusProtection();
+        var processor = new TurnProcessor(
+            new MatchFinder(),
+            new GravityResolver(),
+            new RefillResolver(new SequenceRandomSource(1, 2, 3, 4, 0)),
+            new ScoreCalculator(),
+            new BonusFactory(),
+            new BonusActivationResolver());
+
+        var result = processor.ProcessTurnPipelineWithEvents(
+            board,
+            new Move(new GridPosition(4, 2), new GridPosition(5, 2)),
+            new GameSession(),
+            new GameplayStateMachine());
+
+        Assert.True(HasAnyBonus(board));
+        Assert.DoesNotContain(result.Events, e => e is DestroyerSpawned or BombExploded);
     }
 
     private static MatchGroup Match(PieceType piece, params GridPosition[] positions)
@@ -311,6 +354,45 @@ public class Phase11BonusesTests
         }
 
         return board;
+    }
+
+    private static BoardState CreateBoardForFreshBonusProtection()
+    {
+        var board = new BoardState();
+        var types = PieceCatalog.All;
+        for (var row = 0; row < board.Height; row++)
+        {
+            for (var column = 0; column < board.Width; column++)
+            {
+                board.SetPiece(new GridPosition(row, column), types[(row + (column * 2)) % types.Count]);
+            }
+        }
+
+        board.SetPiece(new GridPosition(5, 0), PieceType.Red);
+        board.SetPiece(new GridPosition(5, 1), PieceType.Red);
+        board.SetPiece(new GridPosition(5, 2), PieceType.Blue);
+        board.SetPiece(new GridPosition(5, 3), PieceType.Red);
+        board.SetPiece(new GridPosition(4, 2), PieceType.Red);
+        board.SetPiece(new GridPosition(6, 2), PieceType.Red);
+        board.SetPiece(new GridPosition(7, 2), PieceType.Red);
+
+        return board;
+    }
+
+    private static bool HasAnyBonus(BoardState board)
+    {
+        for (var row = 0; row < board.Height; row++)
+        {
+            for (var column = 0; column < board.Width; column++)
+            {
+                if (board.GetBonus(new GridPosition(row, column)) is not null)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private sealed class SequenceRandomSource(params int[] values) : IRandomSource

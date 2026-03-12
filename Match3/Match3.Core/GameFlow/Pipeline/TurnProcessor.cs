@@ -126,7 +126,9 @@ public sealed class TurnProcessor
                 .SelectMany(group => group.Positions)
                 .Distinct()
                 .ToArray();
-            var hasMatchedBonuses = matchedPositions.Any(position => board.GetBonus(position) is not null);
+            var hasMatchedBonuses = matchedPositions.Any(position =>
+                board.GetContent(position)?.Bonus is not null &&
+                board.GetContent(position)?.IsFreshBonus == false);
             var createdBonus = hasMatchedBonuses
                 ? null
                 : TryCreateBonus(matches, GetBonusAnchor(matches, move));
@@ -138,7 +140,9 @@ public sealed class TurnProcessor
 
             var bonusActivation = ResolveMatchedBonuses(board, matchedPositions);
             var plainDestroyed = matchedPositions
-                .Where(position => !bonusActivation.ActivatedBonusPositions.Contains(position))
+                .Where(position =>
+                    !bonusActivation.ActivatedBonusPositions.Contains(position) &&
+                    board.GetContent(position)?.IsFreshBonus != true)
                 .ToArray();
 
             ClearMatchedPieces(board, plainDestroyed);
@@ -151,7 +155,7 @@ public sealed class TurnProcessor
 
             if (createdBonus is not null)
             {
-                board.SetContent(createdBonus.Position, new CellContent(ToPieceType(createdBonus), createdBonus));
+                board.SetContent(createdBonus.Position, new CellContent(ToPieceType(createdBonus), createdBonus, IsFreshBonus: true));
                 events.Add(CreateBonusCreatedEvent(createdBonus));
             }
 
@@ -198,6 +202,7 @@ public sealed class TurnProcessor
             }
         }
 
+        board.MarkAllBonusesAsSettled();
         stateMachine.TransitionToCheckingEndGame();
         if (session.IsGameOver)
         {
@@ -269,8 +274,9 @@ public sealed class TurnProcessor
         IReadOnlyList<GridPosition> matchedPositions)
     {
         var rootBonuses = matchedPositions
-            .Select(board.GetBonus)
-            .Where(bonus => bonus is not null)
+            .Select(position => board.GetContent(position))
+            .Where(content => content?.Bonus is not null && !content.IsFreshBonus)
+            .Select(content => content.Bonus)
             .GroupBy(bonus => bonus.Position)
             .Select(group => group.First())
             .ToArray();

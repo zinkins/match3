@@ -61,13 +61,13 @@ public sealed class AnimationQueue
         {
             PiecesSwapped => new AnimationStep(nameof(PiecesSwapped), 0.22f),
             SwapReverted => new AnimationStep(nameof(SwapReverted), 0.36f),
-            MatchResolved => new AnimationStep(nameof(MatchResolved), 0.12f),
+            MatchResolved => new AnimationStep(nameof(MatchResolved), 0.2f),
             LineBonusCreated => new AnimationStep(nameof(LineBonusCreated), 0.15f),
             BombBonusCreated => new AnimationStep(nameof(BombBonusCreated), 0.15f),
-            DestroyerSpawned => new AnimationStep(nameof(DestroyerSpawned), 0.55f),
-            BombExploded => new AnimationStep(nameof(BombExploded), 0.3f),
-            PiecesFell => new AnimationStep(nameof(PiecesFell), 0.45f),
-            PiecesSpawned => new AnimationStep(nameof(PiecesSpawned), 0.45f),
+            DestroyerSpawned => new AnimationStep(nameof(DestroyerSpawned), 0.8f),
+            BombExploded => new AnimationStep(nameof(BombExploded), 0.45f),
+            PiecesFell => new AnimationStep(nameof(PiecesFell), 0.65f),
+            PiecesSpawned => new AnimationStep(nameof(PiecesSpawned), 1.15f),
             GameEnded => new AnimationStep(nameof(GameEnded), 0.01f),
             _ => new AnimationStep(domainEvent.GetType().Name, 0.01f)
         };

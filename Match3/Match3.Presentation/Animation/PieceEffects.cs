@@ -180,6 +180,81 @@ public sealed class TimedVisualEffect(Func<float, RenderPiece> buildPiece, float
     }
 }
 
+public sealed class TimedHiddenCells(IReadOnlyCollection<GridPosition> positions, float durationSeconds, float delaySeconds = 0f)
+{
+    public IReadOnlyCollection<GridPosition> Positions { get; } = positions;
+
+    public float DurationSeconds { get; } = durationSeconds;
+
+    public float DelaySeconds { get; } = delaySeconds;
+
+    public float ElapsedSeconds { get; private set; }
+
+    public bool IsStarted => ElapsedSeconds >= DelaySeconds;
+
+    public bool IsCompleted => ElapsedSeconds >= DelaySeconds + DurationSeconds;
+
+    public bool Contains(GridPosition position)
+    {
+        return IsStarted && Positions.Contains(position);
+    }
+
+    public void Update(float deltaSeconds)
+    {
+        ElapsedSeconds += deltaSeconds;
+    }
+}
+
+public sealed class TimedPathClearEffect(IReadOnlyList<GridPosition> path, float durationSeconds, float delaySeconds = 0f)
+{
+    public IReadOnlyList<GridPosition> Path { get; } = path;
+
+    public float DurationSeconds { get; } = durationSeconds;
+
+    public float DelaySeconds { get; } = delaySeconds;
+
+    public float ElapsedSeconds { get; private set; }
+
+    public bool IsCompleted => ElapsedSeconds >= DelaySeconds + DurationSeconds;
+
+    public void Update(float deltaSeconds)
+    {
+        ElapsedSeconds += deltaSeconds;
+    }
+
+    public bool Contains(GridPosition position)
+    {
+        if (ElapsedSeconds < DelaySeconds || Path.Count == 0)
+        {
+            return false;
+        }
+
+        var pathIndex = -1;
+        for (var i = 0; i < Path.Count; i++)
+        {
+            if (Path[i] == position)
+            {
+                pathIndex = i;
+                break;
+            }
+        }
+
+        if (pathIndex < 0)
+        {
+            return false;
+        }
+
+        if (Path.Count == 1)
+        {
+            return true;
+        }
+
+        var progress = MathF.Min(1f, (ElapsedSeconds - DelaySeconds) / DurationSeconds);
+        var reachedIndex = (int)MathF.Floor(progress * (Path.Count - 1));
+        return pathIndex <= reachedIndex;
+    }
+}
+
 public sealed class GameplayEffectsController
 {
     private readonly CompositePieceEffect selectedEffect = new(
@@ -189,6 +264,8 @@ public sealed class GameplayEffectsController
     private readonly Dictionary<GridPosition, TimedPieceEffect> cellEffects = [];
     private readonly List<TimedPieceEffect> overlayEffects = [];
     private readonly List<TimedVisualEffect> visualEffects = [];
+    private readonly List<TimedHiddenCells> hiddenCells = [];
+    private readonly List<TimedPathClearEffect> pathClearEffects = [];
     private GridPosition? lastSelectedCell;
     private float totalSeconds;
 
@@ -219,6 +296,24 @@ public sealed class GameplayEffectsController
             if (visualEffects[i].IsCompleted)
             {
                 visualEffects.RemoveAt(i);
+            }
+        }
+
+        for (var i = hiddenCells.Count - 1; i >= 0; i--)
+        {
+            hiddenCells[i].Update(delta);
+            if (hiddenCells[i].IsCompleted)
+            {
+                hiddenCells.RemoveAt(i);
+            }
+        }
+
+        for (var i = pathClearEffects.Count - 1; i >= 0; i--)
+        {
+            pathClearEffects[i].Update(delta);
+            if (pathClearEffects[i].IsCompleted)
+            {
+                pathClearEffects.RemoveAt(i);
             }
         }
 
@@ -257,7 +352,17 @@ public sealed class GameplayEffectsController
         var pieces = new List<RenderPiece>(snapshot.Pieces.Count + overlayEffects.Count);
         foreach (var piece in snapshot.Pieces)
         {
-            if (overlayEffects.Any(effect => effect.HideBasePiece && effect.Position == piece.Position))
+            if (overlayEffects.Any(effect => effect.HideBasePiece && effect.IsStarted && effect.Position == piece.Position))
+            {
+                continue;
+            }
+
+            if (hiddenCells.Any(effect => effect.Contains(piece.Position)))
+            {
+                continue;
+            }
+
+            if (pathClearEffects.Any(effect => effect.Contains(piece.Position)))
             {
                 continue;
             }
@@ -305,6 +410,8 @@ public sealed class GameplayEffectsController
         var forwardPath = BuildWorldPath(path.Skip(launchIndex), transform);
         var backwardPath = BuildWorldPath(path.Take(launchIndex + 1).Reverse(), transform);
         var size = transform.CellSize * 0.42f;
+        pathClearEffects.Add(new TimedPathClearEffect(path.Skip(launchIndex).ToArray(), 0.8f));
+        pathClearEffects.Add(new TimedPathClearEffect(path.Take(launchIndex + 1).Reverse().ToArray(), 0.8f));
 
         QueueDestroyerVisual(forwardPath, size);
         QueueDestroyerVisual(backwardPath, size);
@@ -322,6 +429,7 @@ public sealed class GameplayEffectsController
         var centerWorld = transform.GridToWorld(new GridPosition((int)MathF.Round(centerRow), (int)MathF.Round(centerColumn)));
         var center = new Vector2(centerWorld.X + (transform.CellSize / 2f), centerWorld.Y + (transform.CellSize / 2f));
         var maxSize = transform.CellSize * 1.9f;
+        hiddenCells.Add(new TimedHiddenCells(area.ToArray(), 0.45f));
 
         visualEffects.Add(new TimedVisualEffect(
             progress =>
@@ -338,7 +446,7 @@ public sealed class GameplayEffectsController
                     Rotation: 0f,
                     Layer: 25f);
             },
-            durationSeconds: 0.3f));
+            durationSeconds: 0.45f));
     }
 
     private void QueueDestroyerVisual(IReadOnlyList<Vector2> worldPath, float size)
@@ -356,7 +464,7 @@ public sealed class GameplayEffectsController
                 return new RenderPiece(
                     new GridPosition(-1, -1),
                     PieceVisualConstants.ShapeDiamond,
-                    PieceVisualConstants.TintOrange,
+                    PieceVisualConstants.TintWhite,
                     center.X - (size / 2f),
                     center.Y - (size / 2f),
                     size,
@@ -364,7 +472,7 @@ public sealed class GameplayEffectsController
                     Rotation: progress * MathF.PI * 2f,
                     Layer: 30f);
             },
-            durationSeconds: 0.55f));
+            durationSeconds: 0.8f));
     }
 
     private static IReadOnlyList<Vector2> BuildWorldPath(IEnumerable<GridPosition> path, BoardTransform transform)
@@ -428,7 +536,7 @@ public sealed class GameplayEffectsController
             hideBasePiece: true));
     }
 
-    public void QueueBoardSettle(BoardRenderSnapshot beforeSnapshot, BoardRenderSnapshot afterSnapshot, float cellSize)
+    public void QueueBoardSettle(BoardRenderSnapshot beforeSnapshot, BoardRenderSnapshot afterSnapshot, float cellSize, float initialDelaySeconds = 0f)
     {
         for (var column = 0; column < 8; column++)
         {
@@ -465,8 +573,8 @@ public sealed class GameplayEffectsController
                     target.Position,
                     target with { X = from.X, Y = from.Y, Layer = 15f },
                     new MovePieceEffect(from, new Vector2(target.X, target.Y)),
-                    durationSeconds: 0.45f,
-                    delaySeconds: 0f,
+                    durationSeconds: source is not null ? 0.65f : 0.75f,
+                    delaySeconds: initialDelaySeconds + (source is not null ? 0f : 0.4f),
                     hideBasePiece: true));
             }
         }

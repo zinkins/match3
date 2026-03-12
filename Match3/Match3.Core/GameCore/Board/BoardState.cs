@@ -53,7 +53,25 @@ public sealed class BoardState
             throw new InvalidOperationException("Cannot assign a bonus to an empty cell.");
         }
 
-        cells[position.Row, position.Column] = NormalizeContent(position, current with { Bonus = bonus });
+        cells[position.Row, position.Column] = NormalizeContent(position, current with { Bonus = bonus, IsFreshBonus = false });
+    }
+
+    public void MarkAllBonusesAsSettled()
+    {
+        for (var row = 0; row < HeightValue; row++)
+        {
+            for (var column = 0; column < WidthValue; column++)
+            {
+                var current = cells[row, column];
+                if (current?.Bonus is null || !current.IsFreshBonus)
+                {
+                    continue;
+                }
+
+                var position = new GridPosition(row, column);
+                cells[row, column] = NormalizeContent(position, current with { IsFreshBonus = false });
+            }
+        }
     }
 
     public BoardState Clone()

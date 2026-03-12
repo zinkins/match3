@@ -54,8 +54,22 @@ public sealed class SpriteBatchRenderer
     {
         foreach (var piece in pieces)
         {
+            DrawPieceOutline(canvas, piece);
             canvas.DrawShape(piece.Shape, piece.X, piece.Y, piece.Width, piece.Height, piece.Tint, piece.Rotation);
         }
+    }
+
+    private static void DrawPieceOutline(IGameCanvas canvas, RenderPiece piece)
+    {
+        const float outlineThickness = 2f;
+        canvas.DrawShape(
+            piece.Shape,
+            piece.X - outlineThickness,
+            piece.Y - outlineThickness,
+            piece.Width + (outlineThickness * 2f),
+            piece.Height + (outlineThickness * 2f),
+            PieceVisualConstants.TintBlack,
+            piece.Rotation);
     }
 
     private static void DrawCells(IGameCanvas canvas, BoardRenderSnapshot boardSnapshot)

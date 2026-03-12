@@ -88,7 +88,11 @@ public sealed class PresentationScreenHost : IGameScreenHost
                 var swappedBoard = beforeBoard.Clone();
                 ApplySwap(swappedBoard, move.Value);
                 var swappedSnapshot = gameplay.BoardRenderer.BuildSnapshot(swappedBoard, gameplay.BoardTransform);
-                gameplay.EffectsController.QueueBoardSettle(swappedSnapshot, afterSnapshot, gameplay.BoardTransform.CellSize);
+                gameplay.EffectsController.QueueBoardSettle(
+                    swappedSnapshot,
+                    afterSnapshot,
+                    gameplay.BoardTransform.CellSize,
+                    GetSettleDelaySeconds(result.Events));
             }
         }
     }
@@ -120,5 +124,21 @@ public sealed class PresentationScreenHost : IGameScreenHost
                     break;
             }
         }
+    }
+
+    private static float GetSettleDelaySeconds(IReadOnlyList<IDomainEvent> events)
+    {
+        var delay = 0f;
+        foreach (var domainEvent in events)
+        {
+            delay = MathF.Max(delay, domainEvent switch
+            {
+                DestroyerSpawned => 0.8f,
+                BombExploded => 0.45f,
+                _ => 0f
+            });
+        }
+
+        return delay;
     }
 }
