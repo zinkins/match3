@@ -103,14 +103,14 @@ public sealed class PresentationScreenHost : IGameScreenHost
         var animation = gameplay.TurnAnimationBuilder.Build(new TurnAnimationContext
         {
             IsSwapApplied = result.IsSwapApplied,
-            QueueVisualEffects = () => QueueVisualEvents(gameplay, result.Events),
+            QueueVisualEffects = () => GameplayVisualEffectsTimeline.QueueEvents(gameplay.BoardViewState, gameplay.AnimationPlayer, result.Events, gameplay.BoardTransform),
             QueueSwapAnimation = () => GameplayAnimationRuntime.QueueSwap(gameplay.BoardViewState, gameplay.AnimationPlayer, move.Value, rollback: !result.IsSwapApplied),
             QueueCreatedBonusAnimation = () => GameplayAnimationRuntime.QueueCreatedBonuses(
                 gameplay.BoardViewState,
                 gameplay.AnimationPlayer,
                 afterSnapshot,
                 gameplay.BoardTransform.CellSize,
-                GetSettleDelaySeconds(result.Events),
+                GameplayVisualEffectsTimeline.GetTotalDuration(result.Events),
                 createdBonusOrigins),
             QueueBoardSettleAnimation = () => GameplayAnimationRuntime.QueueBoardSettle(
                 gameplay.BoardViewState,
@@ -118,11 +118,11 @@ public sealed class PresentationScreenHost : IGameScreenHost
                 swappedSnapshot,
                 afterSnapshot,
                 gameplay.BoardTransform.CellSize,
-                GetSettleDelaySeconds(result.Events),
+                GameplayVisualEffectsTimeline.GetTotalDuration(result.Events),
                 createdBonusTargets,
                 gameplay.VisualState),
             SwapDurationSeconds = result.IsSwapApplied ? 0.22f : 0.36f,
-            SettleDelaySeconds = GetSettleDelaySeconds(result.Events),
+            SettleDelaySeconds = GameplayVisualEffectsTimeline.GetTotalDuration(result.Events),
             SettleDurationSeconds = 1.15f
         });
 
@@ -141,23 +141,6 @@ public sealed class PresentationScreenHost : IGameScreenHost
         board.SetContent(move.From, toPiece);
         board.SetContent(move.To, fromPiece);
     }
-
-    private static void QueueVisualEvents(GameplayScreen gameplay, IReadOnlyList<IDomainEvent> events)
-    {
-        foreach (var domainEvent in events)
-        {
-            switch (domainEvent)
-            {
-                case DestroyerSpawned destroyer:
-                    GameplayAnimationRuntime.QueueDestroyer(gameplay.BoardViewState, gameplay.AnimationPlayer, destroyer.Position, destroyer.Path, gameplay.BoardTransform);
-                    break;
-                case BombExploded explosion:
-                    GameplayAnimationRuntime.QueueExplosion(gameplay.BoardViewState, gameplay.AnimationPlayer, explosion.Area, gameplay.BoardTransform);
-                    break;
-            }
-        }
-    }
-
     private static IReadOnlyList<GridPosition> GetCreatedBonusTargets(BoardRenderSnapshot snapshot, IReadOnlyList<GridPosition> createdBonusOrigins)
     {
         if (createdBonusOrigins.Count == 0)
@@ -185,19 +168,4 @@ public sealed class PresentationScreenHost : IGameScreenHost
             .ToArray();
     }
 
-    private static float GetSettleDelaySeconds(IReadOnlyList<IDomainEvent> events)
-    {
-        var delay = 0f;
-        foreach (var domainEvent in events)
-        {
-            delay = MathF.Max(delay, domainEvent switch
-            {
-                DestroyerSpawned => 0.8f,
-                BombExploded => 0.45f,
-                _ => 0f
-            });
-        }
-
-        return delay;
-    }
 }

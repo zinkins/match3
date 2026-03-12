@@ -1,6 +1,7 @@
 using Match3.Presentation.Animation;
 using Match3.Presentation.Animation.Engine;
 using System.Numerics;
+using Match3.Core.GameFlow.Events;
 
 namespace Match3.Tests;
 
@@ -303,6 +304,49 @@ public sealed class Phase16AnimationEngineTests
 
         animation.Update(1.95f);
         Assert.True(animation.IsCompleted);
+    }
+
+    [Fact]
+    public void TurnAnimationBuilder_PreservesVisualContinuity_ForBonusActivatedByDestroyer()
+    {
+        var builder = new TurnAnimationBuilder();
+        var visualState = new GameplayVisualState();
+        var player = new AnimationPlayer();
+        var viewState = new BoardViewState();
+        var transform = new Match3.Presentation.Rendering.BoardTransform(48f, new Vector2(20f, 20f));
+        var events = new IDomainEvent[]
+        {
+            new DestroyerSpawned(new Match3.Core.GameCore.ValueObjects.GridPosition(0, 0),
+                [new Match3.Core.GameCore.ValueObjects.GridPosition(0, 0), new Match3.Core.GameCore.ValueObjects.GridPosition(0, 1), new Match3.Core.GameCore.ValueObjects.GridPosition(0, 2)]),
+            new BombExploded(new Match3.Core.GameCore.ValueObjects.GridPosition(0, 1), [new Match3.Core.GameCore.ValueObjects.GridPosition(0, 1)])
+        };
+        var snapshot = new Match3.Presentation.Rendering.BoardRenderSnapshot(
+            [],
+            [
+                new Match3.Presentation.Rendering.RenderPiece(new Match3.Core.GameCore.ValueObjects.GridPosition(0, 1), Match3.Presentation.Rendering.PieceVisualConstants.ShapeCircle, Match3.Presentation.Rendering.PieceVisualConstants.TintRed, 68f, 20f, 32f, 32f)
+            ]);
+        var animation = builder.Build(new TurnAnimationContext
+        {
+            IsSwapApplied = true,
+            QueueVisualEffects = () => GameplayVisualEffectsTimeline.QueueEvents(viewState, player, events, transform),
+            QueueSwapAnimation = static () => { },
+            QueueCreatedBonusAnimation = static () => { },
+            QueueBoardSettleAnimation = static () => { },
+            SwapDurationSeconds = 0.22f,
+            SettleDelaySeconds = GameplayVisualEffectsTimeline.GetTotalDuration(events),
+            SettleDurationSeconds = 0f
+        });
+
+        animation.Update(0f);
+
+        player.Update(0.39f);
+        var beforeActivation = visualState.BuildPieces(snapshot, null, viewState);
+        Assert.Contains(beforeActivation, piece => piece.Position == new Match3.Core.GameCore.ValueObjects.GridPosition(0, 1) && piece.Shape == Match3.Presentation.Rendering.PieceVisualConstants.ShapeCircle);
+
+        player.Update(0.02f);
+        var afterActivation = visualState.BuildPieces(snapshot, null, viewState);
+        Assert.DoesNotContain(afterActivation, piece => piece.Position == new Match3.Core.GameCore.ValueObjects.GridPosition(0, 1) && piece.Shape == Match3.Presentation.Rendering.PieceVisualConstants.ShapeCircle);
+        Assert.Contains(afterActivation, piece => piece.Shape == Match3.Presentation.Rendering.PieceVisualConstants.ShapeCircle && piece.Position.Row == -1);
     }
 
     [Fact]

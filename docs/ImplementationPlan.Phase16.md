@@ -153,9 +153,9 @@ T517 [ ] [Nice] Прогнать tests.
 T518 [x] [MVP] Написать test `TurnAnimationBuilder_DoesNotScheduleSpawnForCreatedBonusCell`.
 T519 [x] [MVP] Зафиксировать правило приоритета created bonus над обычным spawn.
 T520 [x] [MVP] Прогнать tests.
-T521 [ ] [MVP] Написать test `TurnAnimationBuilder_PreservesVisualContinuity_ForBonusActivatedByDestroyer`.
-T522 [ ] [MVP] Реализовать непрерывность визуального объекта при активации бонуса destroyer-ом.
-T523 [ ] [MVP] Прогнать tests.
+T521 [x] [MVP] Написать test `TurnAnimationBuilder_PreservesVisualContinuity_ForBonusActivatedByDestroyer`.
+T522 [x] [MVP] Реализовать непрерывность визуального объекта при активации бонуса destroyer-ом.
+T523 [x] [MVP] Прогнать tests.
 T524 [x] [MVP] Написать test `SelectionEffect_IsSuppressed_WhenPieceNodeIsConsumedByResolvePhase`.
 T525 [x] [MVP] Убрать lingering selection/highlight с уничтоженных узлов.
 T526 [x] [MVP] Прогнать tests.

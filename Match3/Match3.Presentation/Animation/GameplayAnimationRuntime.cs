@@ -10,7 +10,7 @@ namespace Match3.Presentation.Animation;
 
 public static class GameplayAnimationRuntime
 {
-    public static void QueueDestroyer(BoardViewState viewState, AnimationPlayer animationPlayer, GridPosition origin, IReadOnlyList<GridPosition> path, BoardTransform transform)
+    public static void QueueDestroyer(BoardViewState viewState, AnimationPlayer animationPlayer, GridPosition origin, IReadOnlyList<GridPosition> path, BoardTransform transform, float initialDelaySeconds = 0f)
     {
         ArgumentNullException.ThrowIfNull(viewState);
         ArgumentNullException.ThrowIfNull(animationPlayer);
@@ -29,11 +29,11 @@ public static class GameplayAnimationRuntime
         var size = transform.CellSize * 0.42f;
         var forwardPath = path.Skip(launchIndex).ToArray();
         var backwardPath = path.Take(launchIndex + 1).Reverse().ToArray();
-        QueueDestroyerVisual(viewState, animationPlayer, forwardPath, transform, size);
-        QueueDestroyerVisual(viewState, animationPlayer, backwardPath, transform, size);
+        QueueDestroyerVisual(viewState, animationPlayer, forwardPath, transform, size, initialDelaySeconds);
+        QueueDestroyerVisual(viewState, animationPlayer, backwardPath, transform, size, initialDelaySeconds);
     }
 
-    public static void QueueExplosion(BoardViewState viewState, AnimationPlayer animationPlayer, IReadOnlyList<GridPosition> area, BoardTransform transform)
+    public static void QueueExplosion(BoardViewState viewState, AnimationPlayer animationPlayer, IReadOnlyList<GridPosition> area, BoardTransform transform, float initialDelaySeconds = 0f)
     {
         ArgumentNullException.ThrowIfNull(viewState);
         ArgumentNullException.ThrowIfNull(animationPlayer);
@@ -67,6 +67,7 @@ public static class GameplayAnimationRuntime
 
         var areaCells = area.ToArray();
         var animation = Anim.Sequence()
+            .AppendDelayIfNeeded(initialDelaySeconds)
             .Append(new CallbackAnimation(() => viewState.HideCells(areaCells)))
             .Append(Anim.Parallel(
                 Anim.ScaleTo(effectNode, new Vector2(1f, 1f), 0.45f),
@@ -259,7 +260,7 @@ public static class GameplayAnimationRuntime
         }
     }
 
-    private static void QueueDestroyerVisual(BoardViewState viewState, AnimationPlayer animationPlayer, IReadOnlyList<GridPosition> path, BoardTransform transform, float size)
+    private static void QueueDestroyerVisual(BoardViewState viewState, AnimationPlayer animationPlayer, IReadOnlyList<GridPosition> path, BoardTransform transform, float size, float initialDelaySeconds)
     {
         if (path.Count <= 1)
         {
@@ -287,6 +288,7 @@ public static class GameplayAnimationRuntime
         var segmentDuration = 0.8f / (path.Count - 1);
         var pathCells = path.ToArray();
         var animation = Anim.Sequence()
+            .AppendDelayIfNeeded(initialDelaySeconds)
             .Append(new CallbackAnimation(() => viewState.HideCells([pathCells[0]])));
 
         for (var i = 1; i < pathCells.Length; i++)
@@ -385,5 +387,15 @@ public static class GameplayAnimationRuntime
         return before.Shape == after.Shape &&
             before.Tint == after.Tint &&
             before.Position.Row <= after.Position.Row;
+    }
+
+    private static SequenceAnimation AppendDelayIfNeeded(this SequenceAnimation animation, float delaySeconds)
+    {
+        if (delaySeconds > 0f)
+        {
+            animation.Append(new DelayAnimation(delaySeconds, blocksInput: true));
+        }
+
+        return animation;
     }
 }
