@@ -77,9 +77,9 @@ T441 [x] [MVP] Прогнать tests.
 T442 [x] [MVP] Написать test `AnimationPlayer_BlocksInput_WhileBlockingScenarioIsRunning`.
 T443 [x] [MVP] Перевести policy блокировки input на `AnimationPlayer`.
 T444 [x] [MVP] Прогнать tests.
-T445 [ ] [MVP] Написать test `PieceNodeRenderer_UsesAnimatedNodeState_ForDrawing`.
-T446 [ ] [MVP] Перевести render path на чтение состояния из `BoardViewState`.
-T447 [ ] [MVP] Прогнать tests.
+T445 [x] [MVP] Написать test `PieceNodeRenderer_UsesAnimatedNodeState_ForDrawing`.
+T446 [x] [MVP] Перевести render path на чтение состояния из `BoardViewState`.
+T447 [x] [MVP] Прогнать tests.
 T448 [ ] [MVP] Написать test `SwapAnimationScenario_MovesBothPiecesToTargetCells`.
 T449 [ ] [MVP] Перевести `QueueSwap` на `Sequence/Parallel` поверх `PieceNode`.
 T450 [ ] [MVP] Удалить старый special-case код swap overlays.

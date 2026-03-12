@@ -98,6 +98,40 @@ public class Phase15RuntimeRenderingTests
     }
 
     [Fact]
+    public void PieceNodeRenderer_UsesAnimatedNodeState_ForDrawing()
+    {
+        var viewState = new BoardViewState();
+        var renderer = new PieceNodeRenderer();
+        var position = new GridPosition(0, 0);
+        var snapshot = new BoardRenderSnapshot(
+            [],
+            [
+                new RenderPiece(position, PieceVisualConstants.ShapeSquare, PieceVisualConstants.TintRed, 20f, 20f, 32f, 32f)
+            ]);
+        var node = new PieceNode(
+            NodeId.New(),
+            position,
+            new System.Numerics.Vector2(40f, 50f),
+            new System.Numerics.Vector2(1.5f, 0.5f),
+            rotation: 0.3f,
+            opacity: 1f,
+            tint: PieceVisualConstants.TintBlue,
+            glow: 0f,
+            isVisible: true);
+        viewState.AddOrUpdate(node);
+
+        var renderedSnapshot = renderer.BuildSnapshot(snapshot, viewState);
+        var piece = Assert.Single(renderedSnapshot.Pieces);
+
+        Assert.Equal(32f * 1.5f, piece.Width);
+        Assert.Equal(32f * 0.5f, piece.Height);
+        Assert.Equal(40f - ((piece.Width - 32f) / 2f), piece.X);
+        Assert.Equal(50f - ((piece.Height - 32f) / 2f), piece.Y);
+        Assert.Equal(0.3f, piece.Rotation);
+        Assert.Equal(PieceVisualConstants.TintBlue, piece.Tint);
+    }
+
+    [Fact]
     public void PresentationScreenHost_DrawsCurrentScreen()
     {
         var flow = new ScreenFlowController();

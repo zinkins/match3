@@ -86,6 +86,14 @@
 - `AnimationQueue`
 - `AnimationStep`
 
+Правило состояния:
+
+- в `Presentation` допустим mutable runtime state для анимаций и рендера;
+- такой state не считается частью доменной модели;
+- mutable presentation objects не должны утекать в `Game Core` и `Game Flow`.
+
+Это правило нужно для animation/runtime-слоя, где состояние обновляется каждый кадр и где технически удобнее хранить изменяемые transform/state objects.
+
 ### 2.4 Platform
 
 Платформенные проекты `DesktopGL`, `Android`, `iOS` являются composition root:
@@ -141,6 +149,12 @@ Match3.Core/
 - фиксировать смысл данных на уровне типов;
 - защищать инварианты;
 - делать API `Game Core` самодокументируемым.
+
+Важно:
+
+- требование immutable value objects относится прежде всего к `Game Core` и смысловым данным `Game Flow`;
+- presentation runtime не обязан копировать этот стиль один в один;
+- для animation/render state допустим mutable holder, если он изолирован от доменной логики.
 
 Пример:
 

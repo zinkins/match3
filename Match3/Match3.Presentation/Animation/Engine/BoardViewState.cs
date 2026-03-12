@@ -15,7 +15,7 @@ public sealed class BoardViewState
 
         if (nodesById.TryGetValue(node.Id, out var existing))
         {
-            nodeIdsByCell.Remove(existing.LogicalCell);
+            _ = nodeIdsByCell.Remove(existing.LogicalCell);
         }
 
         nodesById[node.Id] = node;
@@ -28,5 +28,17 @@ public sealed class BoardViewState
             nodesById.TryGetValue(nodeId, out var node)
             ? node
             : null;
+    }
+
+    public bool RemoveNode(NodeId id)
+    {
+        if (!nodesById.TryGetValue(id, out var node))
+        {
+            return false;
+        }
+
+        _ = nodesById.Remove(id);
+        _ = nodeIdsByCell.Remove(node.LogicalCell);
+        return true;
     }
 }

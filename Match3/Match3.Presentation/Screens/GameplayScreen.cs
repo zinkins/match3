@@ -32,6 +32,8 @@ public sealed class GameplayScreen : IScreen
         BoardRenderer = boardRenderer;
         HudRenderer = hudRenderer;
         BoardTransform = boardTransform;
+        BoardViewState = new BoardViewState();
+        PieceNodeRenderer = new PieceNodeRenderer();
         OkButton = new UiButton("Ok", onOk ?? throw new ArgumentNullException(nameof(onOk)));
     }
 
@@ -57,6 +59,10 @@ public sealed class GameplayScreen : IScreen
 
     public BoardTransform BoardTransform { get; }
 
+    public BoardViewState BoardViewState { get; }
+
+    public PieceNodeRenderer PieceNodeRenderer { get; }
+
     public UiButton OkButton { get; }
 
     public bool ShouldShowGameOverOverlay => Presenter.IsGameOver && !EffectsController.HasActiveBlockingEffects;
@@ -65,5 +71,3 @@ public sealed class GameplayScreen : IScreen
 
     public GridPosition? SelectedCell => BoardInputHandler.SelectedCell;
 }
-
-
