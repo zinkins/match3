@@ -1,7 +1,9 @@
 using System;
-using Match3.Core.Runtime;
+using System.Linq;
 using Match3.Core.GameCore.Board;
+using Match3.Core.GameCore.ValueObjects;
 using Match3.Core.GameFlow.Events;
+using Match3.Core.Runtime;
 using Match3.Presentation.Input;
 using Match3.Presentation.Rendering;
 
@@ -82,26 +84,31 @@ public sealed class PresentationScreenHost : IGameScreenHost
         }
 
         var move = gameplay.BoardInputHandler.HandleClick(ToNumerics(inputState.PointerPosition));
-        if (move is not null)
+        if (move is null)
         {
-            var beforeBoard = gameplay.Board.Clone();
-            var beforeSnapshot = gameplay.BoardRenderer.BuildSnapshot(beforeBoard, gameplay.BoardTransform);
-            var result = gameplay.Presenter.ProcessMove(gameplay.Board, move.Value);
-            var afterSnapshot = gameplay.BoardRenderer.BuildSnapshot(gameplay.Board, gameplay.BoardTransform);
-            QueueVisualEvents(gameplay, result.Events);
-            gameplay.EffectsController.QueueSwap(beforeSnapshot, move.Value, rollback: !result.IsSwapApplied);
-            if (result.IsSwapApplied)
-            {
-                var swappedBoard = beforeBoard.Clone();
-                ApplySwap(swappedBoard, move.Value);
-                var swappedSnapshot = gameplay.BoardRenderer.BuildSnapshot(swappedBoard, gameplay.BoardTransform);
-                gameplay.EffectsController.QueueBoardSettle(
-                    swappedSnapshot,
-                    afterSnapshot,
-                    gameplay.BoardTransform.CellSize,
-                    GetSettleDelaySeconds(result.Events));
-            }
+            return;
         }
+
+        var beforeBoard = gameplay.Board.Clone();
+        var beforeSnapshot = gameplay.BoardRenderer.BuildSnapshot(beforeBoard, gameplay.BoardTransform);
+        var result = gameplay.Presenter.ProcessMove(gameplay.Board, move.Value);
+        var afterSnapshot = gameplay.BoardRenderer.BuildSnapshot(gameplay.Board, gameplay.BoardTransform);
+        QueueVisualEvents(gameplay, result.Events);
+        gameplay.EffectsController.QueueSwap(beforeSnapshot, move.Value, rollback: !result.IsSwapApplied);
+        if (!result.IsSwapApplied)
+        {
+            return;
+        }
+
+        var swappedBoard = beforeBoard.Clone();
+        ApplySwap(swappedBoard, move.Value);
+        var swappedSnapshot = gameplay.BoardRenderer.BuildSnapshot(swappedBoard, gameplay.BoardTransform);
+        gameplay.EffectsController.QueueBoardSettle(
+            swappedSnapshot,
+            afterSnapshot,
+            gameplay.BoardTransform.CellSize,
+            GetSettleDelaySeconds(result.Events),
+            GetCreatedBonusOrigins(result.Events));
     }
 
     private static System.Numerics.Vector2 ToNumerics(System.Numerics.Vector2 value)
@@ -109,7 +116,7 @@ public sealed class PresentationScreenHost : IGameScreenHost
         return value;
     }
 
-    private static void ApplySwap(BoardState board, Match3.Core.GameCore.ValueObjects.Move move)
+    private static void ApplySwap(BoardState board, Move move)
     {
         var fromPiece = board.GetContent(move.From);
         var toPiece = board.GetContent(move.To);
@@ -133,6 +140,20 @@ public sealed class PresentationScreenHost : IGameScreenHost
         }
     }
 
+    private static IReadOnlyList<GridPosition> GetCreatedBonusOrigins(IReadOnlyList<IDomainEvent> events)
+    {
+        return events
+            .Select(domainEvent => domainEvent switch
+            {
+                LineBonusCreated created => (GridPosition?)created.Position,
+                BombBonusCreated created => created.Position,
+                _ => null
+            })
+            .Where(position => position is not null)
+            .Select(position => position!.Value)
+            .ToArray();
+    }
+
     private static float GetSettleDelaySeconds(IReadOnlyList<IDomainEvent> events)
     {
         var delay = 0f;
@@ -149,3 +170,4 @@ public sealed class PresentationScreenHost : IGameScreenHost
         return delay;
     }
 }
+

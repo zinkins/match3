@@ -120,7 +120,8 @@ public sealed class TimedPieceEffect
         IPieceEffect effect,
         float durationSeconds,
         float delaySeconds,
-        bool hideBasePiece)
+        bool hideBasePiece,
+        bool hideBasePieceBeforeStart = false)
     {
         Position = position;
         Piece = piece;
@@ -128,6 +129,7 @@ public sealed class TimedPieceEffect
         DurationSeconds = durationSeconds;
         DelaySeconds = delaySeconds;
         HideBasePiece = hideBasePiece;
+        HideBasePieceBeforeStart = hideBasePieceBeforeStart;
     }
 
     public GridPosition? Position { get; }
@@ -139,6 +141,8 @@ public sealed class TimedPieceEffect
     public float DelaySeconds { get; }
 
     public bool HideBasePiece { get; }
+
+    public bool HideBasePieceBeforeStart { get; }
 
     public float ElapsedSeconds { get; private set; }
 
@@ -352,7 +356,7 @@ public sealed class GameplayEffectsController
         var pieces = new List<RenderPiece>(snapshot.Pieces.Count + overlayEffects.Count);
         foreach (var piece in snapshot.Pieces)
         {
-            if (overlayEffects.Any(effect => effect.HideBasePiece && effect.IsStarted && effect.Position == piece.Position))
+            if (overlayEffects.Any(effect => effect.HideBasePiece && effect.Position == piece.Position && (effect.IsStarted || effect.HideBasePieceBeforeStart)))
             {
                 continue;
             }
@@ -536,7 +540,7 @@ public sealed class GameplayEffectsController
             hideBasePiece: true));
     }
 
-    public void QueueBoardSettle(BoardRenderSnapshot beforeSnapshot, BoardRenderSnapshot afterSnapshot, float cellSize, float initialDelaySeconds = 0f)
+    public void QueueBoardSettle(BoardRenderSnapshot beforeSnapshot, BoardRenderSnapshot afterSnapshot, float cellSize, float initialDelaySeconds = 0f, IReadOnlyList<GridPosition>? createdBonusOrigins = null)
     {
         for (var column = 0; column < 8; column++)
         {
@@ -575,7 +579,8 @@ public sealed class GameplayEffectsController
                     new MovePieceEffect(from, new Vector2(target.X, target.Y)),
                     durationSeconds: source is not null ? 0.65f : 0.75f,
                     delaySeconds: initialDelaySeconds + (source is not null ? 0f : 0.4f),
-                    hideBasePiece: true));
+                    hideBasePiece: true,
+                    hideBasePieceBeforeStart: source is null));
             }
         }
     }

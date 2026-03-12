@@ -177,4 +177,43 @@ public class Phase15PieceEffectsTests
 
         Assert.True(movedBluePiece.Y <= 116f);
     }
+
+    [Fact]
+    public void GameplayEffectsController_HidesSpawnTargets_BeforeSpawnAnimationStarts()
+    {
+        var controller = new GameplayEffectsController();
+        var beforeSnapshot = new BoardRenderSnapshot([], []);
+        var afterSnapshot = new BoardRenderSnapshot(
+            [],
+            [
+                new RenderPiece(new GridPosition(0, 0), PieceVisualConstants.ShapeDiamond, PieceVisualConstants.TintRed, 20f, 20f, 32f, 32f)
+            ]);
+
+        controller.QueueBoardSettle(beforeSnapshot, afterSnapshot, 48f);
+        controller.Update(TimeSpan.FromMilliseconds(50));
+
+        var pieces = controller.BuildPieces(afterSnapshot, null);
+
+        Assert.DoesNotContain(pieces, piece => piece.Position == new GridPosition(0, 0));
+    }
+
+    [Fact]
+    public void GameplayEffectsController_AnimatesCreatedBonus_FromCreationCell_InsteadOfTopSpawn()
+    {
+        var controller = new GameplayEffectsController();
+        var beforeSnapshot = new BoardRenderSnapshot([], []);
+        var afterSnapshot = new BoardRenderSnapshot(
+            [],
+            [
+                new RenderPiece(new GridPosition(3, 2), PieceVisualConstants.ShapeDiamond, PieceVisualConstants.TintRed, 116f, 164f, 32f, 32f)
+            ]);
+
+        controller.QueueBoardSettle(beforeSnapshot, afterSnapshot, 48f, createdBonusOrigins: [new GridPosition(1, 2)]);
+        controller.Update(TimeSpan.FromMilliseconds(50));
+
+        var pieces = controller.BuildPieces(afterSnapshot, null);
+        var bonus = Assert.Single(pieces, piece => piece.Shape == PieceVisualConstants.ShapeDiamond);
+
+        Assert.True(bonus.Y >= 68f);
+    }
 }
