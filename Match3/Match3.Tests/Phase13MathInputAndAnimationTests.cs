@@ -160,6 +160,26 @@ public class Phase13MathInputAndAnimationTests
     }
 
     [Fact]
+    public void DestroyerAnimation_InterpolatesContinuouslyAcrossWholePath()
+    {
+        var animation = new DestroyerAnimation(
+            new List<Vector2>
+            {
+                new(0f, 0f),
+                new(10f, 0f),
+                new(20f, 0f)
+            });
+
+        var quarter = animation.Evaluate(0.25f);
+        var half = animation.Evaluate(0.5f);
+        var threeQuarters = animation.Evaluate(0.75f);
+
+        Assert.Equal(new Vector2(5f, 0f), quarter);
+        Assert.Equal(new Vector2(10f, 0f), half);
+        Assert.Equal(new Vector2(15f, 0f), threeQuarters);
+    }
+
+    [Fact]
     public void SelectionHighlight_CreatesMatrixTransform()
     {
         var highlight = new SelectionHighlight();

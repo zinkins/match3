@@ -80,6 +80,32 @@ public class Phase15PieceEffectsTests
     }
 
     [Fact]
+    public void GameplayAnimationRuntime_UsesSameSpeed_ForBothDestroyerBranches()
+    {
+        var visualState = new GameplayVisualState();
+        var player = new AnimationPlayer();
+        var viewState = new BoardViewState();
+        var transform = new BoardTransform(48f, new System.Numerics.Vector2(20f, 20f));
+        var snapshot = new BoardRenderSnapshot([], []);
+
+        GameplayAnimationRuntime.QueueDestroyer(
+            viewState,
+            player,
+            new GridPosition(0, 2),
+            [new GridPosition(0, 0), new GridPosition(0, 1), new GridPosition(0, 2), new GridPosition(0, 3), new GridPosition(0, 4)],
+            transform);
+
+        AdvanceRuntime(player, 0.2f, stepSeconds: 0.2f);
+        var pieces = visualState.BuildPieces(snapshot, null, viewState)
+            .Where(piece => piece.Shape == PieceVisualConstants.ShapeDiamond)
+            .OrderBy(piece => piece.X)
+            .ToArray();
+
+        Assert.Equal(2, pieces.Length);
+        Assert.Equal(96f, pieces[1].X - pieces[0].X, 0.01f);
+    }
+
+    [Fact]
     public void GameplayAnimationRuntime_HidesPiecesInsideExplosionArea_WhileBombEffectRuns()
     {
         var visualState = new GameplayVisualState();
@@ -130,7 +156,7 @@ public class Phase15PieceEffectsTests
             .Where(piece => piece.Shape == PieceVisualConstants.ShapeDiamond)
             .Max(piece => piece.X);
 
-        AdvanceRuntime(player, 0.55f);
+        AdvanceRuntime(player, 0.15f);
 
         var latePieces = visualState.BuildPieces(snapshot, null, viewState);
         var lateDestroyerX = latePieces
@@ -138,6 +164,29 @@ public class Phase15PieceEffectsTests
             .Max(piece => piece.X);
 
         Assert.True(lateDestroyerX > earlyDestroyerX);
+    }
+
+    [Fact]
+    public void GameplayAnimationRuntime_MovesDestroyerSmoothly_ThroughSegmentBoundaries()
+    {
+        var visualState = new GameplayVisualState();
+        var player = new AnimationPlayer();
+        var viewState = new BoardViewState();
+        var transform = new BoardTransform(48f, new System.Numerics.Vector2(20f, 20f));
+        var snapshot = new BoardRenderSnapshot([], []);
+
+        GameplayAnimationRuntime.QueueDestroyer(viewState, player, new GridPosition(0, 0), [new GridPosition(0, 0), new GridPosition(0, 1), new GridPosition(0, 2), new GridPosition(0, 3)], transform);
+        AdvanceRuntime(player, 0.10f, stepSeconds: 0.10f);
+        var beforeBoundaryX = visualState.BuildPieces(snapshot, null, viewState)
+            .Single(piece => piece.Shape == PieceVisualConstants.ShapeDiamond)
+            .X;
+
+        AdvanceRuntime(player, 0.40f, stepSeconds: 0.40f);
+        var afterBoundaryX = visualState.BuildPieces(snapshot, null, viewState)
+            .Single(piece => piece.Shape == PieceVisualConstants.ShapeDiamond)
+            .X;
+
+        Assert.True(afterBoundaryX > beforeBoundaryX);
     }
 
     [Fact]

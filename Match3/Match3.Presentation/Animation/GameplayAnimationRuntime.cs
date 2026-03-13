@@ -29,8 +29,11 @@ public static class GameplayAnimationRuntime
         var size = transform.CellSize * 0.42f;
         var forwardPath = path.Skip(launchIndex).ToArray();
         var backwardPath = path.Take(launchIndex + 1).Reverse().ToArray();
-        QueueDestroyerVisual(viewState, animationPlayer, forwardPath, transform, size, initialDelaySeconds);
-        QueueDestroyerVisual(viewState, animationPlayer, backwardPath, transform, size, initialDelaySeconds);
+        var segmentDurationSeconds = path.Count > 1
+            ? 0.8f / (path.Count - 1)
+            : 0f;
+        QueueDestroyerVisual(viewState, animationPlayer, forwardPath, transform, size, initialDelaySeconds, segmentDurationSeconds);
+        QueueDestroyerVisual(viewState, animationPlayer, backwardPath, transform, size, initialDelaySeconds, segmentDurationSeconds);
     }
 
     public static void QueueExplosion(BoardViewState viewState, AnimationPlayer animationPlayer, IReadOnlyList<GridPosition> area, BoardTransform transform, float initialDelaySeconds = 0f)
@@ -314,7 +317,7 @@ public static class GameplayAnimationRuntime
         }
     }
 
-    private static void QueueDestroyerVisual(BoardViewState viewState, AnimationPlayer animationPlayer, IReadOnlyList<GridPosition> path, BoardTransform transform, float size, float initialDelaySeconds)
+    private static void QueueDestroyerVisual(BoardViewState viewState, AnimationPlayer animationPlayer, IReadOnlyList<GridPosition> path, BoardTransform transform, float size, float initialDelaySeconds, float segmentDurationSeconds)
     {
         if (path.Count <= 1)
         {
@@ -339,27 +342,17 @@ public static class GameplayAnimationRuntime
             layer: 30f);
         viewState.AddOrUpdate(effectNode);
 
-        var segmentDuration = 0.8f / (path.Count - 1);
         var pathCells = path.ToArray();
+        var durationSeconds = segmentDurationSeconds * (pathCells.Length - 1);
         var animation = Anim.Sequence()
             .AppendDelayIfNeeded(initialDelaySeconds)
-            .Append(new CallbackAnimation(() => viewState.HideCells([pathCells[0]])));
-
-        for (var i = 1; i < pathCells.Length; i++)
-        {
-            var targetCenter = centers[i];
-            var targetPosition = new Vector2(targetCenter.X - (size / 2f), targetCenter.Y - (size / 2f));
-            var cell = pathCells[i];
-            animation
-                .Append(Anim.MoveTo(effectNode, targetPosition, segmentDuration))
-                .Append(new CallbackAnimation(() => viewState.HideCells([cell])));
-        }
-
-        animation.Append(new CallbackAnimation(() =>
-        {
-            viewState.ShowCells(pathCells);
-            viewState.RemoveEffectNode(effectNode.Id);
-        }));
+            .Append(new DestroyerFlightAnimation(
+                viewState,
+                effectNode,
+                centers,
+                pathCells,
+                size,
+                durationSeconds));
 
         animationPlayer.Play(animation, ChannelConflictPolicy.Replace);
     }

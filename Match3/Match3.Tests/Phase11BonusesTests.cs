@@ -289,7 +289,7 @@ public class Phase11BonusesTests
     }
 
     [Fact]
-    public void TurnProcessor_KeepsNewlyCreatedBonus_OnBoard_WhenCascadeWouldImmediatelyMatchIt()
+    public void TurnProcessor_ActivatesNewlyCreatedBonus_WhenNextCascadeMatchesIt()
     {
         var board = CreateBoardForFreshBonusProtection();
         var processor = new TurnProcessor(
@@ -306,8 +306,8 @@ public class Phase11BonusesTests
             new GameSession(),
             new GameplayStateMachine());
 
-        Assert.True(HasAnyBonus(board));
-        Assert.DoesNotContain(result.Events, e => e is DestroyerSpawned or BombExploded);
+        Assert.Contains(result.Events, e => e is LineBonusCreated);
+        Assert.Contains(result.Events, e => e is DestroyerSpawned);
     }
 
     private static MatchGroup Match(PieceType piece, params GridPosition[] positions)
@@ -368,31 +368,20 @@ public class Phase11BonusesTests
             }
         }
 
-        board.SetPiece(new GridPosition(5, 0), PieceType.Red);
+        board.SetPiece(new GridPosition(4, 3), PieceType.Red);
+        board.SetPiece(new GridPosition(4, 4), PieceType.Red);
+        board.SetPiece(new GridPosition(5, 0), PieceType.Green);
         board.SetPiece(new GridPosition(5, 1), PieceType.Red);
         board.SetPiece(new GridPosition(5, 2), PieceType.Blue);
         board.SetPiece(new GridPosition(5, 3), PieceType.Red);
+        board.SetPiece(new GridPosition(5, 4), PieceType.Red);
+        board.SetPiece(new GridPosition(5, 5), PieceType.Blue);
+        board.SetPiece(new GridPosition(4, 3), PieceType.Red);
         board.SetPiece(new GridPosition(4, 2), PieceType.Red);
-        board.SetPiece(new GridPosition(6, 2), PieceType.Red);
-        board.SetPiece(new GridPosition(7, 2), PieceType.Red);
+        board.SetPiece(new GridPosition(6, 2), PieceType.Blue);
+        board.SetPiece(new GridPosition(7, 2), PieceType.Green);
 
         return board;
-    }
-
-    private static bool HasAnyBonus(BoardState board)
-    {
-        for (var row = 0; row < board.Height; row++)
-        {
-            for (var column = 0; column < board.Width; column++)
-            {
-                if (board.GetBonus(new GridPosition(row, column)) is not null)
-                {
-                    return true;
-                }
-            }
-        }
-
-        return false;
     }
 
     private sealed class SequenceRandomSource(params int[] values) : IRandomSource

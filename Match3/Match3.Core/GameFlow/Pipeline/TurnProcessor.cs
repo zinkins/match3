@@ -194,6 +194,8 @@ public sealed class TurnProcessor
             stepEvents.Add(new PiecesSpawned());
             onPhaseCompleted?.Invoke(stateMachine.State, session);
 
+            board.MarkAllBonusesAsSettled();
+
             cascadeSteps.Add(new TurnPipelineCascadeStep(stepStartBoard, stepResolvedBoard, stepGravityBoard, board.Clone(), stepEvents));
             events.AddRange(stepEvents);
 
@@ -209,8 +211,6 @@ public sealed class TurnProcessor
                 onPhaseCompleted?.Invoke(stateMachine.State, session);
             }
         }
-
-        board.MarkAllBonusesAsSettled();
         stateMachine.TransitionToCheckingEndGame();
         if (session.IsGameOver)
         {
