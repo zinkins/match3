@@ -81,7 +81,11 @@ public sealed class ScreenFlowController
     private GameplayScreen CreateGameplayScreen(GameSession session, Action onOk)
     {
         var board = new BoardGenerator().Generate();
-        var boardTransform = new BoardTransform(48f, new System.Numerics.Vector2(40f, 100f), board.Height, board.Width);
+        var boardTransform = new BoardTransform(
+            LayoutMetrics.InitialBoardCellSize,
+            new System.Numerics.Vector2(LayoutMetrics.InitialBoardOriginX, LayoutMetrics.InitialBoardOriginY),
+            board.Height,
+            board.Width);
         var presenter = new GameplayPresenter(
             new TurnProcessor(),
             new GameplayStateMachine(),

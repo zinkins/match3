@@ -123,7 +123,13 @@ public class Phase15PieceEffectsTests
             ]);
 
         GameplayAnimationRuntime.QueueExplosion(viewState, player, [affected], transform);
-        player.Update(0.05f);
+        player.Update(0.24f);
+
+        var piecesBeforeDetonation = visualState.BuildPieces(snapshot, null, viewState);
+
+        Assert.Contains(piecesBeforeDetonation, piece => piece.Position == affected);
+
+        player.Update(0.02f);
 
         var pieces = visualState.BuildPieces(snapshot, null, viewState);
 

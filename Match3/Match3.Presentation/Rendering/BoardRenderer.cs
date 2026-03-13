@@ -31,7 +31,7 @@ public sealed class BoardRenderer
     {
         var cells = new List<RenderQuad>(board.Width * board.Height);
         var pieces = new List<RenderPiece>(board.Width * board.Height);
-        var inset = transform.CellSize * 0.12f;
+        var inset = transform.CellSize * BoardRenderStyle.PieceInsetFactor;
 
         for (var row = 0; row < board.Height; row++)
         {
@@ -42,8 +42,8 @@ public sealed class BoardRenderer
                 cells.Add(new RenderQuad(
                     world.X,
                     world.Y,
-                    transform.CellSize - 1f,
-                    transform.CellSize - 1f,
+                    transform.CellSize - BoardRenderStyle.CellBorderThickness,
+                    transform.CellSize - BoardRenderStyle.CellBorderThickness,
                     PieceVisualConstants.TintDarkGray));
 
                 var content = board.GetContent(position);
@@ -115,9 +115,9 @@ public sealed class BoardRenderer
         return bonus switch
         {
             LineBonus { Orientation: LineOrientation.Horizontal } =>
-                (world.X + (transform.CellSize * 0.08f), world.Y + (transform.CellSize * 0.26f), transform.CellSize * 0.84f, transform.CellSize * 0.48f),
+                (world.X + (transform.CellSize * BoardRenderStyle.HorizontalLineOffsetXFactor), world.Y + (transform.CellSize * BoardRenderStyle.HorizontalLineOffsetYFactor), transform.CellSize * BoardRenderStyle.HorizontalLineWidthFactor, transform.CellSize * BoardRenderStyle.HorizontalLineHeightFactor),
             LineBonus { Orientation: LineOrientation.Vertical } =>
-                (world.X + (transform.CellSize * 0.26f), world.Y + (transform.CellSize * 0.08f), transform.CellSize * 0.48f, transform.CellSize * 0.84f),
+                (world.X + (transform.CellSize * BoardRenderStyle.VerticalLineOffsetXFactor), world.Y + (transform.CellSize * BoardRenderStyle.VerticalLineOffsetYFactor), transform.CellSize * BoardRenderStyle.VerticalLineWidthFactor, transform.CellSize * BoardRenderStyle.VerticalLineHeightFactor),
             BombBonus =>
                 (world.X + inset, world.Y + inset, baseSize, baseSize),
             _ =>

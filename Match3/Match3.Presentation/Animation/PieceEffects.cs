@@ -209,8 +209,6 @@ public sealed class TimedPathClearEffect(IReadOnlyList<GridPosition> path, float
 
 public sealed class GameplayVisualState
 {
-    private const float SelectedSpinSpeedRadiansPerSecond = 0.45f;
-
     private GridPosition? lastSelectedCell;
     private GridPosition? suppressedSelectedCell;
     private float selectedSpinElapsedSeconds;
@@ -260,8 +258,8 @@ public sealed class GameplayVisualState
         {
             animationPlayer.Play(
                 Anim.Parallel(
-                    Anim.ScaleTo(previousNode, new Vector2(1f, 1f), 0.12f),
-                    Anim.RotateTo(previousNode, 0f, 0.12f)),
+                    Anim.ScaleTo(previousNode, new Vector2(1f, 1f), GameplayEffectTimings.SelectionTransitionSeconds),
+                    Anim.RotateTo(previousNode, 0f, GameplayEffectTimings.SelectionTransitionSeconds)),
                 ChannelConflictPolicy.Replace);
         }
 
@@ -269,8 +267,8 @@ public sealed class GameplayVisualState
         {
             animationPlayer.Play(
                 Anim.Parallel(
-                    Anim.ScaleTo(selectedNode, new Vector2(1.12f, 1.12f), 0.12f),
-                    Anim.RotateTo(selectedNode, 0.18f, 0.12f)),
+                    Anim.ScaleTo(selectedNode, new Vector2(GameplayEffectStyle.SelectedScale, GameplayEffectStyle.SelectedScale), GameplayEffectTimings.SelectionTransitionSeconds),
+                    Anim.RotateTo(selectedNode, GameplayEffectStyle.SelectedRotationRadians, GameplayEffectTimings.SelectionTransitionSeconds)),
                 ChannelConflictPolicy.Replace);
         }
 
@@ -295,7 +293,7 @@ public sealed class GameplayVisualState
             var current = effectiveSelectedCell == piece.Position
                 ? piece with
                 {
-                    Layer = 10f,
+                    Layer = GameplayEffectStyle.SelectedLayer,
                     Rotation = piece.Rotation + GetSelectedSpinRotation()
                 }
                 : piece;
@@ -327,7 +325,7 @@ public sealed class GameplayVisualState
 
     private float GetSelectedSpinRotation()
     {
-        return (selectedSpinElapsedSeconds * SelectedSpinSpeedRadiansPerSecond) % MathF.Tau;
+        return (selectedSpinElapsedSeconds * GameplayEffectTimings.SelectedSpinSpeedRadiansPerSecond) % MathF.Tau;
     }
 
     private static RenderPiece BuildEffectPiece(EffectNode effectNode)

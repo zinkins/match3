@@ -6,7 +6,7 @@ public sealed class TurnAnimationContext
 
     public required Action QueueSwapAnimation { get; init; }
 
-    public float SwapDurationSeconds { get; init; } = 0.22f;
+    public float SwapDurationSeconds { get; init; } = GameplayEffectTimings.SwapAcceptedSeconds;
 
     public IReadOnlyList<TurnAnimationCascadeStep> CascadeSteps { get; init; } = [];
 }

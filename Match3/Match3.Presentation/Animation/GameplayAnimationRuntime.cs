@@ -35,11 +35,11 @@ public static class GameplayAnimationRuntime
             launchIndex = path.Count / 2;
         }
 
-        var size = transform.CellSize * 0.42f;
+        var size = transform.CellSize * GameplayEffectStyle.DestroyerSizeFactor;
         var forwardPath = path.Skip(launchIndex).ToArray();
         var backwardPath = path.Take(launchIndex + 1).Reverse().ToArray();
         var segmentDurationSeconds = path.Count > 1
-            ? 0.8f / (path.Count - 1)
+            ? GameplayEffectTimings.DestroyerTravelSeconds / (path.Count - 1)
             : 0f;
         QueueDestroyerVisual(viewState, animationPlayer, forwardPath, transform, size, initialDelaySeconds, segmentDurationSeconds);
         QueueDestroyerVisual(viewState, animationPlayer, backwardPath, transform, size, initialDelaySeconds, segmentDurationSeconds);
@@ -67,13 +67,13 @@ public static class GameplayAnimationRuntime
         var centerColumn = (float)area.Average(position => position.Column);
         var centerWorld = transform.GridToWorld(new GridPosition((int)MathF.Round(centerRow), (int)MathF.Round(centerColumn)));
         var center = new Vector2(centerWorld.X + (transform.CellSize / 2f), centerWorld.Y + (transform.CellSize / 2f));
-        var maxSize = transform.CellSize * 1.9f;
+        var maxSize = transform.CellSize * GameplayEffectStyle.BombMaxSizeFactor;
         var initialPosition = new Vector2(center.X - (maxSize / 2f), center.Y - (maxSize / 2f));
         var effectNode = new EffectNode(
             NodeId.New(),
             new GridPosition(-1, -1),
             initialPosition,
-            new Vector2(0.1f, 0.1f),
+            new Vector2(GameplayEffectStyle.BombInitialScale, GameplayEffectStyle.BombInitialScale),
             rotation: 0f,
             opacity: 1f,
             tint: PieceVisualConstants.TintOrange,
@@ -82,16 +82,17 @@ public static class GameplayAnimationRuntime
             shape: PieceVisualConstants.ShapeCircle,
             width: maxSize,
             height: maxSize,
-            layer: 25f);
+            layer: GameplayEffectStyle.BombEffectLayer);
         viewState.AddOrUpdate(effectNode);
 
         var areaCells = area.ToArray();
         var animation = Anim.Sequence()
             .AppendDelayIfNeeded(initialDelaySeconds)
+            .AppendDelayIfNeeded(GameplayEffectTimings.BombDetonationDelaySeconds)
             .Append(new CallbackAnimation(() => viewState.HideCells(areaCells)))
             .Append(Anim.Parallel(
-                Anim.ScaleTo(effectNode, new Vector2(1f, 1f), 0.45f),
-                Anim.FadeTo(effectNode, 0f, 0.45f)))
+                Anim.ScaleTo(effectNode, new Vector2(1f, 1f), GameplayEffectTimings.BombExplosionSeconds),
+                Anim.FadeTo(effectNode, 0f, GameplayEffectTimings.BombExplosionSeconds)))
             .Append(new CallbackAnimation(() =>
             {
                 viewState.ShowCells(areaCells);
@@ -148,7 +149,7 @@ public static class GameplayAnimationRuntime
                 piece.Shape,
                 piece.Width,
                 piece.Height,
-                layer: 20f);
+                layer: GameplayEffectStyle.MatchPopEffectLayer);
             viewState.AddOrUpdate(effectNode);
 
             var scaleAnimation = new PropertyTween<Vector2>(
@@ -158,10 +159,10 @@ public static class GameplayAnimationRuntime
                 value => effectNode.Scale = value,
                 new Vector2(1f, 1f),
                 Vector2.Zero,
-                0.18f,
+                GameplayEffectTimings.MatchPopSeconds,
                 static (_, _, progress) =>
                 {
-                    var burst = 1f + (0.28f * MathF.Sin(progress * MathF.PI));
+                    var burst = 1f + (GameplayEffectStyle.MatchPopBurstAmplitude * MathF.Sin(progress * MathF.PI));
                     var shrink = 1f - Easing.SmoothStep(progress);
                     var value = MathF.Max(0f, burst * shrink);
                     return new Vector2(value, value);
@@ -172,8 +173,8 @@ public static class GameplayAnimationRuntime
                 () => effectNode.Rotation,
                 value => effectNode.Rotation = value,
                 piece.Rotation,
-                piece.Rotation + 0.45f,
-                0.18f,
+                piece.Rotation + GameplayEffectStyle.MatchPopRotationDeltaRadians,
+                GameplayEffectTimings.MatchPopSeconds,
                 static (from, to, progress) => from + ((to - from) * Easing.SmoothStep(progress)));
 
             var animation = Anim.Sequence()
@@ -209,11 +210,11 @@ public static class GameplayAnimationRuntime
         {
             var rollbackSequence = Anim.Sequence()
                 .Append(Anim.Parallel(
-                    Anim.MoveTo(fromNode, toPosition, 0.18f, blocksInput: true),
-                    Anim.MoveTo(toNode, fromPosition, 0.18f, blocksInput: true)))
+                    Anim.MoveTo(fromNode, toPosition, GameplayEffectTimings.SwapRollbackLegSeconds, blocksInput: true),
+                    Anim.MoveTo(toNode, fromPosition, GameplayEffectTimings.SwapRollbackLegSeconds, blocksInput: true)))
                 .Append(Anim.Parallel(
-                    Anim.MoveTo(fromNode, fromPosition, 0.18f, blocksInput: true),
-                    Anim.MoveTo(toNode, toPosition, 0.18f, blocksInput: true)));
+                    Anim.MoveTo(fromNode, fromPosition, GameplayEffectTimings.SwapRollbackLegSeconds, blocksInput: true),
+                    Anim.MoveTo(toNode, toPosition, GameplayEffectTimings.SwapRollbackLegSeconds, blocksInput: true)));
             animationPlayer.Play(rollbackSequence, ChannelConflictPolicy.Replace);
             return;
         }
@@ -222,8 +223,8 @@ public static class GameplayAnimationRuntime
         toNode.LogicalCell = move.From;
         animationPlayer.Play(
             Anim.Parallel(
-                Anim.MoveTo(fromNode, toPosition, 0.22f, blocksInput: true),
-                Anim.MoveTo(toNode, fromPosition, 0.22f, blocksInput: true)),
+                Anim.MoveTo(fromNode, toPosition, GameplayEffectTimings.SwapAcceptedSeconds, blocksInput: true),
+                Anim.MoveTo(toNode, fromPosition, GameplayEffectTimings.SwapAcceptedSeconds, blocksInput: true)),
             ChannelConflictPolicy.Replace);
     }
 
@@ -310,7 +311,7 @@ public static class GameplayAnimationRuntime
                 {
                     var node = viewState.GetPieceNode(source!.Position) ?? CreatePieceNode(source, new Vector2(source.X, source.Y));
                     var from = node.Position;
-                    var durationSeconds = 0.65f;
+                    var durationSeconds = GameplayEffectTimings.GravitySeconds;
                     var delaySeconds = initialDelaySeconds;
 
                     node.LogicalCell = target.Position;
@@ -408,7 +409,7 @@ public static class GameplayAnimationRuntime
                     animation.Append(new DelayAnimation(initialDelaySeconds, blocksInput: true));
                 }
 
-                animation.Append(Anim.MoveTo(node, targetPosition, 0.75f, blocksInput: true));
+                animation.Append(Anim.MoveTo(node, targetPosition, GameplayEffectTimings.SpawnSeconds, blocksInput: true));
                 animationPlayer.Play(animation, ChannelConflictPolicy.Replace);
             }
         }
@@ -459,7 +460,7 @@ public static class GameplayAnimationRuntime
                 animation.Append(new DelayAnimation(initialDelaySeconds, blocksInput: true));
             }
 
-            animation.Append(Anim.MoveTo(node, targetPosition, 0.75f, blocksInput: true));
+            animation.Append(Anim.MoveTo(node, targetPosition, GameplayEffectTimings.SpawnSeconds, blocksInput: true));
             animationPlayer.Play(animation, ChannelConflictPolicy.Replace);
         }
     }
@@ -486,7 +487,7 @@ public static class GameplayAnimationRuntime
             shape: PieceVisualConstants.ShapeDiamond,
             width: size,
             height: size,
-            layer: 30f);
+            layer: GameplayEffectStyle.DestroyerEffectLayer);
         viewState.AddOrUpdate(effectNode);
 
         var pathCells = path.ToArray();

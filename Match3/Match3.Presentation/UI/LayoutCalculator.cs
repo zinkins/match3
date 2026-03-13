@@ -6,17 +6,10 @@ namespace Match3.Presentation.UI;
 
 public sealed class LayoutCalculator
 {
-    private const float MinSafePadding = 16f;
-    private const float HudHeight = 48f;
-    private const float HudSpacing = 16f;
-    private const float ButtonWidth = 220f;
-    private const float ButtonHeight = 70f;
-    private const float TitleWidth = 220f;
-
     public UiRect GetSafeBounds(float viewportWidth, float viewportHeight)
     {
-        var horizontalPadding = MathF.Max(MinSafePadding, viewportWidth * 0.04f);
-        var verticalPadding = MathF.Max(MinSafePadding, viewportHeight * 0.04f);
+        var horizontalPadding = MathF.Max(LayoutMetrics.MinSafePadding, viewportWidth * LayoutMetrics.SafePaddingFactor);
+        var verticalPadding = MathF.Max(LayoutMetrics.MinSafePadding, viewportHeight * LayoutMetrics.SafePaddingFactor);
         return new UiRect(
             horizontalPadding,
             verticalPadding,
@@ -27,7 +20,7 @@ public sealed class LayoutCalculator
     public GameplayLayout CalculateGameplayLayout(float viewportWidth, float viewportHeight, int rows = 8, int columns = 8)
     {
         var safeBounds = GetSafeBounds(viewportWidth, viewportHeight);
-        var availableHeight = MathF.Max(0f, safeBounds.Height - HudHeight - HudSpacing);
+        var availableHeight = MathF.Max(0f, safeBounds.Height - LayoutMetrics.HudHeight - LayoutMetrics.HudSpacing);
         var cellSize = MathF.Floor(MathF.Min(safeBounds.Width / columns, availableHeight / rows));
         if (cellSize <= 0f)
         {
@@ -38,20 +31,20 @@ public sealed class LayoutCalculator
         var boardHeight = cellSize * rows;
         var origin = new Vector2(
             safeBounds.X + ((safeBounds.Width - boardWidth) / 2f),
-            safeBounds.Y + HudHeight + HudSpacing + ((availableHeight - boardHeight) / 2f));
+            safeBounds.Y + LayoutMetrics.HudHeight + LayoutMetrics.HudSpacing + ((availableHeight - boardHeight) / 2f));
 
         return new GameplayLayout(
             new BoardTransform(cellSize, origin, rows, columns),
-            new UiRect(safeBounds.X, safeBounds.Y, safeBounds.Width, HudHeight),
+            new UiRect(safeBounds.X, safeBounds.Y, safeBounds.Width, LayoutMetrics.HudHeight),
             safeBounds);
     }
 
     public MenuLayout CalculateMainMenuLayout(float viewportWidth, float viewportHeight)
     {
         var safeBounds = GetSafeBounds(viewportWidth, viewportHeight);
-        var buttonY = safeBounds.Y + (safeBounds.Height * 0.28f);
+        var buttonY = safeBounds.Y + (safeBounds.Height * LayoutMetrics.MainMenuButtonYFactor);
         return new MenuLayout(
-            (safeBounds.X + ((safeBounds.Width - TitleWidth) / 2f), safeBounds.Y + 24f),
+            (safeBounds.X + ((safeBounds.Width - LayoutMetrics.TitleWidth) / 2f), safeBounds.Y + LayoutMetrics.MainMenuTitleTopOffset),
             CreateCenteredButton(safeBounds, buttonY),
             safeBounds,
             safeBounds);
@@ -60,29 +53,29 @@ public sealed class LayoutCalculator
     public MenuLayout CalculateGameOverLayout(float viewportWidth, float viewportHeight)
     {
         var safeBounds = GetSafeBounds(viewportWidth, viewportHeight);
-        var popupWidth = MathF.Min(safeBounds.Width * 0.72f, 520f);
-        var popupHeight = MathF.Min(safeBounds.Height * 0.82f, 500f);
+        var popupWidth = MathF.Min(safeBounds.Width * LayoutMetrics.GameOverPopupWidthFactor, LayoutMetrics.GameOverPopupMaxWidth);
+        var popupHeight = MathF.Min(safeBounds.Height * LayoutMetrics.GameOverPopupHeightFactor, LayoutMetrics.GameOverPopupMaxHeight);
         var popupX = safeBounds.X + ((safeBounds.Width - popupWidth) / 2f);
         var popupY = safeBounds.Y + ((safeBounds.Height - popupHeight) / 2f);
         var popupBounds = new UiRect(popupX, popupY, popupWidth, popupHeight);
-        var buttonWidth = MathF.Min(ButtonWidth, popupBounds.Width - 48f);
+        var buttonWidth = MathF.Min(LayoutMetrics.ButtonWidth, popupBounds.Width - LayoutMetrics.GameOverPopupHorizontalPadding);
         var buttonBounds = new UiRect(
             popupBounds.X + ((popupBounds.Width - buttonWidth) / 2f),
-            popupBounds.Y + popupBounds.Height - ButtonHeight - 24f,
+            popupBounds.Y + popupBounds.Height - LayoutMetrics.ButtonHeight - LayoutMetrics.GameOverButtonBottomOffset,
             buttonWidth,
-            ButtonHeight);
+            LayoutMetrics.ButtonHeight);
         var titlePosition = (
-            popupBounds.X + ((popupBounds.Width - TitleWidth) / 2f),
-            popupBounds.Y + 28f);
+            popupBounds.X + ((popupBounds.Width - LayoutMetrics.TitleWidth) / 2f),
+            popupBounds.Y + LayoutMetrics.GameOverTitleTopOffset);
 
         return new MenuLayout(titlePosition, buttonBounds, safeBounds, popupBounds);
     }
 
     private static UiRect CreateCenteredButton(UiRect safeBounds, float y)
     {
-        var width = MathF.Min(ButtonWidth, safeBounds.Width);
+        var width = MathF.Min(LayoutMetrics.ButtonWidth, safeBounds.Width);
         var x = safeBounds.X + ((safeBounds.Width - width) / 2f);
-        return new UiRect(x, y, width, ButtonHeight);
+        return new UiRect(x, y, width, LayoutMetrics.ButtonHeight);
     }
 }
 

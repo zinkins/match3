@@ -77,8 +77,8 @@ public static class GameplayVisualEffectsTimeline
                     foreach (var cell in explosion.Area)
                     {
                         delays[cell] = delays.TryGetValue(cell, out var existing)
-                            ? MathF.Max(existing, schedule.StartDelaySeconds)
-                            : schedule.StartDelaySeconds;
+                            ? MathF.Max(existing, schedule.StartDelaySeconds + GameplayEffectTimings.BombDetonationDelaySeconds)
+                            : schedule.StartDelaySeconds + GameplayEffectTimings.BombDetonationDelaySeconds;
                     }
 
                     break;
@@ -101,8 +101,8 @@ public static class GameplayVisualEffectsTimeline
 
             var durationSeconds = domainEvent switch
             {
-                DestroyerSpawned => 0.8f,
-                BombExploded => 0.45f,
+                DestroyerSpawned => GameplayEffectTimings.DestroyerTravelSeconds,
+                BombExploded => GameplayEffectTimings.BombDetonationDelaySeconds + GameplayEffectTimings.BombExplosionSeconds,
                 _ => 0f
             };
 
@@ -141,7 +141,7 @@ public static class GameplayVisualEffectsTimeline
             return null;
         }
 
-        var segmentDuration = 0.8f / (path.Count - 1);
+        var segmentDuration = GameplayEffectTimings.DestroyerTravelSeconds / (path.Count - 1);
         return initialDelaySeconds + (Math.Abs(targetIndex - originIndex) * segmentDuration);
     }
 
@@ -157,7 +157,7 @@ public static class GameplayVisualEffectsTimeline
 
         var segmentDuration = path.Count <= 1
             ? 0f
-            : 0.8f / (path.Count - 1);
+            : GameplayEffectTimings.DestroyerTravelSeconds / (path.Count - 1);
         for (var i = 0; i < path.Count; i++)
         {
             delays[path[i]] = initialDelaySeconds + (Math.Abs(i - originIndex) * segmentDuration);

@@ -475,11 +475,11 @@ public sealed class Phase16AnimationEngineTests
         animation.Update(0f);
         animation.Update(0.22f);
 
-        player.Update(0.39f);
+        player.Update(0.50f);
         var beforeActivation = visualState.BuildPieces(snapshot, null, viewState);
-        Assert.Contains(beforeActivation, piece => piece.Position == new Match3.Core.GameCore.ValueObjects.GridPosition(0, 1) && piece.Shape == Match3.Presentation.Rendering.PieceVisualConstants.ShapeCircle);
+        Assert.Contains(beforeActivation, piece => piece.Shape == Match3.Presentation.Rendering.PieceVisualConstants.ShapeCircle && piece.Position.Row == -1);
 
-        player.Update(0.02f);
+        player.Update(0.20f);
         var afterActivation = visualState.BuildPieces(snapshot, null, viewState);
         Assert.DoesNotContain(afterActivation, piece => piece.Position == new Match3.Core.GameCore.ValueObjects.GridPosition(0, 1) && piece.Shape == Match3.Presentation.Rendering.PieceVisualConstants.ShapeCircle);
         Assert.Contains(afterActivation, piece => piece.Shape == Match3.Presentation.Rendering.PieceVisualConstants.ShapeCircle && piece.Position.Row == -1);
@@ -867,7 +867,11 @@ public sealed class Phase16AnimationEngineTests
 
         Assert.Single(viewState.EffectNodes);
 
-        player.Update(0.05f);
+        player.Update(0.24f);
+        var beforeExplosion = visualState.BuildPieces(snapshot, null, viewState);
+        Assert.Contains(beforeExplosion, piece => piece.Position == affected);
+
+        player.Update(0.02f);
         var activePieces = visualState.BuildPieces(snapshot, null, viewState);
         Assert.DoesNotContain(activePieces, piece => piece.Position == affected);
 
@@ -929,7 +933,7 @@ public sealed class Phase16AnimationEngineTests
 
         Assert.Single(viewState.EffectNodes);
 
-        player.Update(0.45f);
+        player.Update(0.70f);
 
         Assert.Empty(viewState.EffectNodes);
         Assert.False(player.HasBlockingAnimations);

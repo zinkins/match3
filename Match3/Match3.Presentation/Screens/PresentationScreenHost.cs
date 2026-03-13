@@ -13,8 +13,6 @@ namespace Match3.Presentation.Screens;
 
 public sealed class PresentationScreenHost : IGameScreenHost
 {
-    private const float MinimumResolveDurationSeconds = 0.18f;
-
     private readonly ScreenFlowController flowController;
     private readonly SpriteBatchRenderer renderer;
     private readonly MouseInputRouter mouseInputRouter = new();
@@ -111,7 +109,7 @@ public sealed class PresentationScreenHost : IGameScreenHost
         {
             IsSwapApplied = result.IsSwapApplied,
             QueueSwapAnimation = () => GameplayAnimationRuntime.QueueSwap(gameplay.BoardViewState, gameplay.AnimationPlayer, move.Value, rollback: !result.IsSwapApplied),
-            SwapDurationSeconds = result.IsSwapApplied ? 0.22f : 0.36f,
+            SwapDurationSeconds = result.IsSwapApplied ? GameplayEffectTimings.SwapAcceptedSeconds : GameplayEffectTimings.SwapRollbackLegSeconds * 2f,
             CascadeSteps = BuildCascadeSteps(gameplay, result)
         });
 
@@ -177,8 +175,8 @@ public sealed class PresentationScreenHost : IGameScreenHost
                     },
                     QueueSettleAnimation = () => gameplay.SetVisualBoard(step.EndBoard),
                     ResolveDurationSeconds = GetResolveDurationSeconds(step.Events),
-                    GravityDurationSeconds = HasGravityMovement(resolvedSnapshot, gravitySnapshot) ? 0.65f : 0f,
-                    SpawnDurationSeconds = HasSpawnMovement(gravitySnapshot, endSnapshot, createdBonusTargets, createdBonusOrigins) ? 0.75f : 0f,
+                    GravityDurationSeconds = HasGravityMovement(resolvedSnapshot, gravitySnapshot) ? GameplayEffectTimings.GravitySeconds : 0f,
+                    SpawnDurationSeconds = HasSpawnMovement(gravitySnapshot, endSnapshot, createdBonusTargets, createdBonusOrigins) ? GameplayEffectTimings.SpawnSeconds : 0f,
                     SettleDurationSeconds = 0f
                 };
             })
@@ -234,7 +232,7 @@ public sealed class PresentationScreenHost : IGameScreenHost
 
     private static float GetResolveDurationSeconds(IReadOnlyList<IDomainEvent> events)
     {
-        return MathF.Max(MinimumResolveDurationSeconds, GameplayVisualEffectsTimeline.GetTotalDuration(events));
+        return MathF.Max(GameplayEffectTimings.MinimumResolveSeconds, GameplayVisualEffectsTimeline.GetTotalDuration(events));
     }
 
     private static IReadOnlyList<GridPosition> GetCreatedBonusTargets(BoardRenderSnapshot snapshot, IReadOnlyList<GridPosition> createdBonusOrigins)
