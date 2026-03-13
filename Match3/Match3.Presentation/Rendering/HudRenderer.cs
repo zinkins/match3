@@ -36,7 +36,7 @@ public sealed class HudRenderer
         return new HudRenderSnapshot(
         [
             new RenderText(FormatScore(score), safeBounds.X, safeBounds.Y, PieceVisualConstants.TintWhite),
-            new RenderText(FormatRemainingTime(remainingTime), Math.Max(safeBounds.X, safeBounds.X + safeBounds.Width - 150f), safeBounds.Y, PieceVisualConstants.TintWhite)
+            new RenderText(FormatRemainingTime(remainingTime), Math.Max(safeBounds.X, safeBounds.X + safeBounds.Width - UiRenderStyle.HudRightLabelWidth), safeBounds.Y, PieceVisualConstants.TintWhite)
         ]);
     }
 }

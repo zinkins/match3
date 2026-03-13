@@ -30,7 +30,7 @@ public sealed class SpriteBatchRenderer
     {
         canvas.DrawFilledRectangle(bounds.X, bounds.Y, bounds.Width, bounds.Height, PieceVisualConstants.TintLightGray);
         var textX = bounds.X + ((bounds.Width - EstimateTextWidth(label)) / 2f);
-        var textY = bounds.Y + ((bounds.Height - 26f) / 2f);
+        var textY = bounds.Y + ((bounds.Height - UiRenderStyle.ButtonTextHeight) / 2f);
         canvas.DrawText(label, textX, textY, PieceVisualConstants.TintBlack);
     }
 
@@ -50,13 +50,12 @@ public sealed class SpriteBatchRenderer
 
     private static void DrawPieceOutline(IGameCanvas canvas, RenderPiece piece)
     {
-        const float outlineThickness = 2f;
         canvas.DrawShape(
             piece.Shape,
-            piece.X - outlineThickness,
-            piece.Y - outlineThickness,
-            piece.Width + (outlineThickness * 2f),
-            piece.Height + (outlineThickness * 2f),
+            piece.X - UiRenderStyle.PieceOutlineThickness,
+            piece.Y - UiRenderStyle.PieceOutlineThickness,
+            piece.Width + (UiRenderStyle.PieceOutlineThickness * 2f),
+            piece.Height + (UiRenderStyle.PieceOutlineThickness * 2f),
             PieceVisualConstants.TintBlack,
             piece.Rotation);
     }
@@ -83,7 +82,7 @@ public sealed class SpriteBatchRenderer
         var popupBounds = ScreenLayoutMetrics.GetGameOverPopupBounds(canvas.ViewportWidth, canvas.ViewportHeight);
         canvas.DrawFilledRectangle(popupBounds.X, popupBounds.Y, popupBounds.Width, popupBounds.Height, PieceVisualConstants.TintOrange);
 
-        var titleY = popupBounds.Y + 56f;
+        var titleY = popupBounds.Y + UiRenderStyle.GameOverTitleTopOffset;
         var titleX = popupBounds.X + ((popupBounds.Width - EstimateTextWidth(screen.GameOverMessage)) / 2f);
         canvas.DrawText(screen.GameOverMessage, titleX, titleY, PieceVisualConstants.TintBlack);
 
@@ -108,7 +107,7 @@ public sealed class SpriteBatchRenderer
 
     private static float EstimateTextWidth(string text)
     {
-        return text.Length * 16f;
+        return text.Length * UiRenderStyle.TextCharacterWidth;
     }
 }
 
