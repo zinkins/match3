@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Match3.Core.GameCore.Board;
 using Match3.Core.GameCore.ValueObjects;
 
@@ -71,7 +72,10 @@ public sealed class BonusActivationResolver
         Queue<BonusToken> queue,
         IReadOnlyList<BonusToken> triggered)
     {
-        foreach (var bonus in triggered)
+        foreach (var bonus in triggered
+            .OrderBy(bonus => bonus.Position.Row)
+            .ThenBy(bonus => bonus.Position.Column)
+            .ThenBy(bonus => (int)bonus.Kind))
         {
             if (!activatedPositions.Contains(bonus.Position))
             {

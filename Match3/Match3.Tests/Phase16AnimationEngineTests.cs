@@ -1,7 +1,14 @@
 using Match3.Presentation.Animation;
 using Match3.Presentation.Animation.Engine;
+using System.Linq;
 using System.Numerics;
 using Match3.Core.GameFlow.Events;
+using Match3.Core.GameCore.Board;
+using Match3.Core.GameCore.Pieces;
+using Match3.Core.GameCore.ValueObjects;
+using Match3.Core.GameFlow.Pipeline;
+using Match3.Core.GameFlow.Sessions;
+using Match3.Core.GameFlow.StateMachine;
 
 namespace Match3.Tests;
 
@@ -371,6 +378,15 @@ public sealed class Phase16AnimationEngineTests
     [Fact]
     public void CascadeScenario_WaitsForPreviousSpawnBeforeStartingNextResolve()
     {
+        var result = new TurnProcessor(
+            matchFinder: new MatchFinder(),
+            gravityResolver: new GravityResolver(),
+            refillResolver: new RefillResolver(new SequenceRandomSource(0, 1, 2, 3, 4)))
+            .ProcessTurnPipelineWithEvents(
+                CreateBoardForCascadeAfterGravity(),
+                new Move(new GridPosition(3, 1), new GridPosition(3, 2)),
+                new GameSession(),
+                new GameplayStateMachine());
         var calls = new List<string>();
         var builder = new TurnAnimationBuilder();
         var animation = builder.Build(new TurnAnimationContext
@@ -378,32 +394,22 @@ public sealed class Phase16AnimationEngineTests
             IsSwapApplied = true,
             QueueSwapAnimation = () => calls.Add("swap"),
             SwapDurationSeconds = 0.22f,
-            CascadeSteps =
-            [
-                new TurnAnimationCascadeStep
+            CascadeSteps = result.CascadeSteps
+                .Select((step, index) => new TurnAnimationCascadeStep
                 {
-                    QueueResolveAnimation = () => calls.Add("resolve-1"),
-                    QueueGravityAnimation = () => calls.Add("gravity-1"),
-                    QueueSpawnAnimation = () => calls.Add("spawn-1"),
-                    QueueSettleAnimation = () => calls.Add("settle-1"),
-                    ResolveDurationSeconds = 0.3f,
-                    GravityDurationSeconds = 0f,
-                    SpawnDurationSeconds = 0.4f,
+                    QueueResolveAnimation = () => calls.Add($"resolve-{index + 1}"),
+                    QueueGravityAnimation = () => calls.Add($"gravity-{index + 1}"),
+                    QueueSpawnAnimation = () => calls.Add($"spawn-{index + 1}"),
+                    QueueSettleAnimation = () => calls.Add($"settle-{index + 1}"),
+                    ResolveDurationSeconds = step.Events.Any(e => e is MatchResolved) ? 0.3f : 0f,
+                    GravityDurationSeconds = step.Events.Any(e => e is PiecesFell) ? 0.1f : 0f,
+                    SpawnDurationSeconds = step.Events.Any(e => e is PiecesSpawned) ? 0.4f : 0f,
                     SettleDurationSeconds = 0f
-                },
-                new TurnAnimationCascadeStep
-                {
-                    QueueResolveAnimation = () => calls.Add("resolve-2"),
-                    QueueGravityAnimation = () => calls.Add("gravity-2"),
-                    QueueSpawnAnimation = () => calls.Add("spawn-2"),
-                    QueueSettleAnimation = () => calls.Add("settle-2"),
-                    ResolveDurationSeconds = 0.3f,
-                    GravityDurationSeconds = 0f,
-                    SpawnDurationSeconds = 0f,
-                    SettleDurationSeconds = 0f
-                }
-            ]
+                })
+                .ToArray()
         });
+
+        Assert.Equal(2, result.CascadeSteps.Count);
 
         animation.Update(0f);
         Assert.Equal(["swap"], calls);
@@ -412,6 +418,12 @@ public sealed class Phase16AnimationEngineTests
         Assert.Equal(["swap", "resolve-1"], calls);
 
         animation.Update(0.3f);
+        Assert.Equal(["swap", "resolve-1", "gravity-1"], calls);
+
+        animation.Update(0.09f);
+        Assert.Equal(["swap", "resolve-1", "gravity-1"], calls);
+
+        animation.Update(0.01f);
         Assert.Equal(["swap", "resolve-1", "gravity-1", "spawn-1"], calls);
 
         animation.Update(0.39f);
@@ -911,6 +923,42 @@ public sealed class Phase16AnimationEngineTests
         var session = new Match3.Core.GameFlow.Sessions.GameSession();
         session.UpdateTimer(TimeSpan.FromSeconds(60));
         return session;
+    }
+
+    private static BoardState CreateBoardForCascadeAfterGravity()
+    {
+        var board = new BoardState();
+        var types = PieceCatalog.All;
+        for (var row = 0; row < board.Height; row++)
+        {
+            for (var column = 0; column < board.Width; column++)
+            {
+                board.SetPiece(new GridPosition(row, column), types[(row + column) % types.Count]);
+            }
+        }
+
+        board.SetPiece(new GridPosition(1, 1), PieceType.Red);
+        board.SetPiece(new GridPosition(2, 1), PieceType.Blue);
+        board.SetPiece(new GridPosition(3, 1), PieceType.Green);
+        board.SetPiece(new GridPosition(4, 1), PieceType.Blue);
+        board.SetPiece(new GridPosition(5, 1), PieceType.Red);
+        board.SetPiece(new GridPosition(6, 1), PieceType.Red);
+        board.SetPiece(new GridPosition(3, 2), PieceType.Blue);
+        return board;
+    }
+
+    private sealed class SequenceRandomSource(params int[] values) : IRandomSource
+    {
+        private readonly int[] values = values.Length == 0 ? [0] : values;
+        private int index;
+
+        public int Next(int minInclusive, int maxExclusive)
+        {
+            var value = values[index % values.Length];
+            index++;
+            var range = maxExclusive - minInclusive;
+            return minInclusive + (value % range);
+        }
     }
     private static PropertyTween<float> CreateTween(
         object target,

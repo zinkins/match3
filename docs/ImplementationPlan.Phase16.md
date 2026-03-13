@@ -120,12 +120,12 @@ T484 [ ] [Nice] Проверить визуально, что последова
 T485 [x] [MVP] Написать test `TurnAnimationBuilder_BuildsDistinctPhaseBoundaries_ForCascadeStep`.
 T486 [x] [MVP] Добавить в `TurnAnimationBuilder` явное представление phase boundaries.
 T487 [x] [MVP] Прогнать tests.
-T488 [ ] [MVP] Написать test `CascadeScenario_WaitsForPreviousSpawnBeforeStartingNextResolve`.
-T489 [ ] [MVP] Реализовать последовательный запуск каскадов через общий scenario.
-T490 [ ] [MVP] Прогнать tests.
-T491 [ ] [MVP] Написать test `ChainReactionScenario_PlaysBonusEffectsInDeterministicOrder`.
-T492 [ ] [MVP] Зафиксировать порядок визуализации chain reaction бонусов.
-T493 [ ] [MVP] Прогнать tests.
+T488 [x] [MVP] Написать test `CascadeScenario_WaitsForPreviousSpawnBeforeStartingNextResolve`.
+T489 [x] [MVP] Реализовать последовательный запуск каскадов через общий scenario.
+T490 [x] [MVP] Прогнать tests.
+T491 [x] [MVP] Написать test `ChainReactionScenario_PlaysBonusEffectsInDeterministicOrder`.
+T492 [x] [MVP] Зафиксировать порядок визуализации chain reaction бонусов.
+T493 [x] [MVP] Прогнать tests.
 T494 [ ] [Nice] [P] Написать test `AnimationPlayer_CanCancelTransientEffectHandle`.
 T495 [ ] [Nice] Добавить отмену анимации через `AnimationHandle`.
 T496 [ ] [Nice] Прогнать tests.

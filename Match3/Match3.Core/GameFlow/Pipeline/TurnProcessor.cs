@@ -285,6 +285,9 @@ public sealed class TurnProcessor
             .Select(content => content.Bonus)
             .GroupBy(bonus => bonus.Position)
             .Select(group => group.First())
+            .OrderBy(bonus => bonus.Position.Row)
+            .ThenBy(bonus => bonus.Position.Column)
+            .ThenBy(bonus => (int)bonus.Kind)
             .ToArray();
 
         if (rootBonuses.Length == 0)

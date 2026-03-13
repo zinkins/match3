@@ -139,6 +139,58 @@ public class Phase10DomainEventsTests
     }
 
     [Fact]
+    public void TurnProcessor_BuildsSeparateCascadeSteps_WhenGravityCreatesFollowUpMatch()
+    {
+        var result = CreateProcessor().ProcessTurnPipelineWithEvents(
+            CreateBoardForCascadeAfterGravity(),
+            new Move(new GridPosition(3, 1), new GridPosition(3, 2)),
+            new GameSession(),
+            new GameplayStateMachine());
+
+        Assert.True(result.IsSwapApplied);
+        Assert.Equal(2, result.CascadeSteps.Count);
+        Assert.Contains(result.CascadeSteps[0].Events, e => e is MatchResolved);
+        Assert.Contains(result.CascadeSteps[0].Events, e => e is PiecesFell);
+        Assert.Contains(result.CascadeSteps[0].Events, e => e is PiecesSpawned);
+        Assert.Contains(result.CascadeSteps[1].Events, e => e is MatchResolved);
+        Assert.Contains(result.CascadeSteps[1].Events, e => e is PiecesFell);
+        Assert.Contains(result.CascadeSteps[1].Events, e => e is PiecesSpawned);
+    }
+
+    [Fact]
+    public void ChainReactionScenario_PlaysBonusEffectsInDeterministicOrder()
+    {
+        var board = CreateBoardForBonusChainReactionOrder();
+        board.SetBonus(new GridPosition(3, 1), new Match3.Core.GameCore.Bonuses.LineBonus(new GridPosition(3, 1), PieceColor.Red, Match3.Core.GameCore.Bonuses.LineOrientation.Horizontal));
+        board.SetBonus(new GridPosition(3, 3), new Match3.Core.GameCore.Bonuses.BombBonus(new GridPosition(3, 3), PieceColor.Blue));
+        board.SetBonus(new GridPosition(2, 3), new Match3.Core.GameCore.Bonuses.LineBonus(new GridPosition(2, 3), PieceColor.Green, Match3.Core.GameCore.Bonuses.LineOrientation.Vertical));
+
+        var result = CreateProcessor().ProcessTurnPipelineWithEvents(
+            board,
+            new Move(new GridPosition(4, 2), new GridPosition(3, 2)),
+            new GameSession(),
+            new GameplayStateMachine());
+
+        var orderedBonusEvents = result.Events
+            .Where(e => e is DestroyerSpawned or BombExploded)
+            .Select(e => e switch
+            {
+                DestroyerSpawned destroyer => $"D:{destroyer.Position.Row},{destroyer.Position.Column}",
+                BombExploded bomb => $"B:{bomb.Position.Row},{bomb.Position.Column}",
+                _ => throw new InvalidOperationException()
+            })
+            .ToArray();
+
+        Assert.Equal(
+            [
+                "D:3,1",
+                "B:3,3",
+                "D:2,3"
+            ],
+            orderedBonusEvents);
+    }
+
+    [Fact]
     public void TurnProcessor_AppliesSwap_WhenMovedBonusFormsMatchWithAnotherBonusAndPiece()
     {
         var board = CreateBoardForBonusToBonusMatch();
@@ -249,6 +301,49 @@ public class Phase10DomainEventsTests
         board.SetPiece(new GridPosition(0, 1), PieceType.Red);
         board.SetPiece(new GridPosition(0, 2), PieceType.Blue);
         board.SetPiece(new GridPosition(1, 2), PieceType.Red);
+        return board;
+    }
+
+    private static BoardState CreateBoardForCascadeAfterGravity()
+    {
+        var board = new BoardState();
+        var types = PieceCatalog.All;
+        for (var row = 0; row < board.Height; row++)
+        {
+            for (var column = 0; column < board.Width; column++)
+            {
+                board.SetPiece(new GridPosition(row, column), types[(row + column) % types.Count]);
+            }
+        }
+
+        board.SetPiece(new GridPosition(1, 1), PieceType.Red);
+        board.SetPiece(new GridPosition(2, 1), PieceType.Blue);
+        board.SetPiece(new GridPosition(3, 1), PieceType.Green);
+        board.SetPiece(new GridPosition(4, 1), PieceType.Blue);
+        board.SetPiece(new GridPosition(5, 1), PieceType.Red);
+        board.SetPiece(new GridPosition(6, 1), PieceType.Red);
+        board.SetPiece(new GridPosition(3, 2), PieceType.Blue);
+        return board;
+    }
+
+    private static BoardState CreateBoardForBonusChainReactionOrder()
+    {
+        var board = new BoardState();
+        var types = PieceCatalog.All;
+        for (var row = 0; row < board.Height; row++)
+        {
+            for (var column = 0; column < board.Width; column++)
+            {
+                board.SetPiece(new GridPosition(row, column), types[(row + column) % types.Count]);
+            }
+        }
+
+        board.SetPiece(new GridPosition(3, 0), PieceType.Red);
+        board.SetPiece(new GridPosition(3, 1), PieceType.Red);
+        board.SetPiece(new GridPosition(3, 2), PieceType.Blue);
+        board.SetPiece(new GridPosition(4, 2), PieceType.Red);
+        board.SetPiece(new GridPosition(3, 3), PieceType.Blue);
+        board.SetPiece(new GridPosition(2, 3), PieceType.Green);
         return board;
     }
 
