@@ -54,39 +54,6 @@ public sealed class TurnProcessor
         this.bonusActivationResolver = bonusActivationResolver ?? throw new ArgumentNullException(nameof(bonusActivationResolver));
     }
 
-    public bool TryProcessMove(BoardState board, Move move)
-    {
-        Swap(board, move);
-
-        var matches = matchFinder.FindMatches(board);
-        if (matches.Count > 0)
-        {
-            return true;
-        }
-
-        Swap(board, move);
-        return false;
-    }
-
-    public bool RecheckAfterGravityAndRefill(BoardState board)
-    {
-        gravityResolver.Apply(board);
-        refillResolver.Refill(board);
-        return matchFinder.FindMatches(board).Count > 0;
-    }
-
-    public void ExecuteAtomicResolvingStep(GameSession session, GameplayStateMachine stateMachine, Action resolveAction)
-    {
-        stateMachine.TransitionToResolving();
-        resolveAction();
-        stateMachine.AdvanceAfterPhase(session);
-    }
-
-    public bool ProcessTurnPipeline(BoardState board, Move move, GameSession session, GameplayStateMachine stateMachine)
-    {
-        return ProcessTurnPipelineWithEvents(board, move, session, stateMachine).IsSwapApplied;
-    }
-
     public TurnPipelineResult ProcessTurnPipelineWithEvents(
         BoardState board,
         Move move,

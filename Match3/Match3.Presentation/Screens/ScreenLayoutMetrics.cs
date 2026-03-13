@@ -26,13 +26,4 @@ public static class ScreenLayoutMetrics
         return Calculator.CalculateMainMenuLayout(viewportWidth, viewportHeight).TitlePosition;
     }
 
-    public static (float X, float Y) GetGameOverTitlePosition(float viewportWidth, float viewportHeight)
-    {
-        return Calculator.CalculateGameOverLayout(viewportWidth, viewportHeight).TitlePosition;
-    }
-
-    public static GameplayLayout GetGameplayLayout(float viewportWidth, float viewportHeight, int rows = 8, int columns = 8)
-    {
-        return Calculator.CalculateGameplayLayout(viewportWidth, viewportHeight, rows, columns);
-    }
 }

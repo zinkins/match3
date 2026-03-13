@@ -2,6 +2,8 @@ using Match3.Core.GameCore.Board;
 using Match3.Core.GameCore.Pieces;
 using Match3.Core.GameCore.ValueObjects;
 using Match3.Core.GameFlow.Pipeline;
+using Match3.Core.GameFlow.Sessions;
+using Match3.Core.GameFlow.StateMachine;
 
 namespace Match3.Tests;
 
@@ -13,10 +15,12 @@ public class Phase6TurnProcessorTests
         var board = CreateBoardForSwapWithMatch();
         var move = new Move(new GridPosition(0, 2), new GridPosition(1, 2));
         var processor = new TurnProcessor();
+        var session = new GameSession();
+        var machine = new GameplayStateMachine();
 
-        var applied = processor.TryProcessMove(board, move);
+        var result = processor.ProcessTurnPipelineWithEvents(board, move, session, machine);
 
-        Assert.True(applied);
+        Assert.True(result.IsSwapApplied);
         Assert.Equal(PieceType.Red, board.GetPiece(move.From));
         Assert.Equal(PieceType.Blue, board.GetPiece(move.To));
     }
@@ -27,10 +31,12 @@ public class Phase6TurnProcessorTests
         var board = CreateBoardForSwapWithoutMatch();
         var move = new Move(new GridPosition(0, 0), new GridPosition(0, 1));
         var processor = new TurnProcessor();
+        var session = new GameSession();
+        var machine = new GameplayStateMachine();
 
-        var applied = processor.TryProcessMove(board, move);
+        var result = processor.ProcessTurnPipelineWithEvents(board, move, session, machine);
 
-        Assert.False(applied);
+        Assert.False(result.IsSwapApplied);
         Assert.Equal(PieceType.Red, board.GetPiece(move.From));
         Assert.Equal(PieceType.Green, board.GetPiece(move.To));
     }
@@ -42,10 +48,12 @@ public class Phase6TurnProcessorTests
         var before = Snapshot(board);
         var move = new Move(new GridPosition(0, 0), new GridPosition(0, 1));
         var processor = new TurnProcessor();
+        var session = new GameSession();
+        var machine = new GameplayStateMachine();
 
-        var applied = processor.TryProcessMove(board, move);
+        var result = processor.ProcessTurnPipelineWithEvents(board, move, session, machine);
 
-        Assert.False(applied);
+        Assert.False(result.IsSwapApplied);
         var after = Snapshot(board);
         Assert.Equal(before, after);
     }

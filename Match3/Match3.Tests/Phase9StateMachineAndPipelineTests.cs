@@ -131,18 +131,16 @@ public class Phase9StateMachineAndPipelineTests
     }
 
     [Fact]
-    public void TurnProcessor_FinishesCurrentAtomicResolution_BeforeGameOver()
+    public void GameplayStateMachine_AdvanceAfterPhase_FinishesCurrentAtomicResolution_BeforeGameOver()
     {
         var machine = new GameplayStateMachine();
         var session = new GameSession();
-        var processor = new TurnProcessor();
         var resolved = false;
 
-        processor.ExecuteAtomicResolvingStep(session, machine, () =>
-        {
-            resolved = true;
-            session.UpdateTimer(TimeSpan.FromSeconds(60));
-        });
+        machine.TransitionToResolving();
+        resolved = true;
+        session.UpdateTimer(TimeSpan.FromSeconds(60));
+        machine.AdvanceAfterPhase(session);
 
         Assert.True(resolved);
         Assert.Equal(GameplayState.CheckingEndGame, machine.State);
@@ -160,9 +158,9 @@ public class Phase9StateMachineAndPipelineTests
             gravityResolver: new GravityResolver(),
             refillResolver: new RefillResolver(new SequenceRandomSource(0, 1, 2, 3, 4)));
 
-        var applied = processor.ProcessTurnPipeline(board, move, session, machine);
+        var result = processor.ProcessTurnPipelineWithEvents(board, move, session, machine);
 
-        Assert.True(applied);
+        Assert.True(result.IsSwapApplied);
         Assert.Equal(GameplayState.Idle, machine.State);
     }
 
@@ -178,8 +176,9 @@ public class Phase9StateMachineAndPipelineTests
         var session = new GameSession();
         var machine = new GameplayStateMachine();
 
-        processor.ProcessTurnPipeline(board, move, session, machine);
+        var result = processor.ProcessTurnPipelineWithEvents(board, move, session, machine);
 
+        Assert.True(result.IsSwapApplied);
         Assert.NotNull(board.GetPiece(new GridPosition(0, 0)));
         Assert.NotNull(board.GetPiece(new GridPosition(0, 1)));
         Assert.NotNull(board.GetPiece(new GridPosition(0, 2)));
@@ -198,10 +197,10 @@ public class Phase9StateMachineAndPipelineTests
         var session = new GameSession();
         var machine = new GameplayStateMachine();
 
-        var applied = processor.ProcessTurnPipeline(board, move, session, machine);
+        var result = processor.ProcessTurnPipelineWithEvents(board, move, session, machine);
         var matches = new MatchFinder().FindMatches(board);
 
-        Assert.True(applied);
+        Assert.True(result.IsSwapApplied);
         Assert.Empty(matches);
     }
 

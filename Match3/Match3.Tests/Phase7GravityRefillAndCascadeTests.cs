@@ -63,19 +63,20 @@ public class Phase7GravityRefillAndCascadeTests
     }
 
     [Fact]
-    public void TurnProcessor_RechecksBoardAfterGravityAndRefill()
+    public void GravityAndRefill_CanBeRecheckedWithoutTurnProcessorWrapper()
     {
         var board = CreateFilledBoard(PieceType.Purple);
         board.SetPiece(new GridPosition(0, 0), null);
         board.SetPiece(new GridPosition(1, 0), null);
         board.SetPiece(new GridPosition(2, 0), null);
 
-        var turnProcessor = new TurnProcessor(
-            matchFinder: new MatchFinder(),
-            gravityResolver: new GravityResolver(),
-            refillResolver: new RefillResolver(new SequenceRandomSource(0, 0, 0)));
+        var gravityResolver = new GravityResolver();
+        var refillResolver = new RefillResolver(new SequenceRandomSource(0, 0, 0));
+        var matchFinder = new MatchFinder();
 
-        var hasCascade = turnProcessor.RecheckAfterGravityAndRefill(board);
+        gravityResolver.Apply(board);
+        refillResolver.Refill(board);
+        var hasCascade = matchFinder.FindMatches(board).Count > 0;
 
         Assert.True(hasCascade);
     }

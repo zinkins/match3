@@ -28,14 +28,6 @@ public class Phase2ValueObjectsTests
     }
 
     [Fact]
-    public void Piece_CreatesWithSelectedColor()
-    {
-        var piece = new Piece(PieceColor.Red);
-
-        Assert.Equal(PieceColor.Red, piece.Color);
-    }
-
-    [Fact]
     public void PieceColor_DefinesColorValues()
     {
         Assert.Contains(PieceColor.Red, Enum.GetValues<PieceColor>());

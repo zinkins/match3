@@ -1,4 +1,3 @@
-using Match3.Core.GameCore.Board;
 using Match3.Core.GameCore.ValueObjects;
 using Match3.Core.GameFlow.Sessions;
 
@@ -34,31 +33,28 @@ public class Phase4MoveValidationAndSelectionTests
     }
 
     [Fact]
-    public void MoveValidator_AllowsAdjacentSwap()
+    public void Move_CapturesAdjacentSwap()
     {
-        var validator = new MoveValidator();
         var move = new Move(new GridPosition(0, 0), new GridPosition(0, 1));
 
-        Assert.True(validator.IsValid(move));
+        Assert.True(move.From.IsAdjacentTo(move.To));
     }
 
     [Fact]
-    public void MoveValidator_RejectsNonAdjacentSwap()
+    public void Move_RejectLogicCanBeDerivedFromGridPosition_WhenCellsAreNotAdjacent()
     {
-        var validator = new MoveValidator();
         var move = new Move(new GridPosition(0, 0), new GridPosition(0, 2));
 
-        Assert.False(validator.IsValid(move));
+        Assert.False(move.From.IsAdjacentTo(move.To));
     }
 
     [Fact]
-    public void MoveValidator_RejectsSameCellSwap()
+    public void Move_RejectLogicCanBeDerivedFromGridPosition_WhenCellsAreSame()
     {
-        var validator = new MoveValidator();
         var position = new GridPosition(1, 1);
         var move = new Move(position, position);
 
-        Assert.False(validator.IsValid(move));
+        Assert.False(move.From.IsAdjacentTo(move.To));
     }
 
     [Fact]
