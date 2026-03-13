@@ -257,10 +257,6 @@ public sealed class Phase16AnimationEngineTests
         {
             IsSwapApplied = false,
             QueueSwapAnimation = () => calls.Add("swap"),
-            QueueResolveAnimation = () => calls.Add("resolve"),
-            QueueGravityAnimation = () => calls.Add("gravity"),
-            QueueSpawnAnimation = () => calls.Add("spawn"),
-            QueueSettleAnimation = () => calls.Add("settle"),
             SwapDurationSeconds = 0.36f
         });
 
@@ -287,15 +283,21 @@ public sealed class Phase16AnimationEngineTests
         {
             IsSwapApplied = true,
             QueueSwapAnimation = () => calls.Add("swap"),
-            QueueResolveAnimation = () => calls.Add("resolve"),
-            QueueGravityAnimation = () => calls.Add("gravity"),
-            QueueSpawnAnimation = () => calls.Add("spawn"),
-            QueueSettleAnimation = () => calls.Add("settle"),
             SwapDurationSeconds = 0.22f,
-            ResolveDurationSeconds = 0.8f,
-            GravityDurationSeconds = 0f,
-            SpawnDurationSeconds = 0f,
-            SettleDurationSeconds = 1.15f
+            CascadeSteps =
+            [
+                new TurnAnimationCascadeStep
+                {
+                    QueueResolveAnimation = () => calls.Add("resolve"),
+                    QueueGravityAnimation = () => calls.Add("gravity"),
+                    QueueSpawnAnimation = () => calls.Add("spawn"),
+                    QueueSettleAnimation = () => calls.Add("settle"),
+                    ResolveDurationSeconds = 0.8f,
+                    GravityDurationSeconds = 0f,
+                    SpawnDurationSeconds = 0f,
+                    SettleDurationSeconds = 1.15f
+                }
+            ]
         });
 
         animation.Update(0f);
@@ -324,15 +326,21 @@ public sealed class Phase16AnimationEngineTests
         {
             IsSwapApplied = true,
             QueueSwapAnimation = () => calls.Add("swap"),
-            QueueResolveAnimation = () => calls.Add("resolve"),
-            QueueGravityAnimation = () => calls.Add("gravity"),
-            QueueSpawnAnimation = () => calls.Add("spawn"),
-            QueueSettleAnimation = () => calls.Add("settle"),
             SwapDurationSeconds = 0.22f,
-            ResolveDurationSeconds = 0.8f,
-            GravityDurationSeconds = 0.1f,
-            SpawnDurationSeconds = 0.2f,
-            SettleDurationSeconds = 1.15f
+            CascadeSteps =
+            [
+                new TurnAnimationCascadeStep
+                {
+                    QueueResolveAnimation = () => calls.Add("resolve"),
+                    QueueGravityAnimation = () => calls.Add("gravity"),
+                    QueueSpawnAnimation = () => calls.Add("spawn"),
+                    QueueSettleAnimation = () => calls.Add("settle"),
+                    ResolveDurationSeconds = 0.8f,
+                    GravityDurationSeconds = 0.1f,
+                    SpawnDurationSeconds = 0.2f,
+                    SettleDurationSeconds = 1.15f
+                }
+            ]
         });
 
         animation.Update(0f);
@@ -361,6 +369,59 @@ public sealed class Phase16AnimationEngineTests
     }
 
     [Fact]
+    public void CascadeScenario_WaitsForPreviousSpawnBeforeStartingNextResolve()
+    {
+        var calls = new List<string>();
+        var builder = new TurnAnimationBuilder();
+        var animation = builder.Build(new TurnAnimationContext
+        {
+            IsSwapApplied = true,
+            QueueSwapAnimation = () => calls.Add("swap"),
+            SwapDurationSeconds = 0.22f,
+            CascadeSteps =
+            [
+                new TurnAnimationCascadeStep
+                {
+                    QueueResolveAnimation = () => calls.Add("resolve-1"),
+                    QueueGravityAnimation = () => calls.Add("gravity-1"),
+                    QueueSpawnAnimation = () => calls.Add("spawn-1"),
+                    QueueSettleAnimation = () => calls.Add("settle-1"),
+                    ResolveDurationSeconds = 0.3f,
+                    GravityDurationSeconds = 0f,
+                    SpawnDurationSeconds = 0.4f,
+                    SettleDurationSeconds = 0f
+                },
+                new TurnAnimationCascadeStep
+                {
+                    QueueResolveAnimation = () => calls.Add("resolve-2"),
+                    QueueGravityAnimation = () => calls.Add("gravity-2"),
+                    QueueSpawnAnimation = () => calls.Add("spawn-2"),
+                    QueueSettleAnimation = () => calls.Add("settle-2"),
+                    ResolveDurationSeconds = 0.3f,
+                    GravityDurationSeconds = 0f,
+                    SpawnDurationSeconds = 0f,
+                    SettleDurationSeconds = 0f
+                }
+            ]
+        });
+
+        animation.Update(0f);
+        Assert.Equal(["swap"], calls);
+
+        animation.Update(0.22f);
+        Assert.Equal(["swap", "resolve-1"], calls);
+
+        animation.Update(0.3f);
+        Assert.Equal(["swap", "resolve-1", "gravity-1", "spawn-1"], calls);
+
+        animation.Update(0.39f);
+        Assert.DoesNotContain("resolve-2", calls);
+
+        animation.Update(0.02f);
+        Assert.Equal(["swap", "resolve-1", "gravity-1", "spawn-1", "settle-1", "resolve-2"], calls);
+    }
+
+    [Fact]
     public void TurnAnimationBuilder_PreservesVisualContinuity_ForBonusActivatedByDestroyer()
     {
         var builder = new TurnAnimationBuilder();
@@ -383,15 +444,21 @@ public sealed class Phase16AnimationEngineTests
         {
             IsSwapApplied = true,
             QueueSwapAnimation = static () => { },
-            QueueResolveAnimation = () => GameplayVisualEffectsTimeline.QueueEvents(viewState, player, events, transform),
-            QueueGravityAnimation = static () => { },
-            QueueSpawnAnimation = static () => { },
-            QueueSettleAnimation = static () => { },
             SwapDurationSeconds = 0.22f,
-            ResolveDurationSeconds = GameplayVisualEffectsTimeline.GetTotalDuration(events),
-            GravityDurationSeconds = 0f,
-            SpawnDurationSeconds = 0f,
-            SettleDurationSeconds = 0f
+            CascadeSteps =
+            [
+                new TurnAnimationCascadeStep
+                {
+                    QueueResolveAnimation = () => GameplayVisualEffectsTimeline.QueueEvents(viewState, player, events, transform),
+                    QueueGravityAnimation = static () => { },
+                    QueueSpawnAnimation = static () => { },
+                    QueueSettleAnimation = static () => { },
+                    ResolveDurationSeconds = GameplayVisualEffectsTimeline.GetTotalDuration(events),
+                    GravityDurationSeconds = 0f,
+                    SpawnDurationSeconds = 0f,
+                    SettleDurationSeconds = 0f
+                }
+            ]
         });
 
         animation.Update(0f);
@@ -448,15 +515,21 @@ public sealed class Phase16AnimationEngineTests
         {
             IsSwapApplied = true,
             QueueSwapAnimation = static () => { },
-            QueueResolveAnimation = static () => { },
-            QueueGravityAnimation = () => GameplayAnimationRuntime.QueueBoardSettle(viewState, player, new Match3.Presentation.Rendering.BoardRenderSnapshot([], []), afterSnapshot, 48f, excludedTargets: createdBonusTargets, visualState: visualState),
-            QueueSpawnAnimation = () => GameplayAnimationRuntime.QueueCreatedBonuses(viewState, player, afterSnapshot, 48f, createdBonusOrigins: createdBonusOrigins),
-            QueueSettleAnimation = static () => { },
             SwapDurationSeconds = 0.22f,
-            ResolveDurationSeconds = 0f,
-            GravityDurationSeconds = 0f,
-            SpawnDurationSeconds = 0f,
-            SettleDurationSeconds = 1.15f
+            CascadeSteps =
+            [
+                new TurnAnimationCascadeStep
+                {
+                    QueueResolveAnimation = static () => { },
+                    QueueGravityAnimation = () => GameplayAnimationRuntime.QueueBoardSettle(viewState, player, new Match3.Presentation.Rendering.BoardRenderSnapshot([], []), afterSnapshot, 48f, excludedTargets: createdBonusTargets, visualState: visualState),
+                    QueueSpawnAnimation = () => GameplayAnimationRuntime.QueueCreatedBonuses(viewState, player, afterSnapshot, 48f, createdBonusOrigins: createdBonusOrigins),
+                    QueueSettleAnimation = static () => { },
+                    ResolveDurationSeconds = 0f,
+                    GravityDurationSeconds = 0f,
+                    SpawnDurationSeconds = 0f,
+                    SettleDurationSeconds = 1.15f
+                }
+            ]
         });
 
         animation.Update(0f);
@@ -474,10 +547,6 @@ public sealed class Phase16AnimationEngineTests
         {
             IsSwapApplied = false,
             QueueSwapAnimation = static () => { },
-            QueueResolveAnimation = static () => { },
-            QueueGravityAnimation = static () => { },
-            QueueSpawnAnimation = static () => { },
-            QueueSettleAnimation = static () => { },
             SwapDurationSeconds = 0.36f
         });
 

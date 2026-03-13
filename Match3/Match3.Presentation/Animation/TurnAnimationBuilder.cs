@@ -17,10 +17,13 @@ public sealed class TurnAnimationBuilder : ITurnAnimationBuilder
             return sequence;
         }
 
-        AppendResolvePhase(sequence, context);
-        AppendGravityPhase(sequence, context);
-        AppendSpawnPhase(sequence, context);
-        AppendSettlePhase(sequence, context);
+        foreach (var cascadeStep in context.CascadeSteps)
+        {
+            AppendResolvePhase(sequence, cascadeStep);
+            AppendGravityPhase(sequence, cascadeStep);
+            AppendSpawnPhase(sequence, cascadeStep);
+            AppendSettlePhase(sequence, cascadeStep);
+        }
 
         return sequence;
     }
@@ -30,24 +33,24 @@ public sealed class TurnAnimationBuilder : ITurnAnimationBuilder
         AppendPhase(sequence, context.QueueSwapAnimation, context.SwapDurationSeconds);
     }
 
-    private static void AppendResolvePhase(SequenceAnimation sequence, TurnAnimationContext context)
+    private static void AppendResolvePhase(SequenceAnimation sequence, TurnAnimationCascadeStep cascadeStep)
     {
-        AppendPhase(sequence, context.QueueResolveAnimation, context.ResolveDurationSeconds);
+        AppendPhase(sequence, cascadeStep.QueueResolveAnimation, cascadeStep.ResolveDurationSeconds);
     }
 
-    private static void AppendGravityPhase(SequenceAnimation sequence, TurnAnimationContext context)
+    private static void AppendGravityPhase(SequenceAnimation sequence, TurnAnimationCascadeStep cascadeStep)
     {
-        AppendPhase(sequence, context.QueueGravityAnimation, context.GravityDurationSeconds);
+        AppendPhase(sequence, cascadeStep.QueueGravityAnimation, cascadeStep.GravityDurationSeconds);
     }
 
-    private static void AppendSpawnPhase(SequenceAnimation sequence, TurnAnimationContext context)
+    private static void AppendSpawnPhase(SequenceAnimation sequence, TurnAnimationCascadeStep cascadeStep)
     {
-        AppendPhase(sequence, context.QueueSpawnAnimation, context.SpawnDurationSeconds);
+        AppendPhase(sequence, cascadeStep.QueueSpawnAnimation, cascadeStep.SpawnDurationSeconds);
     }
 
-    private static void AppendSettlePhase(SequenceAnimation sequence, TurnAnimationContext context)
+    private static void AppendSettlePhase(SequenceAnimation sequence, TurnAnimationCascadeStep cascadeStep)
     {
-        AppendPhase(sequence, context.QueueSettleAnimation, context.SettleDurationSeconds);
+        AppendPhase(sequence, cascadeStep.QueueSettleAnimation, cascadeStep.SettleDurationSeconds);
     }
 
     private static void AppendPhase(SequenceAnimation sequence, Action action, float durationSeconds)

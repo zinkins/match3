@@ -3,6 +3,7 @@ using System.Linq;
 using Match3.Core.GameCore.Board;
 using Match3.Core.GameCore.ValueObjects;
 using Match3.Core.GameFlow.Events;
+using Match3.Core.GameFlow.Pipeline;
 using Match3.Core.Runtime;
 using Match3.Presentation.Animation;
 using Match3.Presentation.Input;
@@ -52,7 +53,7 @@ public sealed class PresentationScreenHost : IGameScreenHost
 
         switch (flowController.CurrentScreen)
         {
-            case MainMenuScreen mainMenu when ScreenLayoutMetrics.GetMainMenuPlayButtonBounds(inputState.ViewportWidth, inputState.ViewportHeight).Contains(ToNumerics(inputState.PointerPosition)):
+            case MainMenuScreen mainMenu when ScreenLayoutMetrics.GetMainMenuPlayButtonBounds(inputState.ViewportWidth, inputState.ViewportHeight).Contains(inputState.PointerPosition):
                 mainMenu.PlayButton.Click();
                 break;
             case GameplayScreen gameplay:
@@ -65,7 +66,7 @@ public sealed class PresentationScreenHost : IGameScreenHost
     {
         if (gameplay.ShouldShowGameOverOverlay)
         {
-            if (ScreenLayoutMetrics.GetGameOverOkButtonBounds(inputState.ViewportWidth, inputState.ViewportHeight).Contains(ToNumerics(inputState.PointerPosition)))
+            if (ScreenLayoutMetrics.GetGameOverOkButtonBounds(inputState.ViewportWidth, inputState.ViewportHeight).Contains(inputState.PointerPosition))
             {
                 gameplay.OkButton.Click();
             }
@@ -85,56 +86,23 @@ public sealed class PresentationScreenHost : IGameScreenHost
             return;
         }
 
-        var move = gameplay.BoardInputHandler.HandleClick(ToNumerics(inputState.PointerPosition));
+        var move = gameplay.BoardInputHandler.HandleClick(inputState.PointerPosition);
         if (move is null)
         {
             return;
         }
 
         var beforeBoard = gameplay.Board.Clone();
-        var beforeSnapshot = gameplay.BoardRenderer.BuildSnapshot(beforeBoard, gameplay.BoardTransform);
         var result = gameplay.Presenter.ProcessMove(gameplay.Board, move.Value);
-        var afterSnapshot = gameplay.BoardRenderer.BuildSnapshot(gameplay.Board, gameplay.BoardTransform);
-        var swappedBoard = beforeBoard.Clone();
-        ApplySwap(swappedBoard, move.Value);
-        var swappedSnapshot = gameplay.BoardRenderer.BuildSnapshot(swappedBoard, gameplay.BoardTransform);
-        var createdBonusOrigins = GetCreatedBonusOrigins(result.Events);
-        var createdBonusTargets = GetCreatedBonusTargets(afterSnapshot, createdBonusOrigins);
         var animation = gameplay.TurnAnimationBuilder.Build(new TurnAnimationContext
         {
             IsSwapApplied = result.IsSwapApplied,
             QueueSwapAnimation = () => GameplayAnimationRuntime.QueueSwap(gameplay.BoardViewState, gameplay.AnimationPlayer, move.Value, rollback: !result.IsSwapApplied),
-            QueueResolveAnimation = () => GameplayVisualEffectsTimeline.QueueEvents(gameplay.BoardViewState, gameplay.AnimationPlayer, result.Events, gameplay.BoardTransform),
-            QueueGravityAnimation = () => GameplayAnimationRuntime.QueueBoardSettle(
-                gameplay.BoardViewState,
-                gameplay.AnimationPlayer,
-                swappedSnapshot,
-                afterSnapshot,
-                gameplay.BoardTransform.CellSize,
-                0f,
-                createdBonusTargets,
-                gameplay.VisualState),
-            QueueSpawnAnimation = () => GameplayAnimationRuntime.QueueCreatedBonuses(
-                gameplay.BoardViewState,
-                gameplay.AnimationPlayer,
-                afterSnapshot,
-                gameplay.BoardTransform.CellSize,
-                0f,
-                createdBonusOrigins),
-            QueueSettleAnimation = static () => { },
             SwapDurationSeconds = result.IsSwapApplied ? 0.22f : 0.36f,
-            ResolveDurationSeconds = GameplayVisualEffectsTimeline.GetTotalDuration(result.Events),
-            GravityDurationSeconds = 0f,
-            SpawnDurationSeconds = 0f,
-            SettleDurationSeconds = 1.15f
+            CascadeSteps = BuildCascadeSteps(gameplay, result)
         });
 
         gameplay.AnimationPlayer.Play(animation);
-    }
-
-    private static System.Numerics.Vector2 ToNumerics(System.Numerics.Vector2 value)
-    {
-        return value;
     }
 
     private static void ApplySwap(BoardState board, Move move)
@@ -143,6 +111,44 @@ public sealed class PresentationScreenHost : IGameScreenHost
         var toPiece = board.GetContent(move.To);
         board.SetContent(move.From, toPiece);
         board.SetContent(move.To, fromPiece);
+    }
+
+    private static IReadOnlyList<TurnAnimationCascadeStep> BuildCascadeSteps(GameplayScreen gameplay, TurnPipelineResult result)
+    {
+        return result.CascadeSteps
+            .Select(step =>
+            {
+                var startSnapshot = gameplay.BoardRenderer.BuildSnapshot(step.StartBoard, gameplay.BoardTransform);
+                var endSnapshot = gameplay.BoardRenderer.BuildSnapshot(step.EndBoard, gameplay.BoardTransform);
+                var createdBonusOrigins = GetCreatedBonusOrigins(step.Events);
+                var createdBonusTargets = GetCreatedBonusTargets(endSnapshot, createdBonusOrigins);
+                return new TurnAnimationCascadeStep
+                {
+                    QueueResolveAnimation = () => GameplayVisualEffectsTimeline.QueueEvents(gameplay.BoardViewState, gameplay.AnimationPlayer, step.Events, gameplay.BoardTransform),
+                    QueueGravityAnimation = () => GameplayAnimationRuntime.QueueBoardSettle(
+                        gameplay.BoardViewState,
+                        gameplay.AnimationPlayer,
+                        startSnapshot,
+                        endSnapshot,
+                        gameplay.BoardTransform.CellSize,
+                        0f,
+                        createdBonusTargets,
+                        gameplay.VisualState),
+                    QueueSpawnAnimation = () => GameplayAnimationRuntime.QueueCreatedBonuses(
+                        gameplay.BoardViewState,
+                        gameplay.AnimationPlayer,
+                        endSnapshot,
+                        gameplay.BoardTransform.CellSize,
+                        0f,
+                        createdBonusOrigins),
+                    QueueSettleAnimation = static () => { },
+                    ResolveDurationSeconds = GameplayVisualEffectsTimeline.GetTotalDuration(step.Events),
+                    GravityDurationSeconds = 0f,
+                    SpawnDurationSeconds = 0f,
+                    SettleDurationSeconds = 1.15f
+                };
+            })
+            .ToArray();
     }
     private static IReadOnlyList<GridPosition> GetCreatedBonusTargets(BoardRenderSnapshot snapshot, IReadOnlyList<GridPosition> createdBonusOrigins)
     {

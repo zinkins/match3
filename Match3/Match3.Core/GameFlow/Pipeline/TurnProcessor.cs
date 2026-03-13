@@ -96,6 +96,7 @@ public sealed class TurnProcessor
         Action<GameplayState, GameSession> onPhaseCompleted = null)
     {
         var events = new List<IDomainEvent>();
+        var cascadeSteps = new List<TurnPipelineCascadeStep>();
 
         stateMachine.TransitionToSelecting();
         onPhaseCompleted?.Invoke(stateMachine.State, session);
@@ -122,6 +123,8 @@ public sealed class TurnProcessor
         var resolvedScore = currentScore;
         while (matches.Count > 0)
         {
+            var stepStartBoard = board.Clone();
+            var stepEvents = new List<IDomainEvent>();
             var matchedPositions = matches
                 .SelectMany(group => group.Positions)
                 .Distinct()
@@ -156,42 +159,45 @@ public sealed class TurnProcessor
             if (createdBonus is not null)
             {
                 board.SetContent(createdBonus.Position, new CellContent(ToPieceType(createdBonus), createdBonus, IsFreshBonus: true));
-                events.Add(CreateBonusCreatedEvent(createdBonus));
+                stepEvents.Add(CreateBonusCreatedEvent(createdBonus));
             }
 
             foreach (var activated in bonusActivation.ActivatedBonuses)
             {
-                events.Add(CreateBonusActivationEvent(board, activated));
+                stepEvents.Add(CreateBonusActivationEvent(board, activated));
             }
 
-            events.Add(new MatchResolved(destroyedPieces));
+            stepEvents.Add(new MatchResolved(destroyedPieces));
             var updatedScore = scoreCalculator.AddScore(resolvedScore, destroyedPieces);
-            events.Add(new ScoreAdded(updatedScore - resolvedScore));
+            stepEvents.Add(new ScoreAdded(updatedScore - resolvedScore));
             resolvedScore = updatedScore;
 
             if (session.IsGameOver)
             {
-                return FinishWithGameOver(stateMachine, events, applied);
+                return FinishWithGameOver(stateMachine, events, cascadeSteps, applied);
             }
 
             stateMachine.TransitionToApplyingGravity();
             gravityResolver.Apply(board);
-            events.Add(new PiecesFell());
+            stepEvents.Add(new PiecesFell());
             onPhaseCompleted?.Invoke(stateMachine.State, session);
 
             if (session.IsGameOver)
             {
-                return FinishWithGameOver(stateMachine, events, applied);
+                return FinishWithGameOver(stateMachine, events, cascadeSteps, applied);
             }
 
             stateMachine.TransitionToRefilling();
             refillResolver.Refill(board);
-            events.Add(new PiecesSpawned());
+            stepEvents.Add(new PiecesSpawned());
             onPhaseCompleted?.Invoke(stateMachine.State, session);
+
+            cascadeSteps.Add(new TurnPipelineCascadeStep(stepStartBoard, board.Clone(), stepEvents));
+            events.AddRange(stepEvents);
 
             if (session.IsGameOver)
             {
-                return FinishWithGameOver(stateMachine, events, applied);
+                return FinishWithGameOver(stateMachine, events, cascadeSteps, applied);
             }
 
             matches = matchFinder.FindMatches(board);
@@ -206,11 +212,11 @@ public sealed class TurnProcessor
         stateMachine.TransitionToCheckingEndGame();
         if (session.IsGameOver)
         {
-            return FinishWithGameOver(stateMachine, events, applied);
+            return FinishWithGameOver(stateMachine, events, cascadeSteps, applied);
         }
 
         stateMachine.TransitionToIdle();
-        return new TurnPipelineResult(applied, events);
+        return new TurnPipelineResult(applied, events, cascadeSteps);
     }
 
     private BonusToken TryCreateBonus(
@@ -399,12 +405,13 @@ public sealed class TurnProcessor
     private static TurnPipelineResult FinishWithGameOver(
         GameplayStateMachine stateMachine,
         List<IDomainEvent> events,
+        List<TurnPipelineCascadeStep> cascadeSteps,
         bool applied)
     {
         stateMachine.TransitionToCheckingEndGame();
         stateMachine.TransitionToGameOver();
         events.Add(new GameEnded());
-        return new TurnPipelineResult(applied, events);
+        return new TurnPipelineResult(applied, events, cascadeSteps);
     }
 
     private static void Swap(BoardState board, Move move)
