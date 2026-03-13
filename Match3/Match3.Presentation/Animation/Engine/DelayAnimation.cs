@@ -1,6 +1,6 @@
 namespace Match3.Presentation.Animation.Engine;
 
-public sealed class DelayAnimation(float durationSeconds, bool blocksInput = false) : IAnimation
+public sealed class DelayAnimation(float durationSeconds, bool blocksInput = false) : ITimedAnimation
 {
     public bool IsCompleted => elapsedSeconds >= durationSeconds;
 
@@ -12,12 +12,20 @@ public sealed class DelayAnimation(float durationSeconds, bool blocksInput = fal
 
     public void Update(float deltaTime)
     {
+        _ = Advance(deltaTime);
+    }
+
+    public float Advance(float deltaTime)
+    {
         if (deltaTime < 0f || IsCompleted)
         {
-            return;
+            return 0f;
         }
 
-        elapsedSeconds += deltaTime;
+        var remaining = MathF.Max(0f, durationSeconds - elapsedSeconds);
+        var consumed = MathF.Min(deltaTime, remaining);
+        elapsedSeconds += consumed;
+        return deltaTime - consumed;
     }
 }
 

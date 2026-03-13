@@ -1,6 +1,6 @@
 namespace Match3.Presentation.Animation.Engine;
 
-public sealed class CallbackAnimation(Action callback) : IAnimation
+public sealed class CallbackAnimation(Action callback) : ITimedAnimation
 {
     private readonly Action callback = callback ?? throw new ArgumentNullException(nameof(callback));
     private bool hasInvoked;
@@ -13,12 +13,18 @@ public sealed class CallbackAnimation(Action callback) : IAnimation
 
     public void Update(float deltaTime)
     {
+        _ = Advance(deltaTime);
+    }
+
+    public float Advance(float deltaTime)
+    {
         if (hasInvoked)
         {
-            return;
+            return deltaTime;
         }
 
         callback();
         hasInvoked = true;
+        return deltaTime;
     }
 }

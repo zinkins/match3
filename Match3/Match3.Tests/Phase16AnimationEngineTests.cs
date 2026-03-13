@@ -316,6 +316,51 @@ public sealed class Phase16AnimationEngineTests
     }
 
     [Fact]
+    public void TurnAnimationBuilder_BuildsDistinctPhaseBoundaries_ForCascadeStep()
+    {
+        var builder = new TurnAnimationBuilder();
+        var calls = new List<string>();
+        var animation = builder.Build(new TurnAnimationContext
+        {
+            IsSwapApplied = true,
+            QueueSwapAnimation = () => calls.Add("swap"),
+            QueueResolveAnimation = () => calls.Add("resolve"),
+            QueueGravityAnimation = () => calls.Add("gravity"),
+            QueueSpawnAnimation = () => calls.Add("spawn"),
+            QueueSettleAnimation = () => calls.Add("settle"),
+            SwapDurationSeconds = 0.22f,
+            ResolveDurationSeconds = 0.8f,
+            GravityDurationSeconds = 0.1f,
+            SpawnDurationSeconds = 0.2f,
+            SettleDurationSeconds = 1.15f
+        });
+
+        animation.Update(0f);
+        Assert.Equal(["swap"], calls);
+
+        animation.Update(0.22f);
+        Assert.Equal(["swap", "resolve"], calls);
+
+        animation.Update(0.79f);
+        Assert.Equal(["swap", "resolve"], calls);
+
+        animation.Update(0.01f);
+        Assert.Equal(["swap", "resolve", "gravity"], calls);
+
+        animation.Update(0.09f);
+        Assert.Equal(["swap", "resolve", "gravity"], calls);
+
+        animation.Update(0.01f);
+        Assert.Equal(["swap", "resolve", "gravity", "spawn"], calls);
+
+        animation.Update(0.19f);
+        Assert.Equal(["swap", "resolve", "gravity", "spawn"], calls);
+
+        animation.Update(0.01f);
+        Assert.Equal(["swap", "resolve", "gravity", "spawn", "settle"], calls);
+    }
+
+    [Fact]
     public void TurnAnimationBuilder_PreservesVisualContinuity_ForBonusActivatedByDestroyer()
     {
         var builder = new TurnAnimationBuilder();
@@ -616,7 +661,7 @@ public sealed class Phase16AnimationEngineTests
         player.Update(0.4f);
         Assert.True(spawnedNode.Position.Y < 20f);
 
-        player.Update(0.35f);
+        player.Update(0.75f);
         Assert.Equal(new Vector2(20f, 20f), spawnedNode.Position);
     }
     [Fact]

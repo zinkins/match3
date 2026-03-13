@@ -1,6 +1,6 @@
 namespace Match3.Presentation.Animation.Engine;
 
-public sealed class ParallelAnimation(params IAnimation[] children) : IAnimation
+public sealed class ParallelAnimation(params IAnimation[] children) : ITimedAnimation
 {
     private readonly List<IAnimation> children = [.. children.Where(child => child is not null)];
 
@@ -16,14 +16,31 @@ public sealed class ParallelAnimation(params IAnimation[] children) : IAnimation
 
     public void Update(float deltaTime)
     {
+        _ = Advance(deltaTime);
+    }
+
+    public float Advance(float deltaTime)
+    {
         if (deltaTime < 0f || IsCompleted)
         {
-            return;
+            return 0f;
         }
 
+        var unusedTime = deltaTime;
         foreach (var child in children)
         {
-            child.Update(deltaTime);
+            var childUnused = child is ITimedAnimation timedChild
+                ? timedChild.Advance(deltaTime)
+                : AdvanceUntimedChild(child, deltaTime);
+            unusedTime = MathF.Min(unusedTime, childUnused);
         }
+
+        return IsCompleted ? unusedTime : 0f;
+    }
+
+    private static float AdvanceUntimedChild(IAnimation child, float deltaTime)
+    {
+        child.Update(deltaTime);
+        return child.IsCompleted ? 0f : 0f;
     }
 }

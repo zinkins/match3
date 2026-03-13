@@ -10,19 +10,44 @@ public sealed class TurnAnimationBuilder : ITurnAnimationBuilder
 
         var sequence = Anim.Sequence();
 
-        AppendPhase(sequence, context.QueueSwapAnimation, context.SwapDurationSeconds);
+        AppendSwapPhase(sequence, context);
 
         if (!context.IsSwapApplied)
         {
             return sequence;
         }
 
-        AppendPhase(sequence, context.QueueResolveAnimation, context.ResolveDurationSeconds);
-        AppendPhase(sequence, context.QueueGravityAnimation, context.GravityDurationSeconds);
-        AppendPhase(sequence, context.QueueSpawnAnimation, context.SpawnDurationSeconds);
-        AppendPhase(sequence, context.QueueSettleAnimation, context.SettleDurationSeconds);
+        AppendResolvePhase(sequence, context);
+        AppendGravityPhase(sequence, context);
+        AppendSpawnPhase(sequence, context);
+        AppendSettlePhase(sequence, context);
 
         return sequence;
+    }
+
+    private static void AppendSwapPhase(SequenceAnimation sequence, TurnAnimationContext context)
+    {
+        AppendPhase(sequence, context.QueueSwapAnimation, context.SwapDurationSeconds);
+    }
+
+    private static void AppendResolvePhase(SequenceAnimation sequence, TurnAnimationContext context)
+    {
+        AppendPhase(sequence, context.QueueResolveAnimation, context.ResolveDurationSeconds);
+    }
+
+    private static void AppendGravityPhase(SequenceAnimation sequence, TurnAnimationContext context)
+    {
+        AppendPhase(sequence, context.QueueGravityAnimation, context.GravityDurationSeconds);
+    }
+
+    private static void AppendSpawnPhase(SequenceAnimation sequence, TurnAnimationContext context)
+    {
+        AppendPhase(sequence, context.QueueSpawnAnimation, context.SpawnDurationSeconds);
+    }
+
+    private static void AppendSettlePhase(SequenceAnimation sequence, TurnAnimationContext context)
+    {
+        AppendPhase(sequence, context.QueueSettleAnimation, context.SettleDurationSeconds);
     }
 
     private static void AppendPhase(SequenceAnimation sequence, Action action, float durationSeconds)

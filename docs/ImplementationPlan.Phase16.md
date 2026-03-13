@@ -117,9 +117,9 @@ T481 [ ] [Nice] [P] Проверить визуально `swap` после ми
 T482 [ ] [Nice] [P] Проверить визуально `destroyer` и `explosion` после миграции на новый runtime.
 T483 [ ] [Nice] [P] Проверить визуально `fall` и `spawn` после миграции на новый runtime.
 T484 [ ] [Nice] Проверить визуально, что последовательность фаз хода считывается однозначно.
-T485 [ ] [MVP] Написать test `TurnAnimationBuilder_BuildsDistinctPhaseBoundaries_ForCascadeStep`.
-T486 [ ] [MVP] Добавить в `TurnAnimationBuilder` явное представление phase boundaries.
-T487 [ ] [MVP] Прогнать tests.
+T485 [x] [MVP] Написать test `TurnAnimationBuilder_BuildsDistinctPhaseBoundaries_ForCascadeStep`.
+T486 [x] [MVP] Добавить в `TurnAnimationBuilder` явное представление phase boundaries.
+T487 [x] [MVP] Прогнать tests.
 T488 [ ] [MVP] Написать test `CascadeScenario_WaitsForPreviousSpawnBeforeStartingNextResolve`.
 T489 [ ] [MVP] Реализовать последовательный запуск каскадов через общий scenario.
 T490 [ ] [MVP] Прогнать tests.

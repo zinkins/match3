@@ -1,6 +1,6 @@
 namespace Match3.Presentation.Animation.Engine;
 
-public sealed class PropertyTween<T> : IAnimation
+public sealed class PropertyTween<T> : ITimedAnimation
 {
     private readonly Func<T> getter;
     private readonly Action<T> setter;
@@ -42,13 +42,23 @@ public sealed class PropertyTween<T> : IAnimation
 
     public void Update(float deltaTime)
     {
+        _ = Advance(deltaTime);
+    }
+
+    public float Advance(float deltaTime)
+    {
         if (deltaTime < 0f || IsCompleted)
         {
-            return;
+            return 0f;
         }
 
-        elapsedSeconds += deltaTime;
+        var remaining = MathF.Max(0f, durationSeconds - elapsedSeconds);
+        var consumed = durationSeconds <= 0f
+            ? 0f
+            : MathF.Min(deltaTime, remaining);
+        elapsedSeconds += durationSeconds <= 0f ? 0f : consumed;
         var progress = durationSeconds <= 0f ? 1f : MathF.Min(1f, elapsedSeconds / durationSeconds);
         setter(interpolate(from, to, progress));
+        return durationSeconds <= 0f ? deltaTime : deltaTime - consumed;
     }
 }
