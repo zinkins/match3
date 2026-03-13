@@ -131,6 +131,44 @@ public class Phase15PieceEffectsTests
     }
 
     [Fact]
+    public void GameplayAnimationRuntime_QueuesPopEffect_ForConsumedMatchPieces()
+    {
+        var visualState = new GameplayVisualState();
+        var player = new AnimationPlayer();
+        var viewState = new BoardViewState();
+        var consumed = new GridPosition(0, 0);
+        var survivor = new GridPosition(1, 0);
+        var beforeSnapshot = new BoardRenderSnapshot(
+            [],
+            [
+                new RenderPiece(consumed, PieceVisualConstants.ShapeSquare, PieceVisualConstants.TintRed, 20f, 20f, 32f, 32f),
+                new RenderPiece(survivor, PieceVisualConstants.ShapeSquare, PieceVisualConstants.TintBlue, 68f, 20f, 32f, 32f)
+            ]);
+        var afterSnapshot = new BoardRenderSnapshot(
+            [],
+            [
+                new RenderPiece(survivor, PieceVisualConstants.ShapeSquare, PieceVisualConstants.TintBlue, 68f, 20f, 32f, 32f)
+            ]);
+
+        GameplayAnimationRuntime.QueueMatchPop(viewState, player, beforeSnapshot, afterSnapshot);
+
+        Assert.Single(viewState.EffectNodes);
+
+        player.Update(0.05f);
+        var earlyPieces = visualState.BuildPieces(afterSnapshot, null, viewState);
+        var poppedPiece = Assert.Single(earlyPieces, piece => piece.Position == consumed);
+
+        Assert.True(poppedPiece.Width > 0f);
+        Assert.Equal(PieceVisualConstants.TintRed, poppedPiece.Tint);
+
+        player.Update(0.20f);
+
+        Assert.Empty(viewState.EffectNodes);
+        var finalPieces = visualState.BuildPieces(afterSnapshot, null, viewState);
+        Assert.DoesNotContain(finalPieces, piece => piece.Position == consumed);
+    }
+
+    [Fact]
     public void GameplayAnimationRuntime_MovesDestroyerTransientNode_AlongPath()
     {
         var visualState = new GameplayVisualState();

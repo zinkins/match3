@@ -84,6 +84,76 @@ public static class GameplayAnimationRuntime
         animationPlayer.Play(animation, ChannelConflictPolicy.Replace);
     }
 
+    public static void QueueMatchPop(
+        BoardViewState viewState,
+        AnimationPlayer animationPlayer,
+        BoardRenderSnapshot beforeSnapshot,
+        BoardRenderSnapshot afterSnapshot,
+        float initialDelaySeconds = 0f)
+    {
+        ArgumentNullException.ThrowIfNull(viewState);
+        ArgumentNullException.ThrowIfNull(animationPlayer);
+        ArgumentNullException.ThrowIfNull(beforeSnapshot);
+        ArgumentNullException.ThrowIfNull(afterSnapshot);
+
+        var survivingCells = afterSnapshot.Pieces
+            .Select(piece => piece.Position)
+            .ToHashSet();
+        var consumedPieces = beforeSnapshot.Pieces
+            .Where(piece => !survivingCells.Contains(piece.Position))
+            .ToArray();
+
+        foreach (var piece in consumedPieces)
+        {
+            var effectNode = new EffectNode(
+                NodeId.New(),
+                piece.Position,
+                new Vector2(piece.X, piece.Y),
+                new Vector2(1f, 1f),
+                piece.Rotation,
+                opacity: 1f,
+                piece.Tint,
+                glow: 0f,
+                isVisible: true,
+                piece.Shape,
+                piece.Width,
+                piece.Height,
+                layer: 20f);
+            viewState.AddOrUpdate(effectNode);
+
+            var scaleAnimation = new PropertyTween<Vector2>(
+                effectNode,
+                AnimationChannel.Scale,
+                () => effectNode.Scale,
+                value => effectNode.Scale = value,
+                new Vector2(1f, 1f),
+                Vector2.Zero,
+                0.18f,
+                static (_, _, progress) =>
+                {
+                    var burst = 1f + (0.28f * MathF.Sin(progress * MathF.PI));
+                    var shrink = 1f - Easing.SmoothStep(progress);
+                    var value = MathF.Max(0f, burst * shrink);
+                    return new Vector2(value, value);
+                });
+            var rotationAnimation = new PropertyTween<float>(
+                effectNode,
+                AnimationChannel.Rotation,
+                () => effectNode.Rotation,
+                value => effectNode.Rotation = value,
+                piece.Rotation,
+                piece.Rotation + 0.45f,
+                0.18f,
+                static (from, to, progress) => from + ((to - from) * Easing.SmoothStep(progress)));
+
+            var animation = Anim.Sequence()
+                .AppendDelayIfNeeded(initialDelaySeconds)
+                .Append(Anim.Parallel(scaleAnimation, rotationAnimation))
+                .Append(new CallbackAnimation(() => viewState.RemoveEffectNode(effectNode.Id)));
+            animationPlayer.Play(animation, ChannelConflictPolicy.Replace);
+        }
+    }
+
     public static void QueueSwap(BoardViewState viewState, AnimationPlayer animationPlayer, Move move, bool rollback)
     {
         ArgumentNullException.ThrowIfNull(viewState);
