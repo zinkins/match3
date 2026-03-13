@@ -67,15 +67,16 @@
 
 ### 2.3 Presentation
 
-Отвечает за рендеринг, анимации, UI и преобразование доменных событий в визуальные действия.
+Отвечает за рендеринг, runtime-анимации, UI и преобразование доменных событий в визуальные сценарии.
 
 Основные обязанности:
 
 - отрисовка поля и HUD;
 - визуализация выделения;
-- проигрывание анимаций обмена, падения, взрыва и движения Разрушителей;
+- хранение runtime-состояния визуальных узлов поля и transient-эффектов;
+- проигрывание анимаций обмена, падения, взрыва и движения Разрушителей через общий animation runtime;
 - преобразование координат поля в экранные координаты;
-- обработка пользовательского ввода.
+- обработка пользовательского ввода с учётом blocking animation scenarios.
 
 Типы:
 
@@ -83,8 +84,11 @@
 - `BoardRenderer`
 - `HudRenderer`
 - `BoardTransform`
-- `AnimationQueue`
-- `AnimationStep`
+- `AnimationPlayer`
+- `TurnAnimationBuilder`
+- `BoardViewState`
+- `PieceNode`
+- `EffectNode`
 
 Правило состояния:
 
@@ -93,6 +97,21 @@
 - mutable presentation objects не должны утекать в `Game Core` и `Game Flow`.
 
 Это правило нужно для animation/runtime-слоя, где состояние обновляется каждый кадр и где технически удобнее хранить изменяемые transform/state objects.
+
+#### Runtime animation architecture
+
+Presentation animation layer разделён на три уровня:
+
+- `Animation.Engine` - низкоуровневый runtime, который обновляет `IAnimation`, держит active animations в `AnimationPlayer` и резервирует `node + channel`, чтобы разные tween-ы не перетирали друг друга;
+- `BoardViewState` - runtime-представление визуального дерева поля, где `PieceNode` хранит стабильную identity фишки при смене logical cell, а `EffectNode` описывает transient visual effects;
+- `TurnAnimationBuilder` - слой orchestration, который переводит результат хода в явную фазовую последовательность `swap -> resolve -> gravity -> spawn -> settle` и сериализует каскады в один scenario.
+
+Ключевые правила:
+
+- `Game Core` и `Game Flow` не меняют animation state напрямую;
+- `Presentation` создаёт animation scenario как `SequenceAnimation`/`ParallelAnimation` поверх `Anim` factories;
+- `AnimationPlayer` является единственным местом, где принимается решение о blocking input и конфликте каналов;
+- renderer читает текущее состояние только из `BoardViewState`, а не из legacy overlay-очередей.
 
 ### 2.4 Platform
 
@@ -124,6 +143,7 @@ Match3.Core/
     Screens/
     Rendering/
     Animation/
+      Engine/
     Input/
   Localization/
   Content/
@@ -241,12 +261,21 @@ public readonly record struct GridPosition(int X, int Y)
 - `ScoreAdded`
 - `GameEnded`
 
-`Presentation` слой преобразует эти события в `AnimationStep`.
+`Presentation` слой преобразует эти события в phase-based animation scenario.
+
+Обычно цепочка выглядит так:
+
+1. `PresentationScreenHost` получает результат хода и набор cascade steps.
+2. `TurnAnimationBuilder` строит `SequenceAnimation` с явными границами фаз.
+3. phase callbacks обновляют `BoardViewState` и ставят в `AnimationPlayer` нужные tween-ы/effect scenarios.
+4. renderer каждый кадр читает актуальные `PieceNode` и `EffectNode` из `BoardViewState`.
 
 Преимущества:
 
 - логика не зависит от визуального слоя;
 - анимации можно менять без изменения `Game Core`;
+- runtime гарантирует детерминированный порядок фаз и каскадов;
+- selection, movement и transient effects могут сосуществовать за счёт channel-based tween-ов;
 - удобно строить отладочный лог и unit tests.
 
 ---
@@ -438,6 +467,13 @@ public interface IRandomSource
 1. `Game Core/Game Flow` обрабатывает ход;
 2. логика публикует `Domain Events`;
 3. `Presentation` преобразует эти события в визуальные шаги и анимации.
+
+Практически это означает:
+
+- сценарий хода строится через `TurnAnimationBuilder`, а не через ручной вызов нескольких очередей;
+- composable animations собираются из `Anim.Sequence()`, `Append(...)`, `Join(...)` и `Anim.Parallel(...)`;
+- visual state живёт в `BoardViewState`, где `PieceNode` отвечает за фишки, а `EffectNode` - за временные эффекты;
+- `AnimationPlayer` резервирует `AnimationChannel` на конкретном узле и предотвращает конфликтующие tween-ы.
 
 Примеры событий:
 

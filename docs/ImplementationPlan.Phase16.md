@@ -174,7 +174,7 @@ T538 [x] [MVP] Прогнать tests.
 T539 [x] [MVP] Удалить legacy tests, проверяющие `AnimationQueue`, после замены на новый runtime.
 T540 [x] [MVP] Обновить tests под `AnimationPlayer` и `TurnAnimationBuilder`.
 T541 [x] [MVP] Прогнать tests.
-T542 [ ] [Nice] [P] Обновить `docs/Architecture.md` описанием новой animation architecture.
-T543 [ ] [Nice] [P] Обновить `docs/SolutionStructure.md` новыми папками и ответственностями animation layer.
-T544 [ ] [Nice] [P] Добавить краткую памятку по использованию `Anim.Sequence/Join` для новых эффектов.
+T542 [x] [Nice] [P] Обновить `docs/Architecture.md` описанием новой animation architecture.
+T543 [x] [Nice] [P] Обновить `docs/SolutionStructure.md` новыми папками и ответственностями animation layer.
+T544 [x] [Nice] [P] Добавить краткую памятку по использованию `Anim.Sequence/Join` для новых эффектов.
 T545 [ ] [MVP] Выполнить финальный manual smoke test полного хода: swap -> resolve -> bonus -> fall -> spawn -> cascade.

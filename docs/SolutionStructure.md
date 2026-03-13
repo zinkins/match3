@@ -34,9 +34,9 @@ Match3.sln
 - экраны;
 - рендеринг;
 - HUD;
-- анимации;
+- runtime-анимации и visual effects;
 - input mapping;
-- преобразование `Domain Events` в визуальные действия.
+- преобразование `Domain Events` в визуальные сценарии.
 
 Этот проект нужен, чтобы не дублировать общую UI-логику в `DesktopGL`, `Android` и `iOS`.
 
@@ -128,6 +128,7 @@ Match3.Presentation/
   Screens/
   Rendering/
   Animation/
+    Engine/
   Input/
   UI/
   ViewModels/
@@ -141,9 +142,42 @@ Match3.Presentation/
 - `GameplayScreen` c `Game Over` overlay
 - `BoardRenderer`
 - `HudRenderer`
-- `AnimationQueue`
+- `AnimationPlayer`
+- `TurnAnimationBuilder`
+- `BoardViewState`
+- `PieceNodeRenderer`
 - `BoardTransform`
 - `GameplayPresenter`
+
+### 5.1 Animation layer responsibilities
+
+`Match3.Presentation/Animation/` делится на два уровня:
+
+- корневой `Animation/` - gameplay-specific сценарии и orchestration (`TurnAnimationBuilder`, `GameplayAnimationRuntime`, `GameplayVisualEffectsTimeline`, legacy-compatible adapters при необходимости);
+- `Animation/Engine/` - переиспользуемый runtime (`IAnimation`, `SequenceAnimation`, `ParallelAnimation`, `DelayAnimation`, `CallbackAnimation`, `PropertyTween`, `Anim`, `AnimationPlayer`, `BoardViewState`, `PieceNode`, `EffectNode`).
+
+Такое разделение нужно, чтобы gameplay-сценарии не смешивались с базовой механикой проигрывания animation graph.
+
+### 5.2 Памятка по `Anim.Sequence/Join`
+
+Используйте `Anim.Sequence()` как явную фазовую ленту, где `Append(...)` добавляет следующий шаг, а `Join(...)` запускает дополнительную анимацию внутри текущего шага параллельно с уже добавленной.
+
+Короткое правило:
+
+- `Append(...)` - когда следующий эффект должен начаться только после завершения предыдущего шага;
+- `Join(...)` - когда несколько tween-ов должны стартовать одновременно в рамках одной фазы;
+- `Anim.Parallel(...)` - когда удобнее заранее собрать независимую параллельную группу и передать её как один child animation.
+
+Пример для нового эффекта:
+
+```csharp
+var animation = Anim.Sequence()
+    .Append(Anim.MoveTo(node, targetPosition, 0.18f, blocksInput: true))
+    .Join(Anim.ScaleTo(node, highlightedScale, 0.18f))
+    .Append(Anim.FadeTo(node, 0f, 0.12f));
+```
+
+В примере movement и scale идут в одной фазе, а fade начинается только после завершения этой фазы.
 
 ---
 
