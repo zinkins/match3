@@ -5,11 +5,7 @@ public sealed class AnimationPlayer
     private readonly List<IAnimation> activeAnimations = [];
     private readonly Dictionary<AnimationBinding, IAnimation> reservedBindings = [];
 
-    public bool HasActiveAnimations => activeAnimations.Count > 0;
-
     public bool HasBlockingAnimations => activeAnimations.Any(animation => animation.BlocksInput);
-
-    public IReadOnlyList<IAnimation> ActiveAnimations => activeAnimations;
 
     public AnimationHandle Play(IAnimation animation, ChannelConflictPolicy conflictPolicy = ChannelConflictPolicy.Reject)
     {

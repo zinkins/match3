@@ -90,7 +90,6 @@ public sealed class TurnProcessor
         var resolvedScore = currentScore;
         while (matches.Count > 0)
         {
-            var stepStartBoard = board.Clone();
             var stepEvents = new List<IDomainEvent>();
             var matchedPositions = matches
                 .SelectMany(group => group.Positions)
@@ -163,7 +162,7 @@ public sealed class TurnProcessor
 
             board.MarkAllBonusesAsSettled();
 
-            cascadeSteps.Add(new TurnPipelineCascadeStep(stepStartBoard, stepResolvedBoard, stepGravityBoard, board.Clone(), stepEvents));
+            cascadeSteps.Add(new TurnPipelineCascadeStep(stepResolvedBoard, stepGravityBoard, board.Clone(), stepEvents));
             events.AddRange(stepEvents);
 
             if (session.IsGameOver)

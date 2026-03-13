@@ -15,11 +15,10 @@ namespace Match3.Tests;
 public sealed class Phase16AnimationEngineTests
 {
     [Fact]
-    public void AnimationPlayer_StartsWithoutActiveAnimations()
+    public void AnimationPlayer_StartsWithoutBlockingAnimations()
     {
         var player = new AnimationPlayer();
 
-        Assert.False(player.HasActiveAnimations);
         Assert.False(player.HasBlockingAnimations);
     }
 
@@ -123,7 +122,7 @@ public sealed class Phase16AnimationEngineTests
 
         Assert.True(firstHandle.IsAccepted);
         Assert.False(secondHandle.IsAccepted);
-        Assert.Single(player.ActiveAnimations);
+        Assert.False(firstHandle.IsCompleted);
     }
 
     [Fact]
@@ -933,7 +932,7 @@ public sealed class Phase16AnimationEngineTests
         player.Update(0.45f);
 
         Assert.Empty(viewState.EffectNodes);
-        Assert.False(player.HasActiveAnimations);
+        Assert.False(player.HasBlockingAnimations);
     }
     private static void AdvanceRuntime(AnimationPlayer player, float totalSeconds, float stepSeconds = 0.05f)
     {

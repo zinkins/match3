@@ -271,7 +271,7 @@ public class Phase15RuntimeRenderingTests
             new InputState(true, secondClick, true, false, 800, 480));
 
         Assert.True(builder.WasBuildCalled);
-        Assert.True(gameplay.AnimationPlayer.HasActiveAnimations);
+        Assert.True(gameplay.AnimationPlayer.HasBlockingAnimations);
     }
 
     [Fact]
