@@ -171,9 +171,9 @@ T535 [x] [MVP] Прогнать tests.
 T536 [x] [MVP] Написать test `ScreenFlowController_WaitsForAnimationPlayerBeforeShowingGameOver`.
 T537 [x] [MVP] Перевести `ScreenFlowController` на состояние нового animation runtime.
 T538 [x] [MVP] Прогнать tests.
-T539 [ ] [MVP] Удалить legacy tests, проверяющие `AnimationQueue`, после замены на новый runtime.
-T540 [ ] [MVP] Обновить tests под `AnimationPlayer` и `TurnAnimationBuilder`.
-T541 [ ] [MVP] Прогнать tests.
+T539 [x] [MVP] Удалить legacy tests, проверяющие `AnimationQueue`, после замены на новый runtime.
+T540 [x] [MVP] Обновить tests под `AnimationPlayer` и `TurnAnimationBuilder`.
+T541 [x] [MVP] Прогнать tests.
 T542 [ ] [Nice] [P] Обновить `docs/Architecture.md` описанием новой animation architecture.
 T543 [ ] [Nice] [P] Обновить `docs/SolutionStructure.md` новыми папками и ответственностями animation layer.
 T544 [ ] [Nice] [P] Добавить краткую памятку по использованию `Anim.Sequence/Join` для новых эффектов.

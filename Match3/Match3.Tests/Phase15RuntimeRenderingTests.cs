@@ -305,6 +305,32 @@ public class Phase15RuntimeRenderingTests
     }
 
     [Fact]
+    public void PresentationScreenHost_PassesRealCascadeSteps_ToTurnAnimationBuilder()
+    {
+        var builder = new RecordingTurnAnimationBuilder();
+        var flow = new ScreenFlowController(turnAnimationBuilderFactory: () => builder);
+        var host = new PresentationScreenHost(flow, new SpriteBatchRenderer());
+        flow.MainMenu.PlayButton.Click();
+        flow.UpdateLayout(800, 480);
+        var gameplay = flow.Gameplay;
+        ConfigureBoardForCascadeAfterGravity(gameplay.Board);
+        var firstClick = CreateBoardMoveTarget(gameplay, new GridPosition(3, 1));
+        var secondClick = CreateBoardMoveTarget(gameplay, new GridPosition(3, 2));
+
+        host.Update(
+            TimeSpan.FromMilliseconds(16),
+            new InputState(true, firstClick, true, false, 800, 480));
+
+        host.Update(
+            TimeSpan.FromMilliseconds(16),
+            new InputState(true, secondClick, true, false, 800, 480));
+
+        Assert.True(builder.WasBuildCalled);
+        Assert.NotNull(builder.LastContext);
+        Assert.Equal(2, builder.LastContext!.CascadeSteps.Count);
+    }
+
+    [Fact]
     public void PresentationScreenHost_IgnoresBoardInput_WhenSessionIsGameOver()
     {
         var flow = new ScreenFlowController(CreateExpiredSession);
@@ -361,6 +387,25 @@ public class Phase15RuntimeRenderingTests
         return session;
     }
 
+    private static void ConfigureBoardForCascadeAfterGravity(BoardState board)
+    {
+        for (var row = 0; row < board.Height; row++)
+        {
+            for (var column = 0; column < board.Width; column++)
+            {
+                board.SetPiece(new GridPosition(row, column), PieceCatalog.All[(row + column) % PieceCatalog.All.Count]);
+            }
+        }
+
+        board.SetPiece(new GridPosition(1, 1), PieceType.Red);
+        board.SetPiece(new GridPosition(2, 1), PieceType.Blue);
+        board.SetPiece(new GridPosition(3, 1), PieceType.Green);
+        board.SetPiece(new GridPosition(4, 1), PieceType.Blue);
+        board.SetPiece(new GridPosition(5, 1), PieceType.Red);
+        board.SetPiece(new GridPosition(6, 1), PieceType.Red);
+        board.SetPiece(new GridPosition(3, 2), PieceType.Blue);
+    }
+
     private sealed class FakeCanvas : IGameCanvas
     {
         public int ViewportWidth => 800;
@@ -401,9 +446,12 @@ public class Phase15RuntimeRenderingTests
     {
         public bool WasBuildCalled { get; private set; }
 
+        public Match3.Presentation.Animation.TurnAnimationContext? LastContext { get; private set; }
+
         public Match3.Presentation.Animation.Engine.IAnimation Build(Match3.Presentation.Animation.TurnAnimationContext context)
         {
             WasBuildCalled = true;
+            LastContext = context;
             return new DelayAnimation(0.5f, blocksInput: true);
         }
     }
