@@ -11,15 +11,17 @@ public sealed class BonusFactory
     public BonusToken Create(IReadOnlyList<MatchGroup> groups, GridPosition lastMovedCell)
     {
         var intersection = FindIntersection(groups);
-        var color = PieceCatalog.GetColor(groups[0].PieceType);
         if (intersection is not null)
         {
-            return new BombBonus(intersection.Value, color);
+            var intersectionGroup = groups.First(group => group.Positions.Contains(intersection.Value));
+            var intersectionColor = PieceCatalog.GetColor(intersectionGroup.PieceType);
+            return new BombBonus(intersection.Value, intersectionColor);
         }
 
         var longestGroup = groups
             .OrderByDescending(group => group.Positions.Count)
             .First();
+        var color = PieceCatalog.GetColor(longestGroup.PieceType);
 
         if (longestGroup.Positions.Count >= 5)
         {

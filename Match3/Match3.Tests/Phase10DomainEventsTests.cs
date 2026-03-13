@@ -191,6 +191,25 @@ public class Phase10DomainEventsTests
     }
 
     [Fact]
+    public void TurnProcessor_UsesCascadeMatchLocation_ForBonusAnchor_WhenLastSwapIsOutsideMatch()
+    {
+        var method = typeof(TurnProcessor).GetMethod("GetBonusAnchor", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+        Assert.NotNull(method);
+        var matches = new[]
+        {
+            new MatchGroup(PieceType.Red,
+                [new GridPosition(0, 0), new GridPosition(0, 1), new GridPosition(0, 2), new GridPosition(0, 3)])
+        };
+        var move = new Move(new GridPosition(5, 5), new GridPosition(5, 6));
+
+        var anchor = Assert.IsType<GridPosition>(method!.Invoke(null, [matches, move]));
+
+        Assert.Equal(0, anchor.Row);
+        Assert.InRange(anchor.Column, 1, 2);
+        Assert.NotEqual(move.To, anchor);
+    }
+
+    [Fact]
     public void TurnProcessor_AppliesSwap_WhenMovedBonusFormsMatchWithAnotherBonusAndPiece()
     {
         var board = CreateBoardForBonusToBonusMatch();

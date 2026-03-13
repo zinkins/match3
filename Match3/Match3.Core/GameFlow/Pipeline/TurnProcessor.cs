@@ -249,8 +249,23 @@ public sealed class TurnProcessor
         {
             (true, false) => move.From,
             (false, true) => move.To,
+            (false, false) => GetCascadeBonusAnchor(matches),
             _ => move.To
         };
+    }
+
+    private static GridPosition GetCascadeBonusAnchor(IReadOnlyList<MatchGroup> matches)
+    {
+        var longestGroup = matches
+            .OrderByDescending(group => group.Positions.Count)
+            .ThenBy(group => group.Positions.Min(position => position.Row))
+            .ThenBy(group => group.Positions.Min(position => position.Column))
+            .First();
+        var orderedPositions = longestGroup.Positions
+            .OrderBy(position => position.Row)
+            .ThenBy(position => position.Column)
+            .ToArray();
+        return orderedPositions[(orderedPositions.Length - 1) / 2];
     }
 
     private static bool HasIntersection(IReadOnlyList<MatchGroup> matches)

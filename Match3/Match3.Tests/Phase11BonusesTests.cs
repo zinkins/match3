@@ -56,6 +56,22 @@ public class Phase11BonusesTests
     }
 
     [Fact]
+    public void LineBonus_UsesColorOfBonusCreatingMatch_NotFirstGroup()
+    {
+        var factory = new BonusFactory();
+        var lastMoved = new GridPosition(2, 4);
+        var groups = new[]
+        {
+            Match(PieceType.Blue, new GridPosition(0, 0), new GridPosition(0, 1), new GridPosition(0, 2)),
+            Match(PieceType.Green, new GridPosition(2, 1), new GridPosition(2, 2), new GridPosition(2, 3), lastMoved)
+        };
+
+        var bonus = Assert.IsType<LineBonus>(factory.Create(groups, lastMoved));
+
+        Assert.Equal(PieceColor.Green, bonus.Color);
+    }
+
+    [Fact]
     public void LineBonus_HasOrientation()
     {
         var factory = new BonusFactory();
