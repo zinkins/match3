@@ -109,14 +109,6 @@ public sealed class PresentationScreenHost : IGameScreenHost
         gameplay.AnimationPlayer.Play(animation);
     }
 
-    private static void ApplySwap(BoardState board, Move move)
-    {
-        var fromPiece = board.GetContent(move.From);
-        var toPiece = board.GetContent(move.To);
-        board.SetContent(move.From, toPiece);
-        board.SetContent(move.To, fromPiece);
-    }
-
     private static IReadOnlyList<TurnAnimationCascadeStep> BuildCascadeSteps(GameplayScreen gameplay, TurnPipelineResult result)
     {
         return result.CascadeSteps

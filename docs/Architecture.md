@@ -11,6 +11,14 @@
 
 Для этого проект строится как `Game Core + Game Flow + Presentation + Platform`.
 
+Связанные диаграммы:
+
+- [Project Class Diagram](./ProjectClassDiagram.md)
+- [Simplified Project Class Diagram](./ProjectClassDiagram.Simple.md)
+- [Presentation Class Diagram](./PresentationClassDiagram.md)
+- [Game Flow Class Diagram](./GameFlowClassDiagram.md)
+- [Game Core Class Diagram](./GameCoreClassDiagram.md)
+
 Правило именования:
 
 - в тексте документа используются `Game Core` и `Game Flow`;

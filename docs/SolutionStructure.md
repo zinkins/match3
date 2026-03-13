@@ -2,6 +2,14 @@
 
 ## 1. Состав solution
 
+Связанные диаграммы:
+
+- [Project Class Diagram](./ProjectClassDiagram.md)
+- [Simplified Project Class Diagram](./ProjectClassDiagram.Simple.md)
+- [Presentation Class Diagram](./PresentationClassDiagram.md)
+- [Game Flow Class Diagram](./GameFlowClassDiagram.md)
+- [Game Core Class Diagram](./GameCoreClassDiagram.md)
+
 Рекомендуемый состав проектов:
 
 ```text
