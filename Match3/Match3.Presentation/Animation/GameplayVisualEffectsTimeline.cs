@@ -38,6 +38,39 @@ public static class GameplayVisualEffectsTimeline
         }
     }
 
+    public static IReadOnlyDictionary<GridPosition, float> GetRemovalStartDelays(IReadOnlyList<IDomainEvent> events)
+    {
+        ArgumentNullException.ThrowIfNull(events);
+
+        var delays = new Dictionary<GridPosition, float>();
+        foreach (var schedule in BuildSchedules(events))
+        {
+            switch (schedule.Event)
+            {
+                case DestroyerSpawned destroyer:
+                    foreach (var cellDelay in BuildDestroyerRemovalDelays(destroyer, schedule.StartDelaySeconds))
+                    {
+                        delays[cellDelay.Key] = delays.TryGetValue(cellDelay.Key, out var existing)
+                            ? MathF.Max(existing, cellDelay.Value)
+                            : cellDelay.Value;
+                    }
+
+                    break;
+                case BombExploded explosion:
+                    foreach (var cell in explosion.Area)
+                    {
+                        delays[cell] = delays.TryGetValue(cell, out var existing)
+                            ? MathF.Max(existing, schedule.StartDelaySeconds)
+                            : schedule.StartDelaySeconds;
+                    }
+
+                    break;
+            }
+        }
+
+        return delays;
+    }
+
     private static IReadOnlyList<VisualEffectSchedule> BuildSchedules(IReadOnlyList<IDomainEvent> events)
     {
         var schedules = new List<VisualEffectSchedule>();
@@ -93,6 +126,27 @@ public static class GameplayVisualEffectsTimeline
 
         var segmentDuration = 0.8f / (path.Count - 1);
         return initialDelaySeconds + (Math.Abs(targetIndex - originIndex) * segmentDuration);
+    }
+
+    private static IReadOnlyDictionary<GridPosition, float> BuildDestroyerRemovalDelays(DestroyerSpawned destroyer, float initialDelaySeconds)
+    {
+        var delays = new Dictionary<GridPosition, float>();
+        var path = destroyer.Path;
+        var originIndex = FindIndex(path, destroyer.Position);
+        if (originIndex < 0 || path.Count == 0)
+        {
+            return delays;
+        }
+
+        var segmentDuration = path.Count <= 1
+            ? 0f
+            : 0.8f / (path.Count - 1);
+        for (var i = 0; i < path.Count; i++)
+        {
+            delays[path[i]] = initialDelaySeconds + (Math.Abs(i - originIndex) * segmentDuration);
+        }
+
+        return delays;
     }
 
     private static int FindIndex(IReadOnlyList<GridPosition> positions, GridPosition target)

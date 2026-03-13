@@ -139,7 +139,8 @@ public sealed class PresentationScreenHost : IGameScreenHost
                             gameplay.BoardViewState,
                             gameplay.AnimationPlayer,
                             beforeResolveSnapshot,
-                            gameplay.BoardRenderer.BuildSnapshot(resolveBoard, gameplay.BoardTransform));
+                            gameplay.BoardRenderer.BuildSnapshot(resolveBoard, gameplay.BoardTransform),
+                            step.Events);
                         GameplayVisualEffectsTimeline.QueueEvents(gameplay.BoardViewState, gameplay.AnimationPlayer, step.Events, gameplay.BoardTransform);
                     },
                     QueueGravityAnimation = () =>

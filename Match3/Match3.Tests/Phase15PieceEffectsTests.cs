@@ -1,4 +1,5 @@
 using Match3.Core.GameCore.ValueObjects;
+using Match3.Core.GameFlow.Events;
 using Match3.Presentation.Animation;
 using Match3.Presentation.Animation.Engine;
 using Match3.Presentation.Rendering;
@@ -166,6 +167,42 @@ public class Phase15PieceEffectsTests
         Assert.Empty(viewState.EffectNodes);
         var finalPieces = visualState.BuildPieces(afterSnapshot, null, viewState);
         Assert.DoesNotContain(finalPieces, piece => piece.Position == consumed);
+    }
+
+    [Fact]
+    public void GameplayAnimationRuntime_DelaysPopEffect_UntilDestroyerReachesEachCell()
+    {
+        var visualState = new GameplayVisualState();
+        var player = new AnimationPlayer();
+        var viewState = new BoardViewState();
+        var origin = new GridPosition(0, 0);
+        var tail = new GridPosition(0, 2);
+        var beforeSnapshot = new BoardRenderSnapshot(
+            [],
+            [
+                new RenderPiece(origin, PieceVisualConstants.ShapeSquare, PieceVisualConstants.TintRed, 20f, 20f, 32f, 32f),
+                new RenderPiece(tail, PieceVisualConstants.ShapeSquare, PieceVisualConstants.TintBlue, 116f, 20f, 32f, 32f)
+            ]);
+        var afterSnapshot = new BoardRenderSnapshot([], []);
+        IDomainEvent[] events =
+        [
+            new DestroyerSpawned(origin, [origin, new GridPosition(0, 1), tail])
+        ];
+
+        GameplayAnimationRuntime.QueueMatchPop(viewState, player, beforeSnapshot, afterSnapshot, events);
+
+        var initialPieces = visualState.BuildPieces(afterSnapshot, null, viewState);
+        Assert.Contains(initialPieces, piece => piece.Position == origin);
+        Assert.Contains(initialPieces, piece => piece.Position == tail);
+
+        player.Update(0.2f);
+        var midPieces = visualState.BuildPieces(afterSnapshot, null, viewState);
+        Assert.DoesNotContain(midPieces, piece => piece.Position == origin);
+        Assert.Contains(midPieces, piece => piece.Position == tail);
+
+        player.Update(0.8f);
+        var finalPieces = visualState.BuildPieces(afterSnapshot, null, viewState);
+        Assert.DoesNotContain(finalPieces, piece => piece.Position == tail);
     }
 
     [Fact]

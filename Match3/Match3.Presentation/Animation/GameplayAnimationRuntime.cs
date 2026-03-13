@@ -89,6 +89,7 @@ public static class GameplayAnimationRuntime
         AnimationPlayer animationPlayer,
         BoardRenderSnapshot beforeSnapshot,
         BoardRenderSnapshot afterSnapshot,
+        IReadOnlyList<Match3.Core.GameFlow.Events.IDomainEvent>? events = null,
         float initialDelaySeconds = 0f)
     {
         ArgumentNullException.ThrowIfNull(viewState);
@@ -99,6 +100,9 @@ public static class GameplayAnimationRuntime
         var survivingCells = afterSnapshot.Pieces
             .Select(piece => piece.Position)
             .ToHashSet();
+        var removalDelays = events is null
+            ? new Dictionary<GridPosition, float>()
+            : GameplayVisualEffectsTimeline.GetRemovalStartDelays(events);
         var consumedPieces = beforeSnapshot.Pieces
             .Where(piece => !survivingCells.Contains(piece.Position))
             .ToArray();
@@ -147,7 +151,7 @@ public static class GameplayAnimationRuntime
                 static (from, to, progress) => from + ((to - from) * Easing.SmoothStep(progress)));
 
             var animation = Anim.Sequence()
-                .AppendDelayIfNeeded(initialDelaySeconds)
+                .AppendDelayIfNeeded(initialDelaySeconds + (removalDelays.TryGetValue(piece.Position, out var removalDelay) ? removalDelay : 0f))
                 .Append(Anim.Parallel(scaleAnimation, rotationAnimation))
                 .Append(new CallbackAnimation(() => viewState.RemoveEffectNode(effectNode.Id)));
             animationPlayer.Play(animation, ChannelConflictPolicy.Replace);
