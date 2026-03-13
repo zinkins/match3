@@ -4,6 +4,7 @@ using Match3.Core.GameCore.ValueObjects;
 using Match3.Core.GameFlow.Pipeline;
 using Match3.Core.GameFlow.Sessions;
 using Match3.Core.GameFlow.StateMachine;
+using Match3.Core.GameFlow.Events;
 
 namespace Match3.Tests;
 
@@ -13,6 +14,7 @@ public class Phase6TurnProcessorTests
     public void TurnProcessor_PerformsSwap_WhenMatchExists()
     {
         var board = CreateBoardForSwapWithMatch();
+        var before = Snapshot(board);
         var move = new Move(new GridPosition(0, 2), new GridPosition(1, 2));
         var processor = new TurnProcessor();
         var session = new GameSession();
@@ -21,8 +23,9 @@ public class Phase6TurnProcessorTests
         var result = processor.ProcessTurnPipelineWithEvents(board, move, session, machine);
 
         Assert.True(result.IsSwapApplied);
-        Assert.Equal(PieceType.Red, board.GetPiece(move.From));
-        Assert.Equal(PieceType.Blue, board.GetPiece(move.To));
+        Assert.Contains(result.Events, domainEvent => domainEvent is PiecesSwapped swapped && swapped.Move == move);
+        Assert.DoesNotContain(result.Events, domainEvent => domainEvent is SwapReverted);
+        Assert.NotEqual(before, Snapshot(board));
     }
 
     [Fact]

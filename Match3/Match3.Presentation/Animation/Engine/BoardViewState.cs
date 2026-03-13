@@ -13,6 +13,10 @@ public sealed class BoardViewState
 
     public IReadOnlyCollection<EffectNode> EffectNodes => effectNodesById.Values;
 
+    /// <summary>
+    /// Inserts or updates a piece node and refreshes the cell-to-node mapping for its current logical cell.
+    /// </summary>
+    /// <param name="node">Piece node to store.</param>
     public void AddOrUpdate(PieceNode node)
     {
         ArgumentNullException.ThrowIfNull(node);
@@ -32,6 +36,11 @@ public sealed class BoardViewState
         nodeIdsByCell[node.LogicalCell] = node.Id;
     }
 
+    /// <summary>
+    /// Returns the piece node currently mapped to the specified grid cell, if any.
+    /// </summary>
+    /// <param name="position">Logical grid cell to query.</param>
+    /// <returns>The mapped piece node, or <see langword="null" /> if the cell has no node.</returns>
     public PieceNode? GetPieceNode(GridPosition position)
     {
         return nodeIdsByCell.TryGetValue(position, out var nodeId) &&
@@ -40,6 +49,11 @@ public sealed class BoardViewState
             : null;
     }
 
+    /// <summary>
+    /// Removes a piece node by id and clears its logical-cell mapping when present.
+    /// </summary>
+    /// <param name="id">Identifier of the node to remove.</param>
+    /// <returns><see langword="true" /> if a node was removed; otherwise <see langword="false" />.</returns>
     public bool RemoveNode(NodeId id)
     {
         if (!nodesById.TryGetValue(id, out var node))
@@ -56,6 +70,10 @@ public sealed class BoardViewState
         return true;
     }
 
+    /// <summary>
+    /// Removes all piece nodes except the supplied retained set.
+    /// </summary>
+    /// <param name="retainedIds">Node ids that should remain in the view state.</param>
     public void RemoveNodesExcept(IEnumerable<NodeId> retainedIds)
     {
         ArgumentNullException.ThrowIfNull(retainedIds);
@@ -67,17 +85,30 @@ public sealed class BoardViewState
         }
     }
 
+    /// <summary>
+    /// Inserts or updates an effect node.
+    /// </summary>
+    /// <param name="node">Effect node to store.</param>
     public void AddOrUpdate(EffectNode node)
     {
         ArgumentNullException.ThrowIfNull(node);
         effectNodesById[node.Id] = node;
     }
 
+    /// <summary>
+    /// Removes an effect node by id.
+    /// </summary>
+    /// <param name="id">Identifier of the effect node to remove.</param>
+    /// <returns><see langword="true" /> if an effect node was removed; otherwise <see langword="false" />.</returns>
     public bool RemoveEffectNode(NodeId id)
     {
         return effectNodesById.Remove(id);
     }
 
+    /// <summary>
+    /// Marks the supplied cells as temporarily hidden, supporting nested hide/show lifetimes.
+    /// </summary>
+    /// <param name="positions">Cells to hide.</param>
     public void HideCells(IEnumerable<GridPosition> positions)
     {
         ArgumentNullException.ThrowIfNull(positions);
@@ -90,6 +121,10 @@ public sealed class BoardViewState
         }
     }
 
+    /// <summary>
+    /// Decrements the hide count for the supplied cells and reveals them when the count reaches zero.
+    /// </summary>
+    /// <param name="positions">Cells to reveal.</param>
     public void ShowCells(IEnumerable<GridPosition> positions)
     {
         ArgumentNullException.ThrowIfNull(positions);
@@ -111,6 +146,11 @@ public sealed class BoardViewState
         }
     }
 
+    /// <summary>
+    /// Determines whether a cell is currently hidden by one or more active effects.
+    /// </summary>
+    /// <param name="position">Cell to inspect.</param>
+    /// <returns><see langword="true" /> when the cell is hidden; otherwise <see langword="false" />.</returns>
     public bool IsCellHidden(GridPosition position)
     {
         return hiddenCellCounts.ContainsKey(position);

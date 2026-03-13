@@ -7,6 +7,11 @@ namespace Match3.Presentation.Animation;
 
 public static class GameplayVisualEffectsTimeline
 {
+    /// <summary>
+    /// Calculates the total time required to play all visual effects implied by the supplied domain events.
+    /// </summary>
+    /// <param name="events">Ordered domain events for a resolve step.</param>
+    /// <returns>The total duration in seconds of the scheduled visual effects.</returns>
     public static float GetTotalDuration(IReadOnlyList<IDomainEvent> events)
     {
         ArgumentNullException.ThrowIfNull(events);
@@ -17,6 +22,13 @@ public static class GameplayVisualEffectsTimeline
             : schedules.Max(schedule => schedule.StartDelaySeconds + schedule.DurationSeconds);
     }
 
+    /// <summary>
+    /// Queues effect animations for the supplied domain events, preserving the timing dependencies between destroyers and explosions.
+    /// </summary>
+    /// <param name="viewState">Runtime visual state that owns effect nodes.</param>
+    /// <param name="animationPlayer">Animation runtime that schedules the generated animations.</param>
+    /// <param name="events">Ordered domain events for a resolve step.</param>
+    /// <param name="transform">Board projection used to place effects in world space.</param>
     public static void QueueEvents(BoardViewState viewState, AnimationPlayer animationPlayer, IReadOnlyList<IDomainEvent> events, BoardTransform transform)
     {
         ArgumentNullException.ThrowIfNull(viewState);
@@ -38,6 +50,11 @@ public static class GameplayVisualEffectsTimeline
         }
     }
 
+    /// <summary>
+    /// Computes when each cell should visually disappear so match-pop effects can stay aligned with destroyer or bomb travel time.
+    /// </summary>
+    /// <param name="events">Ordered domain events for a resolve step.</param>
+    /// <returns>A map from grid cell to removal delay in seconds.</returns>
     public static IReadOnlyDictionary<GridPosition, float> GetRemovalStartDelays(IReadOnlyList<IDomainEvent> events)
     {
         ArgumentNullException.ThrowIfNull(events);

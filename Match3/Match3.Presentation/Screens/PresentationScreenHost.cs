@@ -26,6 +26,11 @@ public sealed class PresentationScreenHost : IGameScreenHost
         this.renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
     }
 
+    /// <summary>
+    /// Advances the active presentation screen, updates gameplay runtime systems, processes input, and applies screen-flow transitions.
+    /// </summary>
+    /// <param name="elapsed">Elapsed frame time.</param>
+    /// <param name="inputState">Current pointer and viewport input state.</param>
     public void Update(TimeSpan elapsed, InputState inputState)
     {
         flowController.UpdateLayout(inputState.ViewportWidth, inputState.ViewportHeight);
@@ -41,6 +46,10 @@ public sealed class PresentationScreenHost : IGameScreenHost
         flowController.Tick();
     }
 
+    /// <summary>
+    /// Draws the current screen after synchronizing layout with the canvas viewport.
+    /// </summary>
+    /// <param name="canvas">Target canvas used for rendering.</param>
     public void Draw(IGameCanvas canvas)
     {
         flowController.UpdateLayout(canvas.ViewportWidth, canvas.ViewportHeight);

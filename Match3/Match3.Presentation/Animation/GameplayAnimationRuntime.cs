@@ -10,6 +10,15 @@ namespace Match3.Presentation.Animation;
 
 public static class GameplayAnimationRuntime
 {
+    /// <summary>
+    /// Queues the visual effect for a line bonus by launching mirrored destroyer particles from the activation origin.
+    /// </summary>
+    /// <param name="viewState">Runtime visual state that owns piece and effect nodes.</param>
+    /// <param name="animationPlayer">Animation runtime that schedules the generated animations.</param>
+    /// <param name="origin">The cell where the destroyer is considered to start.</param>
+    /// <param name="path">The full path of cells affected by the destroyer.</param>
+    /// <param name="transform">Board projection used to convert grid cells into world coordinates.</param>
+    /// <param name="initialDelaySeconds">Optional delay before the effect starts.</param>
     public static void QueueDestroyer(BoardViewState viewState, AnimationPlayer animationPlayer, GridPosition origin, IReadOnlyList<GridPosition> path, BoardTransform transform, float initialDelaySeconds = 0f)
     {
         ArgumentNullException.ThrowIfNull(viewState);
@@ -36,6 +45,14 @@ public static class GameplayAnimationRuntime
         QueueDestroyerVisual(viewState, animationPlayer, backwardPath, transform, size, initialDelaySeconds, segmentDurationSeconds);
     }
 
+    /// <summary>
+    /// Queues a bomb explosion effect that temporarily hides affected cells while the explosion animation plays.
+    /// </summary>
+    /// <param name="viewState">Runtime visual state that owns piece and effect nodes.</param>
+    /// <param name="animationPlayer">Animation runtime that schedules the generated animations.</param>
+    /// <param name="area">All cells covered by the explosion.</param>
+    /// <param name="transform">Board projection used to place the explosion in world space.</param>
+    /// <param name="initialDelaySeconds">Optional delay before the effect starts.</param>
     public static void QueueExplosion(BoardViewState viewState, AnimationPlayer animationPlayer, IReadOnlyList<GridPosition> area, BoardTransform transform, float initialDelaySeconds = 0f)
     {
         ArgumentNullException.ThrowIfNull(viewState);
@@ -84,6 +101,15 @@ public static class GameplayAnimationRuntime
         animationPlayer.Play(animation, ChannelConflictPolicy.Replace);
     }
 
+    /// <summary>
+    /// Queues pop animations for pieces that disappear between two board snapshots, optionally aligned to domain-event timings.
+    /// </summary>
+    /// <param name="viewState">Runtime visual state that owns piece and effect nodes.</param>
+    /// <param name="animationPlayer">Animation runtime that schedules the generated animations.</param>
+    /// <param name="beforeSnapshot">Board snapshot before the resolve step.</param>
+    /// <param name="afterSnapshot">Board snapshot after the resolve step.</param>
+    /// <param name="events">Optional domain events used to delay removals until related visual effects reach a cell.</param>
+    /// <param name="initialDelaySeconds">Optional delay before the pop sequence starts.</param>
     public static void QueueMatchPop(
         BoardViewState viewState,
         AnimationPlayer animationPlayer,
@@ -158,6 +184,13 @@ public static class GameplayAnimationRuntime
         }
     }
 
+    /// <summary>
+    /// Queues the swap or rollback animation for two adjacent piece nodes.
+    /// </summary>
+    /// <param name="viewState">Runtime visual state used to resolve the nodes involved in the move.</param>
+    /// <param name="animationPlayer">Animation runtime that schedules the generated animations.</param>
+    /// <param name="move">The logical move being visualized.</param>
+    /// <param name="rollback">If <see langword="true" />, animates the swap out and back to its original positions.</param>
     public static void QueueSwap(BoardViewState viewState, AnimationPlayer animationPlayer, Move move, bool rollback)
     {
         ArgumentNullException.ThrowIfNull(viewState);
@@ -194,6 +227,17 @@ public static class GameplayAnimationRuntime
             ChannelConflictPolicy.Replace);
     }
 
+    /// <summary>
+    /// Queues the combined settle phase by first animating gravity and then animating newly spawned pieces.
+    /// </summary>
+    /// <param name="viewState">Runtime visual state that owns piece nodes.</param>
+    /// <param name="animationPlayer">Animation runtime that schedules the generated animations.</param>
+    /// <param name="beforeSnapshot">Board snapshot before settle begins.</param>
+    /// <param name="afterSnapshot">Board snapshot after settle completes.</param>
+    /// <param name="cellSize">Board cell size used to position spawned pieces above the board.</param>
+    /// <param name="initialDelaySeconds">Optional delay before settle starts.</param>
+    /// <param name="excludedTargets">Cells that should be skipped because another visual path owns them.</param>
+    /// <param name="visualState">Optional gameplay visual state used to preserve or suppress selection effects.</param>
     public static void QueueBoardSettle(
         BoardViewState viewState,
         AnimationPlayer animationPlayer,
@@ -208,6 +252,16 @@ public static class GameplayAnimationRuntime
         QueueSpawn(viewState, animationPlayer, beforeSnapshot, afterSnapshot, cellSize, initialDelaySeconds, excludedTargets);
     }
 
+    /// <summary>
+    /// Queues falling animations for pieces that survive a resolve step and move to new cells after gravity.
+    /// </summary>
+    /// <param name="viewState">Runtime visual state that owns piece nodes.</param>
+    /// <param name="animationPlayer">Animation runtime that schedules the generated animations.</param>
+    /// <param name="beforeSnapshot">Board snapshot before gravity.</param>
+    /// <param name="afterSnapshot">Board snapshot after gravity.</param>
+    /// <param name="initialDelaySeconds">Optional delay before gravity starts.</param>
+    /// <param name="excludedTargets">Cells that should be left untouched because another animation will populate them.</param>
+    /// <param name="visualState">Optional gameplay visual state used to suppress stale selection on consumed nodes.</param>
     public static void QueueGravity(
         BoardViewState viewState,
         AnimationPlayer animationPlayer,
@@ -291,6 +345,16 @@ public static class GameplayAnimationRuntime
         viewState.RemoveNodesExcept(retainedNodeIds);
     }
 
+    /// <summary>
+    /// Queues spawn animations for pieces that appear after refill and have no matching survivor in the previous snapshot.
+    /// </summary>
+    /// <param name="viewState">Runtime visual state that owns piece nodes.</param>
+    /// <param name="animationPlayer">Animation runtime that schedules the generated animations.</param>
+    /// <param name="beforeSnapshot">Board snapshot before refill.</param>
+    /// <param name="afterSnapshot">Board snapshot after refill.</param>
+    /// <param name="cellSize">Board cell size used to place new pieces above the board.</param>
+    /// <param name="initialDelaySeconds">Optional delay before spawn begins.</param>
+    /// <param name="excludedTargets">Cells that should be skipped because another animation will create them.</param>
     public static void QueueSpawn(
         BoardViewState viewState,
         AnimationPlayer animationPlayer,
@@ -350,6 +414,15 @@ public static class GameplayAnimationRuntime
         }
     }
 
+    /// <summary>
+    /// Queues the visual introduction of bonuses that are created inside the board rather than spawned from the refill lane.
+    /// </summary>
+    /// <param name="viewState">Runtime visual state that owns piece nodes.</param>
+    /// <param name="animationPlayer">Animation runtime that schedules the generated animations.</param>
+    /// <param name="afterSnapshot">Board snapshot containing the created bonus pieces.</param>
+    /// <param name="cellSize">Board cell size used to derive the travel distance from the creation origin.</param>
+    /// <param name="initialDelaySeconds">Optional delay before the created-bonus animation begins.</param>
+    /// <param name="createdBonusOrigins">Cells where bonus creation started during resolve.</param>
     public static void QueueCreatedBonuses(BoardViewState viewState, AnimationPlayer animationPlayer, BoardRenderSnapshot afterSnapshot, float cellSize, float initialDelaySeconds = 0f, IReadOnlyList<GridPosition>? createdBonusOrigins = null)
     {
         ArgumentNullException.ThrowIfNull(viewState);

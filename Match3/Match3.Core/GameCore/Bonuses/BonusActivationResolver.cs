@@ -21,6 +21,12 @@ public sealed class BonusActivationResolver
         this.bombBehavior = bombBehavior;
     }
 
+    /// <summary>
+    /// Resolves a bonus activation chain starting from the supplied root bonus, including recursively triggered bonuses.
+    /// </summary>
+    /// <param name="board">Mutable board state that bonus behaviors may alter.</param>
+    /// <param name="rootBonus">The initial bonus being activated.</param>
+    /// <returns>The activated bonuses and all destroyed positions produced by the chain reaction.</returns>
     public BonusActivationResult Resolve(BoardState board, BonusToken rootBonus)
     {
         var queue = new Queue<BonusToken>();

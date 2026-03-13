@@ -10,11 +10,21 @@ public sealed class BoardRenderer
 {
     public BoardState? LastRenderedBoard { get; private set; }
 
+    /// <summary>
+    /// Stores the last board passed through the renderer for inspection-oriented scenarios.
+    /// </summary>
+    /// <param name="board">Board state considered the current rendered board.</param>
     public void Render(BoardState board)
     {
         LastRenderedBoard = board;
     }
 
+    /// <summary>
+    /// Builds a render snapshot of board cells and visible pieces using the current board transform.
+    /// </summary>
+    /// <param name="board">Board state to project.</param>
+    /// <param name="transform">Board transform that converts grid positions into world-space rectangles.</param>
+    /// <returns>A snapshot that can be consumed by rendering and animation systems.</returns>
     public BoardRenderSnapshot BuildSnapshot(
         BoardState board,
         BoardTransform transform)
@@ -62,6 +72,11 @@ public sealed class BoardRenderer
         return new BoardRenderSnapshot(cells, pieces);
     }
 
+    /// <summary>
+    /// Resolves the visual representation for a regular piece type.
+    /// </summary>
+    /// <param name="pieceType">Logical piece type.</param>
+    /// <returns>Shape and tint used to render the piece.</returns>
     public PieceVisual GetVisual(PieceType pieceType)
     {
         return pieceType switch
@@ -75,6 +90,11 @@ public sealed class BoardRenderer
         };
     }
 
+    /// <summary>
+    /// Resolves the visual representation for a bonus token.
+    /// </summary>
+    /// <param name="bonus">Bonus token to render.</param>
+    /// <returns>Shape and tint used to render the bonus.</returns>
     public PieceVisual GetBonusVisual(BonusToken bonus)
     {
         return bonus switch

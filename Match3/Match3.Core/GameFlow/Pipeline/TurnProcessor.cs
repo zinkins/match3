@@ -54,6 +54,16 @@ public sealed class TurnProcessor
         this.bonusActivationResolver = bonusActivationResolver ?? throw new ArgumentNullException(nameof(bonusActivationResolver));
     }
 
+    /// <summary>
+    /// Executes a full turn pipeline: swap validation by outcome, resolve, bonus creation and activation, gravity, refill, cascades, and end-game transitions.
+    /// </summary>
+    /// <param name="board">Mutable board state that will be updated in place.</param>
+    /// <param name="move">The player move to apply.</param>
+    /// <param name="session">Current gameplay session used for timer and game-over checks.</param>
+    /// <param name="stateMachine">State machine that tracks the current gameplay phase.</param>
+    /// <param name="currentScore">Score before the turn starts.</param>
+    /// <param name="onPhaseCompleted">Optional callback invoked after visible phase transitions complete.</param>
+    /// <returns>A detailed result containing whether the swap was accepted, emitted events, and cascade snapshots.</returns>
     public TurnPipelineResult ProcessTurnPipelineWithEvents(
         BoardState board,
         Move move,

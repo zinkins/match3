@@ -30,11 +30,21 @@ public sealed class GameplayPresenter
 
     public bool CanAcceptInput => session.CanAcceptInput;
 
+    /// <summary>
+    /// Advances session time and updates game-over state derived from the timer.
+    /// </summary>
+    /// <param name="elapsed">Elapsed frame time.</param>
     public void Update(TimeSpan elapsed)
     {
         session.UpdateTimer(elapsed);
     }
 
+    /// <summary>
+    /// Processes a player move through the full gameplay pipeline and accumulates score changes emitted by domain events.
+    /// </summary>
+    /// <param name="board">Mutable board state that will be updated in place.</param>
+    /// <param name="move">Player move to execute.</param>
+    /// <returns>The pipeline result for the processed move.</returns>
     public TurnPipelineResult ProcessMove(BoardState board, Move move)
     {
         var result = turnProcessor.ProcessTurnPipelineWithEvents(

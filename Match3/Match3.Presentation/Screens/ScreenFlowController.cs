@@ -35,6 +35,9 @@ public sealed class ScreenFlowController
 
     public IScreen CurrentScreen { get; private set; }
 
+    /// <summary>
+    /// Advances high-level screen flow, including delayed game-over presentation once blocking animations finish.
+    /// </summary>
     public void Tick()
     {
         if (CurrentScreen == Gameplay &&
@@ -45,6 +48,11 @@ public sealed class ScreenFlowController
         }
     }
 
+    /// <summary>
+    /// Recomputes gameplay layout for the current viewport and updates the active board transform in place.
+    /// </summary>
+    /// <param name="viewportWidth">Viewport width in pixels.</param>
+    /// <param name="viewportHeight">Viewport height in pixels.</param>
     public void UpdateLayout(int viewportWidth, int viewportHeight)
     {
         var gameplayLayout = layoutCalculator.CalculateGameplayLayout(
