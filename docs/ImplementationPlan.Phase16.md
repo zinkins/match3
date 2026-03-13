@@ -113,10 +113,10 @@ T477 [x] [MVP] Удалить `AnimationQueue`.
 T478 [x] [MVP] Удалить `GameplayEffectsController`.
 T479 [x] [MVP] Очистить `GameplayScreen` от ссылок на старую animation system.
 T480 [x] [MVP] Прогнать tests.
-T481 [ ] [Nice] [P] Проверить визуально `swap` после миграции на новый runtime.
-T482 [ ] [Nice] [P] Проверить визуально `destroyer` и `explosion` после миграции на новый runtime.
-T483 [ ] [Nice] [P] Проверить визуально `fall` и `spawn` после миграции на новый runtime.
-T484 [ ] [Nice] Проверить визуально, что последовательность фаз хода считывается однозначно.
+T481 [x] [Nice] [P] Проверить визуально `swap` после миграции на новый runtime.
+T482 [x] [Nice] [P] Проверить визуально `destroyer` и `explosion` после миграции на новый runtime.
+T483 [x] [Nice] [P] Проверить визуально `fall` и `spawn` после миграции на новый runtime.
+T484 [x] [Nice] Проверить визуально, что последовательность фаз хода считывается однозначно.
 T485 [x] [MVP] Написать test `TurnAnimationBuilder_BuildsDistinctPhaseBoundaries_ForCascadeStep`.
 T486 [x] [MVP] Добавить в `TurnAnimationBuilder` явное представление phase boundaries.
 T487 [x] [MVP] Прогнать tests.

@@ -676,6 +676,33 @@ public sealed class Phase16AnimationEngineTests
         Assert.True(node.Scale.X > 1f);
         Assert.True(node.Rotation > 0f);
     }
+
+    [Fact]
+    public void SelectionEffect_AppliesContinuousSlowRotation_WhilePieceRemainsSelected()
+    {
+        var visualState = new GameplayVisualState();
+        var player = new AnimationPlayer();
+        var viewState = new BoardViewState();
+        var cell = new Match3.Core.GameCore.ValueObjects.GridPosition(0, 0);
+        var snapshot = new Match3.Presentation.Rendering.BoardRenderSnapshot(
+            [],
+            [
+                new Match3.Presentation.Rendering.RenderPiece(cell, Match3.Presentation.Rendering.PieceVisualConstants.ShapeSquare, Match3.Presentation.Rendering.PieceVisualConstants.TintRed, 20f, 20f, 32f, 32f)
+            ]);
+        var node = new PieceNode(NodeId.New(), cell, new Vector2(20f, 20f), new Vector2(1f, 1f), 0f, 1f, Match3.Presentation.Rendering.PieceVisualConstants.TintRed, 0f, true);
+        viewState.AddOrUpdate(node);
+
+        visualState.BuildPieces(snapshot, cell, viewState, player);
+        player.Update(0.12f);
+
+        var earlyRotation = visualState.BuildPieces(snapshot, cell, viewState, player).Single().Rotation;
+
+        visualState.Update(1f);
+
+        var laterRotation = visualState.BuildPieces(snapshot, cell, viewState, player).Single().Rotation;
+
+        Assert.True(laterRotation > earlyRotation);
+    }
     [Fact]
     public void GravityScenario_ReusesExistingPieceNodes_ForFallingPieces()
     {

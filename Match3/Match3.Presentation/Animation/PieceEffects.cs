@@ -209,8 +209,21 @@ public sealed class TimedPathClearEffect(IReadOnlyList<GridPosition> path, float
 
 public sealed class GameplayVisualState
 {
+    private const float SelectedSpinSpeedRadiansPerSecond = 0.45f;
+
     private GridPosition? lastSelectedCell;
     private GridPosition? suppressedSelectedCell;
+    private float selectedSpinElapsedSeconds;
+
+    public void Update(float deltaSeconds)
+    {
+        if (deltaSeconds <= 0f)
+        {
+            return;
+        }
+
+        selectedSpinElapsedSeconds += deltaSeconds;
+    }
 
     public NodeId? GetSelectedNodeId(BoardViewState viewState)
     {
@@ -261,6 +274,7 @@ public sealed class GameplayVisualState
                 ChannelConflictPolicy.Replace);
         }
 
+        selectedSpinElapsedSeconds = 0f;
         lastSelectedCell = effectiveSelectedCell;
     }
 
@@ -279,7 +293,11 @@ public sealed class GameplayVisualState
             }
 
             var current = effectiveSelectedCell == piece.Position
-                ? piece with { Layer = 10f }
+                ? piece with
+                {
+                    Layer = 10f,
+                    Rotation = piece.Rotation + GetSelectedSpinRotation()
+                }
                 : piece;
             pieces.Add(current);
         }
@@ -305,6 +323,11 @@ public sealed class GameplayVisualState
         return selectedCell == suppressedSelectedCell
             ? null
             : selectedCell;
+    }
+
+    private float GetSelectedSpinRotation()
+    {
+        return (selectedSpinElapsedSeconds * SelectedSpinSpeedRadiansPerSecond) % MathF.Tau;
     }
 
     private static RenderPiece BuildEffectPiece(EffectNode effectNode)

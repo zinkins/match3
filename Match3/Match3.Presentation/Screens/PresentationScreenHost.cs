@@ -33,6 +33,7 @@ public sealed class PresentationScreenHost : IGameScreenHost
         if (flowController.CurrentScreen is GameplayScreen gameplay)
         {
             gameplay.Presenter.Update(elapsed);
+            gameplay.VisualState.Update((float)elapsed.TotalSeconds);
             gameplay.AnimationPlayer.Update((float)elapsed.TotalSeconds);
         }
 
