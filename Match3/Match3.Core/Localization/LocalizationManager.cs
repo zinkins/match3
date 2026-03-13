@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Reflection;
-using System.Resources;
 using System.Threading;
 
 namespace Match3.Core.Localization
@@ -15,7 +13,14 @@ namespace Match3.Core.Localization
         /// <summary>
         /// the culture code we default to
         /// </summary>
-        public const string DEFAULT_CULTURE_CODE = "en-EN";
+        public const string DEFAULT_CULTURE_CODE = "en";
+
+        private static readonly CultureInfo[] SupportedCultures =
+        [
+            CultureInfo.InvariantCulture,
+            new CultureInfo("es-ES"),
+            new CultureInfo("fr-FR")
+        ];
 
         /// <summary>
         /// Retrieves a list of supported cultures based on available language resources in the game.
@@ -29,39 +34,7 @@ namespace Match3.Core.Localization
         /// </remarks>
         public static List<CultureInfo> GetSupportedCultures()
         {
-            // Create a list to hold supported cultures
-            List<CultureInfo> supportedCultures = new List<CultureInfo>();
-
-            // Get the current assembly
-            Assembly assembly = Assembly.GetExecutingAssembly();
-
-            // Resource manager for your Resources.resx
-            ResourceManager resourceManager = new ResourceManager("Match3.Core.Localization.Resources", assembly);
-
-            // Get all cultures defined in the satellite assemblies
-            CultureInfo[] cultures = CultureInfo.GetCultures(CultureTypes.SpecificCultures);
-
-            foreach (CultureInfo culture in cultures)
-            {
-                try
-                {
-                    // Try to get the resource set for this culture
-                    var resourceSet = resourceManager.GetResourceSet(culture, true, false);
-                    if (resourceSet != null)
-                    {
-                        supportedCultures.Add(culture);
-                    }
-                }
-                catch (MissingManifestResourceException)
-                {
-                    // This exception is thrown when there is no .resx for the culture, ignore it
-                }
-            }
-
-            // Always add the default (invariant) culture - the base .resx file
-            supportedCultures.Add(CultureInfo.InvariantCulture);
-
-            return supportedCultures;
+            return [.. SupportedCultures];
         }
 
         /// <summary>

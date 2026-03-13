@@ -12,6 +12,7 @@
     <MonoGameContentOutputDir>$(MonoGameContentRoot)\bin\Android\Match3.Android</MonoGameContentOutputDir>
     <MonoGameContentIntermediateDir>$(BaseIntermediateOutputPath)mgcb</MonoGameContentIntermediateDir>
     <MonoGameContentStamp>$(MonoGameContentIntermediateDir)\content.stamp</MonoGameContentStamp>
+    <GeneratedAndroidAssetsDir>Assets\Content</GeneratedAndroidAssetsDir>
     <MonoGameDotnetCommand Condition="'$(DotnetCommand)' != ''">$(DotnetCommand)</MonoGameDotnetCommand>
     <MonoGameDotnetCommand Condition="'$(MonoGameDotnetCommand)' == ''">dotnet</MonoGameDotnetCommand>
   </PropertyGroup>
@@ -38,11 +39,24 @@
     <Touch Files="$(MonoGameContentStamp)" AlwaysCreate="true" />
   </Target>
 
-  <Target Name="IncludeMonoGameContent"
+  <Target Name="SyncMonoGameContentToAndroidAssets"
           DependsOnTargets="BuildMonoGameContent"
+          BeforeTargets="IncludeMonoGameContent">
+    <ItemGroup>
+      <GeneratedMonoGameAsset Include="$(MonoGameContentOutputDir)\**\*.*" />
+    </ItemGroup>
+    <RemoveDir Directories="$(GeneratedAndroidAssetsDir)" />
+    <MakeDir Directories="$(GeneratedAndroidAssetsDir)" />
+    <Copy SourceFiles="@(GeneratedMonoGameAsset)"
+          DestinationFiles="@(GeneratedMonoGameAsset -> '$(GeneratedAndroidAssetsDir)\%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="false" />
+  </Target>
+
+  <Target Name="IncludeMonoGameContent"
+          DependsOnTargets="SyncMonoGameContentToAndroidAssets"
           BeforeTargets="BeforeCompile">
     <ItemGroup>
-      <AndroidAsset Include="$(MonoGameContentOutputDir)\**\*.*" />
+      <AndroidAsset Include="$(GeneratedAndroidAssetsDir)\**\*.*" />
     </ItemGroup>
   </Target>
 </Project>
