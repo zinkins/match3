@@ -8,19 +8,30 @@ public sealed class TurnAnimationBuilder : ITurnAnimationBuilder
     {
         ArgumentNullException.ThrowIfNull(context);
 
-        var sequence = Anim.Sequence()
-            .Append(new CallbackAnimation(context.QueueVisualEffects))
-            .Append(new CallbackAnimation(context.QueueSwapAnimation))
-            .Append(new DelayAnimation(context.SwapDurationSeconds, blocksInput: true));
+        var sequence = Anim.Sequence();
+
+        AppendPhase(sequence, context.QueueSwapAnimation, context.SwapDurationSeconds);
 
         if (!context.IsSwapApplied)
         {
             return sequence;
         }
 
-        return sequence
-            .Append(new CallbackAnimation(context.QueueCreatedBonusAnimation))
-            .Append(new CallbackAnimation(context.QueueBoardSettleAnimation))
-            .Append(new DelayAnimation(context.SettleDelaySeconds + context.SettleDurationSeconds, blocksInput: true));
+        AppendPhase(sequence, context.QueueResolveAnimation, context.ResolveDurationSeconds);
+        AppendPhase(sequence, context.QueueGravityAnimation, context.GravityDurationSeconds);
+        AppendPhase(sequence, context.QueueSpawnAnimation, context.SpawnDurationSeconds);
+        AppendPhase(sequence, context.QueueSettleAnimation, context.SettleDurationSeconds);
+
+        return sequence;
+    }
+
+    private static void AppendPhase(SequenceAnimation sequence, Action action, float durationSeconds)
+    {
+        sequence.Append(new CallbackAnimation(action));
+
+        if (durationSeconds > 0f)
+        {
+            sequence.Append(new DelayAnimation(durationSeconds, blocksInput: true));
+        }
     }
 }

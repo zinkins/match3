@@ -103,26 +103,29 @@ public sealed class PresentationScreenHost : IGameScreenHost
         var animation = gameplay.TurnAnimationBuilder.Build(new TurnAnimationContext
         {
             IsSwapApplied = result.IsSwapApplied,
-            QueueVisualEffects = () => GameplayVisualEffectsTimeline.QueueEvents(gameplay.BoardViewState, gameplay.AnimationPlayer, result.Events, gameplay.BoardTransform),
             QueueSwapAnimation = () => GameplayAnimationRuntime.QueueSwap(gameplay.BoardViewState, gameplay.AnimationPlayer, move.Value, rollback: !result.IsSwapApplied),
-            QueueCreatedBonusAnimation = () => GameplayAnimationRuntime.QueueCreatedBonuses(
-                gameplay.BoardViewState,
-                gameplay.AnimationPlayer,
-                afterSnapshot,
-                gameplay.BoardTransform.CellSize,
-                GameplayVisualEffectsTimeline.GetTotalDuration(result.Events),
-                createdBonusOrigins),
-            QueueBoardSettleAnimation = () => GameplayAnimationRuntime.QueueBoardSettle(
+            QueueResolveAnimation = () => GameplayVisualEffectsTimeline.QueueEvents(gameplay.BoardViewState, gameplay.AnimationPlayer, result.Events, gameplay.BoardTransform),
+            QueueGravityAnimation = () => GameplayAnimationRuntime.QueueBoardSettle(
                 gameplay.BoardViewState,
                 gameplay.AnimationPlayer,
                 swappedSnapshot,
                 afterSnapshot,
                 gameplay.BoardTransform.CellSize,
-                GameplayVisualEffectsTimeline.GetTotalDuration(result.Events),
+                0f,
                 createdBonusTargets,
                 gameplay.VisualState),
+            QueueSpawnAnimation = () => GameplayAnimationRuntime.QueueCreatedBonuses(
+                gameplay.BoardViewState,
+                gameplay.AnimationPlayer,
+                afterSnapshot,
+                gameplay.BoardTransform.CellSize,
+                0f,
+                createdBonusOrigins),
+            QueueSettleAnimation = static () => { },
             SwapDurationSeconds = result.IsSwapApplied ? 0.22f : 0.36f,
-            SettleDelaySeconds = GameplayVisualEffectsTimeline.GetTotalDuration(result.Events),
+            ResolveDurationSeconds = GameplayVisualEffectsTimeline.GetTotalDuration(result.Events),
+            GravityDurationSeconds = 0f,
+            SpawnDurationSeconds = 0f,
             SettleDurationSeconds = 1.15f
         });
 

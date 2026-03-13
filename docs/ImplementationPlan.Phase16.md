@@ -63,13 +63,13 @@ T432 [x] [MVP] Создать `TurnAnimationBuilder`.
 T433 [x] [MVP] Реализовать построение сценария для invalid swap.
 T434 [x] [MVP] Прогнать tests.
 T435 [x] [MVP] Написать test `TurnAnimationBuilder_BuildsSwapThenSettleSequence_ForAppliedSwap`.
-T436 [ ] [MVP] Реализовать полноценный порядок фаз `swap -> resolve -> gravity -> spawn -> settle`.
-T436a [ ] [MVP] Выделить отдельный phase step для `resolve` внутри `TurnAnimationBuilder`.
-T436b [ ] [MVP] Выделить отдельный phase step для `gravity` внутри `TurnAnimationBuilder`.
-T436c [ ] [MVP] Выделить отдельный phase step для `spawn` внутри `TurnAnimationBuilder`.
-T436d [ ] [MVP] Выделить отдельный phase step для `settle` внутри `TurnAnimationBuilder`.
-T436e [ ] [MVP] Зафиксировать явный порядок phase steps для applied swap scenario.
-T437 [ ] [MVP] Прогнать tests.
+T436 [x] [MVP] Реализовать полноценный порядок фаз `swap -> resolve -> gravity -> spawn -> settle`.
+T436a [x] [MVP] Выделить отдельный phase step для `resolve` внутри `TurnAnimationBuilder`.
+T436b [x] [MVP] Выделить отдельный phase step для `gravity` внутри `TurnAnimationBuilder`.
+T436c [x] [MVP] Выделить отдельный phase step для `spawn` внутри `TurnAnimationBuilder`.
+T436d [x] [MVP] Выделить отдельный phase step для `settle` внутри `TurnAnimationBuilder`.
+T436e [x] [MVP] Зафиксировать явный порядок phase steps для applied swap scenario.
+T437 [x] [MVP] Прогнать tests.
 T438 [x] [MVP] Написать test `PresentationScreenHost_UsesTurnAnimationBuilder_InsteadOfManualQueueCalls`.
 T439 [x] [MVP] Перевести `PresentationScreenHost` на вызов `TurnAnimationBuilder`.
 T440 [x] [MVP] Удалить из `PresentationScreenHost` прямой orchestration `QueueSwap/QueueBoardSettle/QueueVisualEvents`.

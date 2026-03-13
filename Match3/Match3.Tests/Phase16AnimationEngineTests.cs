@@ -256,53 +256,62 @@ public sealed class Phase16AnimationEngineTests
         var animation = builder.Build(new TurnAnimationContext
         {
             IsSwapApplied = false,
-            QueueVisualEffects = () => calls.Add("visual"),
             QueueSwapAnimation = () => calls.Add("swap"),
-            QueueCreatedBonusAnimation = () => calls.Add("bonus"),
-            QueueBoardSettleAnimation = () => calls.Add("settle"),
+            QueueResolveAnimation = () => calls.Add("resolve"),
+            QueueGravityAnimation = () => calls.Add("gravity"),
+            QueueSpawnAnimation = () => calls.Add("spawn"),
+            QueueSettleAnimation = () => calls.Add("settle"),
             SwapDurationSeconds = 0.36f
         });
 
         animation.Update(0f);
 
-        Assert.Equal(["visual", "swap"], calls);
+        Assert.Equal(["swap"], calls);
         Assert.False(animation.IsCompleted);
 
         animation.Update(0.36f);
 
         Assert.True(animation.IsCompleted);
         Assert.DoesNotContain("settle", calls);
-        Assert.DoesNotContain("bonus", calls);
+        Assert.DoesNotContain("resolve", calls);
+        Assert.DoesNotContain("gravity", calls);
+        Assert.DoesNotContain("spawn", calls);
     }
 
     [Fact]
-    public void TurnAnimationBuilder_BuildsSwapThenCreatedBonusThenSettleSequence_ForAppliedSwap()
+    public void TurnAnimationBuilder_BuildsSwapResolveGravitySpawnSettleSequence_ForAppliedSwap()
     {
         var calls = new List<string>();
         var builder = new TurnAnimationBuilder();
         var animation = builder.Build(new TurnAnimationContext
         {
             IsSwapApplied = true,
-            QueueVisualEffects = () => calls.Add("visual"),
             QueueSwapAnimation = () => calls.Add("swap"),
-            QueueCreatedBonusAnimation = () => calls.Add("bonus"),
-            QueueBoardSettleAnimation = () => calls.Add("settle"),
+            QueueResolveAnimation = () => calls.Add("resolve"),
+            QueueGravityAnimation = () => calls.Add("gravity"),
+            QueueSpawnAnimation = () => calls.Add("spawn"),
+            QueueSettleAnimation = () => calls.Add("settle"),
             SwapDurationSeconds = 0.22f,
-            SettleDelaySeconds = 0.8f,
+            ResolveDurationSeconds = 0.8f,
+            GravityDurationSeconds = 0f,
+            SpawnDurationSeconds = 0f,
             SettleDurationSeconds = 1.15f
         });
 
         animation.Update(0f);
-        Assert.Equal(["visual", "swap"], calls);
+        Assert.Equal(["swap"], calls);
 
         animation.Update(0.21f);
-        Assert.DoesNotContain("settle", calls);
+        Assert.Equal(["swap"], calls);
 
         animation.Update(0.01f);
-        Assert.Equal(["visual", "swap", "bonus", "settle"], calls);
+        Assert.Equal(["swap", "resolve"], calls);
+
+        animation.Update(0.8f);
+        Assert.Equal(["swap", "resolve", "gravity", "spawn", "settle"], calls);
         Assert.False(animation.IsCompleted);
 
-        animation.Update(1.95f);
+        animation.Update(1.15f);
         Assert.True(animation.IsCompleted);
     }
 
@@ -328,16 +337,20 @@ public sealed class Phase16AnimationEngineTests
         var animation = builder.Build(new TurnAnimationContext
         {
             IsSwapApplied = true,
-            QueueVisualEffects = () => GameplayVisualEffectsTimeline.QueueEvents(viewState, player, events, transform),
             QueueSwapAnimation = static () => { },
-            QueueCreatedBonusAnimation = static () => { },
-            QueueBoardSettleAnimation = static () => { },
+            QueueResolveAnimation = () => GameplayVisualEffectsTimeline.QueueEvents(viewState, player, events, transform),
+            QueueGravityAnimation = static () => { },
+            QueueSpawnAnimation = static () => { },
+            QueueSettleAnimation = static () => { },
             SwapDurationSeconds = 0.22f,
-            SettleDelaySeconds = GameplayVisualEffectsTimeline.GetTotalDuration(events),
+            ResolveDurationSeconds = GameplayVisualEffectsTimeline.GetTotalDuration(events),
+            GravityDurationSeconds = 0f,
+            SpawnDurationSeconds = 0f,
             SettleDurationSeconds = 0f
         });
 
         animation.Update(0f);
+        animation.Update(0.22f);
 
         player.Update(0.39f);
         var beforeActivation = visualState.BuildPieces(snapshot, null, viewState);
@@ -389,11 +402,15 @@ public sealed class Phase16AnimationEngineTests
         var animation = builder.Build(new TurnAnimationContext
         {
             IsSwapApplied = true,
-            QueueVisualEffects = static () => { },
             QueueSwapAnimation = static () => { },
-            QueueCreatedBonusAnimation = () => GameplayAnimationRuntime.QueueCreatedBonuses(viewState, player, afterSnapshot, 48f, createdBonusOrigins: createdBonusOrigins),
-            QueueBoardSettleAnimation = () => GameplayAnimationRuntime.QueueBoardSettle(viewState, player, new Match3.Presentation.Rendering.BoardRenderSnapshot([], []), afterSnapshot, 48f, excludedTargets: createdBonusTargets, visualState: visualState),
+            QueueResolveAnimation = static () => { },
+            QueueGravityAnimation = () => GameplayAnimationRuntime.QueueBoardSettle(viewState, player, new Match3.Presentation.Rendering.BoardRenderSnapshot([], []), afterSnapshot, 48f, excludedTargets: createdBonusTargets, visualState: visualState),
+            QueueSpawnAnimation = () => GameplayAnimationRuntime.QueueCreatedBonuses(viewState, player, afterSnapshot, 48f, createdBonusOrigins: createdBonusOrigins),
+            QueueSettleAnimation = static () => { },
             SwapDurationSeconds = 0.22f,
+            ResolveDurationSeconds = 0f,
+            GravityDurationSeconds = 0f,
+            SpawnDurationSeconds = 0f,
             SettleDurationSeconds = 1.15f
         });
 
@@ -411,10 +428,11 @@ public sealed class Phase16AnimationEngineTests
         var animation = new TurnAnimationBuilder().Build(new TurnAnimationContext
         {
             IsSwapApplied = false,
-            QueueVisualEffects = static () => { },
             QueueSwapAnimation = static () => { },
-            QueueCreatedBonusAnimation = static () => { },
-            QueueBoardSettleAnimation = static () => { },
+            QueueResolveAnimation = static () => { },
+            QueueGravityAnimation = static () => { },
+            QueueSpawnAnimation = static () => { },
+            QueueSettleAnimation = static () => { },
             SwapDurationSeconds = 0.36f
         });
 
