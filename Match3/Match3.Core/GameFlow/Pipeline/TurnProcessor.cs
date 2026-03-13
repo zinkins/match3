@@ -171,6 +171,7 @@ public sealed class TurnProcessor
             var updatedScore = scoreCalculator.AddScore(resolvedScore, destroyedPieces);
             stepEvents.Add(new ScoreAdded(updatedScore - resolvedScore));
             resolvedScore = updatedScore;
+            var stepResolvedBoard = board.Clone();
 
             if (session.IsGameOver)
             {
@@ -181,6 +182,7 @@ public sealed class TurnProcessor
             gravityResolver.Apply(board);
             stepEvents.Add(new PiecesFell());
             onPhaseCompleted?.Invoke(stateMachine.State, session);
+            var stepGravityBoard = board.Clone();
 
             if (session.IsGameOver)
             {
@@ -192,7 +194,7 @@ public sealed class TurnProcessor
             stepEvents.Add(new PiecesSpawned());
             onPhaseCompleted?.Invoke(stateMachine.State, session);
 
-            cascadeSteps.Add(new TurnPipelineCascadeStep(stepStartBoard, board.Clone(), stepEvents));
+            cascadeSteps.Add(new TurnPipelineCascadeStep(stepStartBoard, stepResolvedBoard, stepGravityBoard, board.Clone(), stepEvents));
             events.AddRange(stepEvents);
 
             if (session.IsGameOver)

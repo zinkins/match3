@@ -92,7 +92,7 @@ public sealed class SpriteBatchRenderer
 
     private static void DrawGameplay(IGameCanvas canvas, GameplayScreen screen)
     {
-        var boardSnapshot = screen.BoardRenderer.BuildSnapshot(screen.Board, screen.BoardTransform);
+        var boardSnapshot = screen.BoardRenderer.BuildSnapshot(screen.VisualBoard, screen.BoardTransform);
         var nodeSnapshot = screen.PieceNodeRenderer.BuildSnapshot(boardSnapshot, screen.BoardViewState);
         var renderedPieces = screen.VisualState.BuildPieces(nodeSnapshot, screen.SelectedCell, screen.BoardViewState, screen.AnimationPlayer);
         DrawCells(canvas, boardSnapshot);

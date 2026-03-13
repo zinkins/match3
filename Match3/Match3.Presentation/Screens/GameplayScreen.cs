@@ -24,6 +24,7 @@ public sealed class GameplayScreen : IScreen
     {
         Presenter = presenter;
         Board = board;
+        VisualBoard = board.Clone();
         BoardInputHandler = boardInputHandler;
         AnimationPlayer = animationPlayer ?? throw new ArgumentNullException(nameof(animationPlayer));
         TurnAnimationBuilder = turnAnimationBuilder ?? throw new ArgumentNullException(nameof(turnAnimationBuilder));
@@ -43,6 +44,8 @@ public sealed class GameplayScreen : IScreen
     public GameplayPresenter Presenter { get; }
 
     public BoardState Board { get; }
+
+    public BoardState VisualBoard { get; private set; }
 
     public BoardInputHandler BoardInputHandler { get; }
 
@@ -67,4 +70,9 @@ public sealed class GameplayScreen : IScreen
     public bool ShouldShowGameOverOverlay => Presenter.IsGameOver && !AnimationPlayer.HasBlockingAnimations;
 
     public GridPosition? SelectedCell => BoardInputHandler.SelectedCell;
+
+    public void SetVisualBoard(BoardState board)
+    {
+        VisualBoard = board ?? throw new ArgumentNullException(nameof(board));
+    }
 }

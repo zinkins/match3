@@ -127,6 +127,19 @@ public static class GameplayAnimationRuntime
         IReadOnlyList<GridPosition>? excludedTargets = null,
         GameplayVisualState? visualState = null)
     {
+        QueueGravity(viewState, animationPlayer, beforeSnapshot, afterSnapshot, initialDelaySeconds, excludedTargets, visualState);
+        QueueSpawn(viewState, animationPlayer, beforeSnapshot, afterSnapshot, cellSize, initialDelaySeconds, excludedTargets);
+    }
+
+    public static void QueueGravity(
+        BoardViewState viewState,
+        AnimationPlayer animationPlayer,
+        BoardRenderSnapshot beforeSnapshot,
+        BoardRenderSnapshot afterSnapshot,
+        float initialDelaySeconds = 0f,
+        IReadOnlyList<GridPosition>? excludedTargets = null,
+        GameplayVisualState? visualState = null)
+    {
         ArgumentNullException.ThrowIfNull(viewState);
         ArgumentNullException.ThrowIfNull(animationPlayer);
 
@@ -143,8 +156,6 @@ public static class GameplayAnimationRuntime
                 .OrderBy(piece => piece.Position.Row)
                 .ToArray();
             var survivorMap = MatchColumnSurvivors(beforeColumn, afterColumn);
-            var spawnCount = 0;
-
             foreach (var target in afterColumn.OrderByDescending(piece => piece.Position.Row))
             {
                 var targetPosition = new Vector2(target.X, target.Y);
@@ -164,59 +175,102 @@ public static class GameplayAnimationRuntime
                     continue;
                 }
 
-                PieceNode node;
-                Vector2 from;
-                float durationSeconds;
-                float delaySeconds;
-
                 if (isSurvivor)
                 {
-                    node = viewState.GetPieceNode(source!.Position) ?? CreatePieceNode(source, new Vector2(source.X, source.Y));
-                    from = node.Position;
-                    durationSeconds = 0.65f;
-                    delaySeconds = initialDelaySeconds;
-                }
-                else
-                {
-                    if (excludedTargets?.Contains(target.Position) == true)
-                    {
-                        if (viewState.GetPieceNode(target.Position) is { } existingExcludedNode)
-                        {
-                            existingExcludedNode.Position = targetPosition;
-                            existingExcludedNode.Tint = target.Tint;
-                            retainedNodeIds.Add(existingExcludedNode.Id);
-                        }
+                    var node = viewState.GetPieceNode(source!.Position) ?? CreatePieceNode(source, new Vector2(source.X, source.Y));
+                    var from = node.Position;
+                    var durationSeconds = 0.65f;
+                    var delaySeconds = initialDelaySeconds;
 
-                        continue;
+                    node.LogicalCell = target.Position;
+                    node.Tint = target.Tint;
+                    node.Position = from;
+                    node.IsVisible = true;
+                    viewState.AddOrUpdate(node);
+                    retainedNodeIds.Add(node.Id);
+
+                    var animation = Anim.Sequence();
+                    if (delaySeconds > 0f)
+                    {
+                        animation.Append(new DelayAnimation(delaySeconds, blocksInput: true));
                     }
 
-                    spawnCount++;
-                    from = new Vector2(target.X, target.Y - (cellSize * (spawnCount + 1)));
-                    node = CreatePieceNode(target, from);
-                    durationSeconds = 0.75f;
-                    delaySeconds = initialDelaySeconds + 0.4f;
+                    animation.Append(Anim.MoveTo(node, targetPosition, durationSeconds, blocksInput: true));
+                    animationPlayer.Play(animation, ChannelConflictPolicy.Replace);
+                    continue;
                 }
 
-                node.LogicalCell = target.Position;
-                node.Tint = target.Tint;
-                node.Position = from;
-                node.IsVisible = true;
-                viewState.AddOrUpdate(node);
-                retainedNodeIds.Add(node.Id);
-
-                var animation = Anim.Sequence();
-                if (delaySeconds > 0f)
+                if (excludedTargets?.Contains(target.Position) == true &&
+                    viewState.GetPieceNode(target.Position) is { } existingExcludedNode)
                 {
-                    animation.Append(new DelayAnimation(delaySeconds, blocksInput: true));
+                    existingExcludedNode.Position = targetPosition;
+                    existingExcludedNode.Tint = target.Tint;
+                    retainedNodeIds.Add(existingExcludedNode.Id);
                 }
-
-                animation.Append(Anim.MoveTo(node, targetPosition, durationSeconds, blocksInput: true));
-                animationPlayer.Play(animation, ChannelConflictPolicy.Replace);
             }
         }
 
         visualState?.SuppressSelectionIfNeeded(selectedNodeIdBeforeSettle, retainedNodeIds);
         viewState.RemoveNodesExcept(retainedNodeIds);
+    }
+
+    public static void QueueSpawn(
+        BoardViewState viewState,
+        AnimationPlayer animationPlayer,
+        BoardRenderSnapshot beforeSnapshot,
+        BoardRenderSnapshot afterSnapshot,
+        float cellSize,
+        float initialDelaySeconds = 0f,
+        IReadOnlyList<GridPosition>? excludedTargets = null)
+    {
+        ArgumentNullException.ThrowIfNull(viewState);
+        ArgumentNullException.ThrowIfNull(animationPlayer);
+
+        for (var column = 0; column < 8; column++)
+        {
+            var beforeColumn = beforeSnapshot.Pieces
+                .Where(piece => piece.Position.Column == column)
+                .OrderBy(piece => piece.Position.Row)
+                .ToArray();
+            var afterColumn = afterSnapshot.Pieces
+                .Where(piece => piece.Position.Column == column)
+                .OrderBy(piece => piece.Position.Row)
+                .ToArray();
+            var survivorMap = MatchColumnSurvivors(beforeColumn, afterColumn);
+            var spawnCount = 0;
+
+            foreach (var target in afterColumn.OrderByDescending(piece => piece.Position.Row))
+            {
+                if (survivorMap.ContainsKey(target.Position))
+                {
+                    continue;
+                }
+
+                if (excludedTargets?.Contains(target.Position) == true)
+                {
+                    continue;
+                }
+
+                spawnCount++;
+                var from = new Vector2(target.X, target.Y - (cellSize * (spawnCount + 1)));
+                var targetPosition = new Vector2(target.X, target.Y);
+                var node = CreatePieceNode(target, from);
+                node.LogicalCell = target.Position;
+                node.Tint = target.Tint;
+                node.Position = from;
+                node.IsVisible = true;
+                viewState.AddOrUpdate(node);
+
+                var animation = Anim.Sequence();
+                if (initialDelaySeconds > 0f)
+                {
+                    animation.Append(new DelayAnimation(initialDelaySeconds, blocksInput: true));
+                }
+
+                animation.Append(Anim.MoveTo(node, targetPosition, 0.75f, blocksInput: true));
+                animationPlayer.Play(animation, ChannelConflictPolicy.Replace);
+            }
+        }
     }
 
     public static void QueueCreatedBonuses(BoardViewState viewState, AnimationPlayer animationPlayer, BoardRenderSnapshot afterSnapshot, float cellSize, float initialDelaySeconds = 0f, IReadOnlyList<GridPosition>? createdBonusOrigins = null)

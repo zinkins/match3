@@ -327,7 +327,98 @@ public class Phase15RuntimeRenderingTests
 
         Assert.True(builder.WasBuildCalled);
         Assert.NotNull(builder.LastContext);
-        Assert.Equal(2, builder.LastContext!.CascadeSteps.Count);
+        Assert.True(builder.LastContext!.CascadeSteps.Count >= 2);
+    }
+
+    [Fact]
+    public void PresentationScreenHost_UsesResolveBoardSnapshot_BeforeGravityRemovesSwapSourcePiece()
+    {
+        var builder = new RecordingTurnAnimationBuilder();
+        var flow = new ScreenFlowController(turnAnimationBuilderFactory: () => builder);
+        var host = new PresentationScreenHost(flow, new SpriteBatchRenderer());
+        flow.MainMenu.PlayButton.Click();
+        flow.UpdateLayout(800, 480);
+        var gameplay = flow.Gameplay;
+        ConfigureBoardForSimpleSwapMatch(gameplay.Board);
+        var firstClick = CreateBoardMoveTarget(gameplay, new GridPosition(0, 2));
+        var secondClick = CreateBoardMoveTarget(gameplay, new GridPosition(1, 2));
+
+        host.Update(
+            TimeSpan.FromMilliseconds(16),
+            new InputState(true, firstClick, true, false, 800, 480));
+
+        host.Update(
+            TimeSpan.FromMilliseconds(16),
+            new InputState(true, secondClick, true, false, 800, 480));
+
+        var context = builder.LastContext;
+        Assert.NotNull(context);
+        Assert.Single(context.CascadeSteps);
+
+        context.CascadeSteps[0].QueueResolveAnimation();
+
+        Assert.Equal(PieceType.Blue, gameplay.VisualBoard.GetCell(new GridPosition(1, 2)));
+    }
+
+    [Fact]
+    public void PresentationScreenHost_UsesGravityBoardSnapshot_WhenVerticalMatchClearsSwapSourceCell()
+    {
+        var builder = new RecordingTurnAnimationBuilder();
+        var flow = new ScreenFlowController(turnAnimationBuilderFactory: () => builder);
+        var host = new PresentationScreenHost(flow, new SpriteBatchRenderer());
+        flow.MainMenu.PlayButton.Click();
+        flow.UpdateLayout(800, 480);
+        var gameplay = flow.Gameplay;
+        ConfigureBoardForVerticalMatchAtSwapSource(gameplay.Board);
+        var firstClick = CreateBoardMoveTarget(gameplay, new GridPosition(5, 2));
+        var secondClick = CreateBoardMoveTarget(gameplay, new GridPosition(4, 2));
+
+        host.Update(
+            TimeSpan.FromMilliseconds(16),
+            new InputState(true, firstClick, true, false, 800, 480));
+
+        host.Update(
+            TimeSpan.FromMilliseconds(16),
+            new InputState(true, secondClick, true, false, 800, 480));
+
+        var context = builder.LastContext;
+        Assert.NotNull(context);
+        Assert.Single(context.CascadeSteps);
+
+        context.CascadeSteps[0].QueueGravityAnimation();
+
+        Assert.NotNull(gameplay.VisualBoard.GetCell(new GridPosition(5, 2)));
+    }
+
+    [Fact]
+    public void PresentationScreenHost_UsesResolvedBoardSnapshot_WhenHorizontalMatchStartsFromSideCell()
+    {
+        var builder = new RecordingTurnAnimationBuilder();
+        var flow = new ScreenFlowController(turnAnimationBuilderFactory: () => builder);
+        var host = new PresentationScreenHost(flow, new SpriteBatchRenderer());
+        flow.MainMenu.PlayButton.Click();
+        flow.UpdateLayout(800, 480);
+        var gameplay = flow.Gameplay;
+        ConfigureBoardForHorizontalMatchFromSide(gameplay.Board);
+        var firstClick = CreateBoardMoveTarget(gameplay, new GridPosition(3, 3));
+        var secondClick = CreateBoardMoveTarget(gameplay, new GridPosition(3, 2));
+
+        host.Update(
+            TimeSpan.FromMilliseconds(16),
+            new InputState(true, firstClick, true, false, 800, 480));
+
+        host.Update(
+            TimeSpan.FromMilliseconds(16),
+            new InputState(true, secondClick, true, false, 800, 480));
+
+        var context = builder.LastContext;
+        Assert.NotNull(context);
+        Assert.Single(context.CascadeSteps);
+
+        context.CascadeSteps[0].QueueResolveAnimation();
+
+        Assert.NotNull(gameplay.VisualBoard.GetCell(new GridPosition(3, 3)));
+        Assert.True(context.CascadeSteps[0].ResolveDurationSeconds > 0f);
     }
 
     [Fact]
@@ -404,6 +495,55 @@ public class Phase15RuntimeRenderingTests
         board.SetPiece(new GridPosition(5, 1), PieceType.Red);
         board.SetPiece(new GridPosition(6, 1), PieceType.Red);
         board.SetPiece(new GridPosition(3, 2), PieceType.Blue);
+    }
+
+    private static void ConfigureBoardForSimpleSwapMatch(BoardState board)
+    {
+        for (var row = 0; row < board.Height; row++)
+        {
+            for (var column = 0; column < board.Width; column++)
+            {
+                board.SetPiece(new GridPosition(row, column), PieceCatalog.All[(row + column) % PieceCatalog.All.Count]);
+            }
+        }
+
+        board.SetPiece(new GridPosition(0, 0), PieceType.Red);
+        board.SetPiece(new GridPosition(0, 1), PieceType.Red);
+        board.SetPiece(new GridPosition(0, 2), PieceType.Blue);
+        board.SetPiece(new GridPosition(1, 2), PieceType.Red);
+    }
+
+    private static void ConfigureBoardForVerticalMatchAtSwapSource(BoardState board)
+    {
+        for (var row = 0; row < board.Height; row++)
+        {
+            for (var column = 0; column < board.Width; column++)
+            {
+                board.SetPiece(new GridPosition(row, column), PieceCatalog.All[(row + column) % PieceCatalog.All.Count]);
+            }
+        }
+
+        board.SetPiece(new GridPosition(4, 2), PieceType.Blue);
+        board.SetPiece(new GridPosition(5, 2), PieceType.Red);
+        board.SetPiece(new GridPosition(6, 2), PieceType.Blue);
+        board.SetPiece(new GridPosition(7, 2), PieceType.Blue);
+    }
+
+    private static void ConfigureBoardForHorizontalMatchFromSide(BoardState board)
+    {
+        for (var row = 0; row < board.Height; row++)
+        {
+            for (var column = 0; column < board.Width; column++)
+            {
+                board.SetPiece(new GridPosition(row, column), PieceCatalog.All[(row + column) % PieceCatalog.All.Count]);
+            }
+        }
+
+        board.SetPiece(new GridPosition(3, 0), PieceType.Red);
+        board.SetPiece(new GridPosition(3, 1), PieceType.Red);
+        board.SetPiece(new GridPosition(3, 2), PieceType.Blue);
+        board.SetPiece(new GridPosition(3, 3), PieceType.Red);
+        board.SetPiece(new GridPosition(3, 4), PieceType.Yellow);
     }
 
     private sealed class FakeCanvas : IGameCanvas

@@ -9,15 +9,23 @@ public sealed class TurnPipelineCascadeStep
 {
     public TurnPipelineCascadeStep(
         BoardState startBoard,
+        BoardState resolvedBoard,
+        BoardState gravityBoard,
         BoardState endBoard,
         IReadOnlyList<IDomainEvent> events)
     {
         StartBoard = startBoard ?? throw new ArgumentNullException(nameof(startBoard));
+        ResolvedBoard = resolvedBoard ?? throw new ArgumentNullException(nameof(resolvedBoard));
+        GravityBoard = gravityBoard ?? throw new ArgumentNullException(nameof(gravityBoard));
         EndBoard = endBoard ?? throw new ArgumentNullException(nameof(endBoard));
         Events = events ?? throw new ArgumentNullException(nameof(events));
     }
 
     public BoardState StartBoard { get; }
+
+    public BoardState ResolvedBoard { get; }
+
+    public BoardState GravityBoard { get; }
 
     public BoardState EndBoard { get; }
 
