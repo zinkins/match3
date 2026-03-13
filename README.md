@@ -2,13 +2,64 @@
 
 Проект в жанре match-3 на базе MonoGame с целевыми платформами DesktopGL, Android и iOS.
 
-## Требования
+## Пререквизиты
+
+### Desktop
+
+Для локального запуска desktop-версии нужны:
 - установленный `.NET 9 SDK`, доступный через `PATH`
-- desktop-среда, способная запускать сборки MonoGame DesktopGL
-- Android workload/tooling для сборок `net9.0-android`
-- Apple build tooling на macOS для сборок `net9.0-ios`
+- восстановленные NuGet-пакеты (`dotnet restore Match3/Match3.sln`)
+- среда, способная запускать MonoGame DesktopGL-приложения:
+  - Windows: актуальные драйверы OpenGL и системные зависимости для DesktopGL
+  - Linux/macOS: OpenGL и нативные библиотеки, необходимые MonoGame DesktopGL
+
+Команды:
+- восстановить пакеты: `dotnet restore Match3/Match3.sln`
+- запустить desktop-версию: `dotnet run --project Match3/Match3.DesktopGL/Match3.DesktopGL.csproj`
+
+### Android
+
+Для сборки и запуска Android-версии нужны:
+- установленный `.NET 9 SDK`
+- workload `android` для .NET
+- Android SDK и Platform Tools
+- настроенная среда для target framework `net9.0-android`
+
+Команды:
+- установить workload: `dotnet workload install android`
+- собрать Android-проект: `dotnet build Match3/Match3.Android/Match3.Android.csproj`
+
+### iOS
+
+Для сборки и запуска iOS-версии нужны:
+- установленный `.NET 9 SDK`
+- macOS с установленным Xcode
+- workload `ios` для .NET
+- настроенный signing для `net9.0-ios`
+
+Команды:
+- установить workload: `dotnet workload install ios`
+- собрать iOS-проект: `dotnet build Match3/Match3.iOS/Match3.iOS.csproj`
 
 Desktop-разработка является самым быстрым способом локальной проверки; mobile targets требуют platform SDK и настройки signing.
+
+### Запуск на Windows
+
+Минимальная последовательность для первого запуска на Windows:
+- установить `.NET 9 SDK`
+- в корне репозитория выполнить `dotnet restore Match3/Match3.sln`
+- убедиться, что установлены актуальные видеодрайверы с поддержкой OpenGL
+- запустить приложение командой `dotnet run --project Match3/Match3.DesktopGL/Match3.DesktopGL.csproj`
+
+Для Android-сборки на Windows дополнительно нужны `dotnet workload install android` и настроенный Android SDK.
+
+## Типичные проблемы
+
+- `dotnet workload install` завершается ошибкой: обновите `.NET SDK` до версии 9 и повторите установку workload
+- Android-проект не собирается: проверьте, что установлен Android SDK и доступны platform tools
+- iOS-проект не собирается на Windows: сборка `Match3.iOS` поддерживается только на macOS с Xcode
+- DesktopGL-приложение не запускается или открывает пустое окно: проверьте драйверы видеокарты и поддержку OpenGL
+- Не находятся NuGet-зависимости: выполните `dotnet restore Match3/Match3.sln` перед сборкой или запуском
 
 ## Быстрый старт
 - собрать весь solution: `dotnet build Match3/Match3.sln`
