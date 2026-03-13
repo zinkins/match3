@@ -110,22 +110,22 @@ Match3.Core/
 - `BoardState`
 - `GridPosition`
 - `Move`
-- `Piece`
+- `CellContent`
+- `PieceType`
 - `PieceColor`
 - `BonusKind`
 - `MatchFinder`
 - `BonusFactory`
-- `GameEvent`
+- `BonusActivationResolver`
 
 ### 4.2 Что относится к Game Flow
 
 - `GameSession`
 - `GameplayStateMachine`
 - `TurnProcessor`
-- `CascadeProcessor`
+- `TurnPipelineResult`
+- `TurnPipelineCascadeStep`
 - `SelectionController`
-- `TrySwapCommand`
-- `TurnResult`
 
 ---
 
@@ -152,12 +152,14 @@ Match3.Presentation/
 - `HudRenderer`
 - `AnimationPlayer`
 - `TurnAnimationBuilder`
+- `GameplayAnimationRuntime`
+- `GameplayVisualEffectsTimeline`
 - `BoardViewState`
 - `PieceNodeRenderer`
 - `BoardTransform`
 - `GameplayPresenter`
 
-### 5.1 Animation layer responsibilities
+### 5.1 Обязанности animation layer
 
 `Match3.Presentation/Animation/` делится на два уровня:
 
@@ -165,6 +167,14 @@ Match3.Presentation/
 - `Animation/Engine/` - переиспользуемый runtime (`IAnimation`, `SequenceAnimation`, `ParallelAnimation`, `DelayAnimation`, `CallbackAnimation`, `PropertyTween`, `Anim`, `AnimationPlayer`, `BoardViewState`, `PieceNode`, `EffectNode`).
 
 Такое разделение нужно, чтобы gameplay-сценарии не смешивались с базовой механикой проигрывания animation graph.
+
+Сопутствующие shared constants разделены так:
+
+- `GameplayEffectTimings` - длительности фаз и эффектов;
+- `GameplayEffectStyle` - визуальные коэффициенты selection/pop/explosion/destroyer effects;
+- `BoardRenderStyle` - размеры и отступы для клеток и бонусов;
+- `UiRenderStyle` - размеры текста, outline и HUD overlay helpers;
+- `LayoutMetrics` - safe bounds, HUD, popup и initial transform metrics.
 
 ### 5.2 Памятка по `Anim.Sequence/Join`
 

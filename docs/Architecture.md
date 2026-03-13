@@ -47,11 +47,12 @@
 - `BoardState`
 - `GridPosition`
 - `Move`
-- `Piece`
+- `CellContent`
+- `PieceType`
 - `PieceColor`
 - `BonusKind`
 - `MatchGroup`
-- `GameEvent`
+- `BonusActivationResult`
 
 ### 2.2 Game Flow
 
@@ -70,7 +71,8 @@
 - `GameSession`
 - `GameplayStateMachine`
 - `TurnProcessor`
-- `CascadeProcessor`
+- `TurnPipelineResult`
+- `TurnPipelineCascadeStep`
 - `SelectionController`
 
 ### 2.3 Presentation
@@ -94,6 +96,8 @@
 - `BoardTransform`
 - `AnimationPlayer`
 - `TurnAnimationBuilder`
+- `GameplayAnimationRuntime`
+- `GameplayVisualEffectsTimeline`
 - `BoardViewState`
 - `PieceNode`
 - `EffectNode`
@@ -106,13 +110,21 @@
 
 Это правило нужно для animation/runtime-слоя, где состояние обновляется каждый кадр и где технически удобнее хранить изменяемые transform/state objects.
 
-#### Runtime animation architecture
+#### Архитектура runtime-анимации
 
 Presentation animation layer разделён на три уровня:
 
 - `Animation.Engine` - низкоуровневый runtime, который обновляет `IAnimation`, держит active animations в `AnimationPlayer` и резервирует `node + channel`, чтобы разные tween-ы не перетирали друг друга;
 - `BoardViewState` - runtime-представление визуального дерева поля, где `PieceNode` хранит стабильную identity фишки при смене logical cell, а `EffectNode` описывает transient visual effects;
-- `TurnAnimationBuilder` - слой orchestration, который переводит результат хода в явную фазовую последовательность `swap -> resolve -> gravity -> spawn -> settle` и сериализует каскады в один scenario.
+- `TurnAnimationBuilder` - слой orchestration, который переводит результат хода в явную фазовую последовательность `swap -> resolve -> gravity -> spawn -> settle` и сериализует каскады в один сценарий.
+
+Константы animation/render system вынесены по зонам ответственности:
+
+- `GameplayEffectTimings` - общие длительности gameplay-эффектов;
+- `GameplayEffectStyle` - визуальные коэффициенты gameplay-эффектов;
+- `BoardRenderStyle` - константы отрисовки клеток и бонусов;
+- `UiRenderStyle` - константы HUD и экранных overlay-элементов;
+- `LayoutMetrics` - layout-метрики safe area, HUD, popup и стартового board transform.
 
 Ключевые правила:
 
@@ -167,10 +179,8 @@ Match3.Core/
 
 - `GridPosition` - координата клетки;
 - `Move` - ход игрока;
-- `BoardSize` - размер поля;
 - `MatchGroup` - найденная комбинация;
-- `ScoreValue` - значение очков;
-- `Countdown` - оставшееся время.
+- `TurnPipelineResult` использует эти value objects, но не заменяет их.
 
 Их задача:
 
@@ -200,6 +210,8 @@ public readonly record struct GridPosition(int X, int Y)
 - `BoardState` - состояние поля 8x8;
 - `GameSessionState` - счёт, таймер, фаза, состояние выбора.
 
+В текущей реализации вместо отдельной сущности `Piece` используется `CellContent`, которое хранит `PieceType` и optional bonus token.
+
 ### 4.3 Правила
 
 `Game Core` реализует правила как отдельные сервисы:
@@ -211,6 +223,8 @@ public readonly record struct GridPosition(int X, int Y)
 - `GravityResolver`
 - `RefillResolver`
 - `ScoreCalculator`
+
+В текущей реализации отдельный `MoveValidator` больше не используется: проверка соседства живёт в `GridPosition`/`SelectionController`, а валидность хода окончательно подтверждается результатом pipeline.
 
 Это позволяет расширять механику без роста одного монолитного класса.
 
