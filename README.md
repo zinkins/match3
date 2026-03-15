@@ -84,6 +84,3 @@ Desktop-разработка является самым быстрым спос
 - gameplay-specific orchestration строится через `TurnAnimationBuilder`, `GameplayAnimationRuntime` и `GameplayVisualEffectsTimeline`
 - low-level runtime управляется `AnimationPlayer`, `IAnimation`, `SequenceAnimation`, `ParallelAnimation` и `PropertyTween`
 - shared animation timings и visual coefficients вынесены в `GameplayEffectTimings`, `GameplayEffectStyle`, `BoardRenderStyle`, `UiRenderStyle` и `LayoutMetrics`
-
-## Вклад в проект
-Workflow, style, testing и ожидания по PR описаны в [AGENTS.md](AGENTS.md).
