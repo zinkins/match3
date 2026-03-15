@@ -48,7 +48,9 @@ namespace Match3.Core
             Content.RootDirectory = "Content";
 
             // Configure screen orientations.
-            graphicsDeviceManager.SupportedOrientations = DisplayOrientation.LandscapeLeft | DisplayOrientation.LandscapeRight;
+            graphicsDeviceManager.SupportedOrientations = IsMobile
+                ? DisplayOrientation.Portrait
+                : DisplayOrientation.LandscapeLeft | DisplayOrientation.LandscapeRight;
         }
 
         /// <summary>

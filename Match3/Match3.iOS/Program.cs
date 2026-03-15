@@ -29,6 +29,11 @@ namespace Match3.iOS
             RunGame();
         }
 
+        public override UIInterfaceOrientationMask GetSupportedInterfaceOrientations(UIApplication application, [Transient] UIWindow? forWindow)
+        {
+            return UIInterfaceOrientationMask.Portrait;
+        }
+
         /// <summary>
         /// The main entry point for the application. 
         /// This sets up the application and specifies the UIApplicationDelegate 
