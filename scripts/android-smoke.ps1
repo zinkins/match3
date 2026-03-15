@@ -179,7 +179,7 @@ Invoke-Step "Preparing logcat" {
 }
 
 Invoke-Step "Launching application" {
-    Invoke-Adb shell monkey -p $packageName -c android.intent.category.LAUNCHER 1 | Out-Null
+    Invoke-Adb shell am start -n "$packageName/$activityName" | Out-Null
 }
 
 Start-Sleep -Seconds 3
