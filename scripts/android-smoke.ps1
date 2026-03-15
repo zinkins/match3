@@ -57,6 +57,29 @@ function Invoke-Step {
     & $Action
 }
 
+function Install-Apk {
+    param([string]$Path)
+
+    for ($attempt = 1; $attempt -le 3; $attempt++) {
+        try {
+            if (-not $KeepInstalled) {
+                Invoke-Adb uninstall $packageName | Out-Null
+            }
+
+            Invoke-Adb install -r $Path
+            return
+        }
+        catch {
+            if ($attempt -eq 3) {
+                throw
+            }
+
+            Write-Host "APK install attempt $attempt failed, retrying..."
+            Start-Sleep -Seconds 2
+        }
+    }
+}
+
 function Get-ViewportSize {
     $output = Invoke-Adb shell wm size
     if ($output -match "Physical size:\s*(\d+)x(\d+)") {
@@ -166,10 +189,7 @@ if (-not (Test-Path $apkPath)) {
 }
 
 Invoke-Step "Installing APK" {
-    if (-not $KeepInstalled) {
-        Invoke-Adb uninstall $packageName | Out-Null
-    }
-    Invoke-Adb install -r $apkPath
+    Install-Apk -Path $apkPath
 }
 
 Invoke-Step "Preparing logcat" {
