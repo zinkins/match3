@@ -7,6 +7,12 @@ public sealed class AnimationPlayer
 
     public bool HasBlockingAnimations => activeAnimations.Any(animation => animation.BlocksInput);
 
+    public bool HasBinding(object target, AnimationChannel channel)
+    {
+        ArgumentNullException.ThrowIfNull(target);
+        return reservedBindings.ContainsKey(new AnimationBinding(target, channel));
+    }
+
     public AnimationHandle Play(IAnimation animation, ChannelConflictPolicy conflictPolicy = ChannelConflictPolicy.Reject)
     {
         ArgumentNullException.ThrowIfNull(animation);

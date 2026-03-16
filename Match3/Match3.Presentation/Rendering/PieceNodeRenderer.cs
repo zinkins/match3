@@ -6,7 +6,7 @@ namespace Match3.Presentation.Rendering;
 
 public sealed class PieceNodeRenderer
 {
-    public BoardRenderSnapshot BuildSnapshot(BoardRenderSnapshot snapshot, BoardViewState viewState)
+    public BoardRenderSnapshot BuildSnapshot(BoardRenderSnapshot snapshot, BoardViewState viewState, AnimationPlayer? animationPlayer = null)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         ArgumentNullException.ThrowIfNull(viewState);
@@ -25,6 +25,28 @@ public sealed class PieceNodeRenderer
             var node = viewState.GetPieceNode(piece.Position);
             if (node is not null)
             {
+                node.LogicalCell = piece.Position;
+                if (OperatingSystem.IsAndroid() && (animationPlayer is null || !animationPlayer.HasBinding(node, AnimationChannel.Position)))
+                {
+                    node.Position = new Vector2(piece.X, piece.Y);
+                }
+
+                if (OperatingSystem.IsAndroid() && (animationPlayer is null || !animationPlayer.HasBinding(node, AnimationChannel.Rotation)))
+                {
+                    node.Rotation = piece.Rotation;
+                }
+
+                if (OperatingSystem.IsAndroid() && (animationPlayer is null || !animationPlayer.HasBinding(node, AnimationChannel.Scale)))
+                {
+                    node.Scale = new Vector2(1f, 1f);
+                }
+
+                if (!node.IsVisible)
+                {
+                    node.Tint = piece.Tint;
+                    node.IsVisible = true;
+                }
+                viewState.AddOrUpdate(node);
                 continue;
             }
 
@@ -60,15 +82,16 @@ public sealed class PieceNodeRenderer
         var height = basePiece.Height * node.Scale.Y;
         var x = node.Position.X - ((width - basePiece.Width) / 2f);
         var y = node.Position.Y - ((height - basePiece.Height) / 2f);
-        return basePiece with
-        {
-            X = x,
-            Y = y,
-            Width = width,
-            Height = height,
-            Rotation = node.Rotation,
-            Tint = node.Tint
-        };
+        return new RenderPiece(
+            basePiece.Position,
+            basePiece.Shape,
+            node.Tint,
+            x,
+            y,
+            width,
+            height,
+            node.Rotation,
+            basePiece.Layer);
     }
 }
 

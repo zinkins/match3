@@ -291,11 +291,16 @@ public sealed class GameplayVisualState
             }
 
             var current = effectiveSelectedCell == piece.Position
-                ? piece with
-                {
-                    Layer = GameplayEffectStyle.SelectedLayer,
-                    Rotation = piece.Rotation + GetSelectedSpinRotation()
-                }
+                ? new RenderPiece(
+                    piece.Position,
+                    piece.Shape,
+                    piece.Tint,
+                    piece.X,
+                    piece.Y,
+                    piece.Width,
+                    piece.Height,
+                    piece.Rotation + GetSelectedSpinRotation(),
+                    GameplayEffectStyle.SelectedLayer)
                 : piece;
             pieces.Add(current);
         }

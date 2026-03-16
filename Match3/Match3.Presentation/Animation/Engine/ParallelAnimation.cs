@@ -8,11 +8,24 @@ public sealed class ParallelAnimation(params IAnimation[] children) : ITimedAnim
 
     public bool BlocksInput => children.Any(child => child.BlocksInput);
 
-    public IReadOnlyCollection<AnimationBinding> ActiveBindings => children
-        .Where(child => !child.IsCompleted)
-        .SelectMany(child => child.ActiveBindings)
-        .Distinct()
-        .ToArray();
+    public IReadOnlyCollection<AnimationBinding> ActiveBindings
+    {
+        get
+        {
+            var bindings = new List<AnimationBinding>();
+            foreach (var child in children)
+            {
+                if (child.IsCompleted)
+                {
+                    continue;
+                }
+
+                bindings.AddRange(child.ActiveBindings);
+            }
+
+            return bindings;
+        }
+    }
 
     public void Update(float deltaTime)
     {

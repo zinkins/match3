@@ -28,6 +28,7 @@
 Команды:
 - установить workload: `dotnet workload install android`
 - собрать Android-проект: `dotnet build Match3/Match3.Android/Match3.Android.csproj`
+- прогнать smoke-test на подключенном устройстве: `powershell -ExecutionPolicy Bypass -File .\scripts\android-smoke.ps1`
 
 ### iOS
 
