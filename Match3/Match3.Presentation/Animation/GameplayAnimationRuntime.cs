@@ -519,18 +519,49 @@ public static class GameplayAnimationRuntime
         viewState.AddOrUpdate(effectNode);
 
         var pathCells = path.ToArray();
-        var durationSeconds = segmentDurationSeconds * (pathCells.Length - 1);
-        var animation = Anim.Sequence()
-            .AppendDelayIfNeeded(initialDelaySeconds)
-            .Append(new DestroyerFlightAnimation(
-                viewState,
-                effectNode,
-                centers,
-                pathCells,
-                size,
-                durationSeconds));
+        if (!OperatingSystem.IsAndroid())
+        {
+            var durationSeconds = segmentDurationSeconds * (pathCells.Length - 1);
+            var animation = Anim.Sequence()
+                .AppendDelayIfNeeded(initialDelaySeconds)
+                .Append(new DestroyerFlightAnimation(
+                    viewState,
+                    effectNode,
+                    centers,
+                    pathCells,
+                    size,
+                    durationSeconds));
 
-        animationPlayer.Play(animation, ChannelConflictPolicy.Replace);
+            animationPlayer.Play(animation, ChannelConflictPolicy.Replace);
+            return;
+        }
+
+        var positions = centers
+            .Select(center => new Vector2(center.X - (size / 2f), center.Y - (size / 2f)))
+            .ToArray();
+        var hideTimeline = Anim.Sequence();
+        hideTimeline.Append(new CallbackAnimation(() => viewState.HideCells([pathCells[0]])));
+        for (var i = 1; i < pathCells.Length; i++)
+        {
+            var cell = pathCells[i];
+            hideTimeline
+                .AppendDelayIfNeeded(segmentDurationSeconds)
+                .Append(new CallbackAnimation(() => viewState.HideCells([cell])));
+        }
+
+        var androidAnimation = Anim.Sequence()
+            .AppendDelayIfNeeded(initialDelaySeconds)
+            .Append(Anim.Parallel(
+                new PathTween(effectNode, positions, segmentDurationSeconds * (pathCells.Length - 1)),
+                hideTimeline));
+
+        androidAnimation.Append(new CallbackAnimation(() =>
+        {
+            viewState.ShowCells(pathCells);
+            viewState.RemoveEffectNode(effectNode.Id);
+        }));
+
+        animationPlayer.Play(androidAnimation, ChannelConflictPolicy.Replace);
     }
 
     private static IReadOnlyList<Vector2> BuildWorldPath(IEnumerable<GridPosition> path, BoardTransform transform)
