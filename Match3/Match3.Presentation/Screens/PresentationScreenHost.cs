@@ -105,6 +105,7 @@ public sealed class PresentationScreenHost : IGameScreenHost
         var beforeBoard = gameplay.Board.Clone();
         gameplay.SetVisualBoard(beforeBoard);
         var result = gameplay.Presenter.ProcessMove(gameplay.Board, move.Value);
+
         var animation = gameplay.TurnAnimationBuilder.Build(new TurnAnimationContext
         {
             IsSwapApplied = result.IsSwapApplied,
@@ -173,7 +174,11 @@ public sealed class PresentationScreenHost : IGameScreenHost
                             0f,
                             createdBonusOrigins);
                     },
-                    QueueSettleAnimation = () => gameplay.SetVisualBoard(step.EndBoard),
+                    QueueSettleAnimation = () =>
+                    {
+                        gameplay.SetVisualBoard(step.EndBoard);
+                        GameplayAnimationRuntime.SyncToSnapshot(gameplay.BoardViewState, endSnapshot);
+                    },
                     ResolveDurationSeconds = GetResolveDurationSeconds(step.Events),
                     GravityDurationSeconds = HasGravityMovement(resolvedSnapshot, gravitySnapshot) ? GameplayEffectTimings.GravitySeconds : 0f,
                     SpawnDurationSeconds = HasSpawnMovement(gravitySnapshot, endSnapshot, createdBonusTargets, createdBonusOrigins) ? GameplayEffectTimings.SpawnSeconds : 0f,

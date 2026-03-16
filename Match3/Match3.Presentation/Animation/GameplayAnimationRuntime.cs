@@ -152,30 +152,14 @@ public static class GameplayAnimationRuntime
                 layer: GameplayEffectStyle.MatchPopEffectLayer);
             viewState.AddOrUpdate(effectNode);
 
-            var scaleAnimation = new PropertyTween<Vector2>(
+            var scaleAnimation = new PopScaleTween(
                 effectNode,
-                AnimationChannel.Scale,
-                () => effectNode.Scale,
-                value => effectNode.Scale = value,
-                new Vector2(1f, 1f),
-                Vector2.Zero,
-                GameplayEffectTimings.MatchPopSeconds,
-                static (_, _, progress) =>
-                {
-                    var burst = 1f + (GameplayEffectStyle.MatchPopBurstAmplitude * MathF.Sin(progress * MathF.PI));
-                    var shrink = 1f - Easing.SmoothStep(progress);
-                    var value = MathF.Max(0f, burst * shrink);
-                    return new Vector2(value, value);
-                });
-            var rotationAnimation = new PropertyTween<float>(
+                GameplayEffectStyle.MatchPopBurstAmplitude,
+                GameplayEffectTimings.MatchPopSeconds);
+            var rotationAnimation = new RotateTween(
                 effectNode,
-                AnimationChannel.Rotation,
-                () => effectNode.Rotation,
-                value => effectNode.Rotation = value,
-                piece.Rotation,
                 piece.Rotation + GameplayEffectStyle.MatchPopRotationDeltaRadians,
-                GameplayEffectTimings.MatchPopSeconds,
-                static (from, to, progress) => from + ((to - from) * Easing.SmoothStep(progress)));
+                GameplayEffectTimings.MatchPopSeconds);
 
             var animation = Anim.Sequence()
                 .AppendDelayIfNeeded(initialDelaySeconds + (removalDelays.TryGetValue(piece.Position, out var removalDelay) ? removalDelay : 0f))
@@ -197,35 +181,44 @@ public static class GameplayAnimationRuntime
         ArgumentNullException.ThrowIfNull(viewState);
         ArgumentNullException.ThrowIfNull(animationPlayer);
 
+        var animation = CreateSwapOnlyAnimation(viewState, move, rollback);
+        if (animation is null)
+        {
+            return;
+        }
+
+        animationPlayer.Play(animation, ChannelConflictPolicy.Replace);
+    }
+
+    public static IAnimation? CreateSwapOnlyAnimation(BoardViewState viewState, Move move, bool rollback)
+    {
+        ArgumentNullException.ThrowIfNull(viewState);
+
         var fromNode = viewState.GetPieceNode(move.From);
         var toNode = viewState.GetPieceNode(move.To);
         if (fromNode is null || toNode is null)
         {
-            return;
+            return null;
         }
 
         var fromPosition = fromNode.Position;
         var toPosition = toNode.Position;
         if (rollback)
         {
-            var rollbackSequence = Anim.Sequence()
+            return Anim.Sequence()
                 .Append(Anim.Parallel(
                     Anim.MoveTo(fromNode, toPosition, GameplayEffectTimings.SwapRollbackLegSeconds, blocksInput: true),
                     Anim.MoveTo(toNode, fromPosition, GameplayEffectTimings.SwapRollbackLegSeconds, blocksInput: true)))
                 .Append(Anim.Parallel(
                     Anim.MoveTo(fromNode, fromPosition, GameplayEffectTimings.SwapRollbackLegSeconds, blocksInput: true),
                     Anim.MoveTo(toNode, toPosition, GameplayEffectTimings.SwapRollbackLegSeconds, blocksInput: true)));
-            animationPlayer.Play(rollbackSequence, ChannelConflictPolicy.Replace);
-            return;
         }
 
         fromNode.LogicalCell = move.To;
         toNode.LogicalCell = move.From;
-        animationPlayer.Play(
-            Anim.Parallel(
-                Anim.MoveTo(fromNode, toPosition, GameplayEffectTimings.SwapAcceptedSeconds, blocksInput: true),
-                Anim.MoveTo(toNode, fromPosition, GameplayEffectTimings.SwapAcceptedSeconds, blocksInput: true)),
-            ChannelConflictPolicy.Replace);
+        return Anim.Parallel(
+            Anim.MoveTo(fromNode, toPosition, GameplayEffectTimings.SwapAcceptedSeconds, blocksInput: true),
+            Anim.MoveTo(toNode, fromPosition, GameplayEffectTimings.SwapAcceptedSeconds, blocksInput: true));
     }
 
     /// <summary>
@@ -378,12 +371,12 @@ public static class GameplayAnimationRuntime
                 .Where(piece => piece.Position.Column == column)
                 .OrderBy(piece => piece.Position.Row)
                 .ToArray();
-            var survivorMap = MatchColumnSurvivors(beforeColumn, afterColumn);
+            var spawnTargets = GetSpawnTargets(beforeColumn, afterColumn);
             var spawnCount = 0;
 
             foreach (var target in afterColumn.OrderByDescending(piece => piece.Position.Row))
             {
-                if (survivorMap.ContainsKey(target.Position))
+                if (!spawnTargets.Contains(target.Position))
                 {
                     continue;
                 }
@@ -462,6 +455,41 @@ public static class GameplayAnimationRuntime
 
             animation.Append(Anim.MoveTo(node, targetPosition, GameplayEffectTimings.SpawnSeconds, blocksInput: true));
             animationPlayer.Play(animation, ChannelConflictPolicy.Replace);
+        }
+    }
+
+    public static void SyncToSnapshot(BoardViewState viewState, BoardRenderSnapshot snapshot)
+    {
+        ArgumentNullException.ThrowIfNull(viewState);
+        ArgumentNullException.ThrowIfNull(snapshot);
+
+        viewState.ClearHiddenCells();
+
+        var activePositions = snapshot.Pieces.Select(piece => piece.Position).ToHashSet();
+        foreach (var node in viewState.PieceNodes.ToArray())
+        {
+            if (!activePositions.Contains(node.LogicalCell))
+            {
+                viewState.RemoveNode(node.Id);
+            }
+        }
+
+        foreach (var piece in snapshot.Pieces)
+        {
+            var targetPosition = new Vector2(piece.X, piece.Y);
+            var node = viewState.GetPieceNode(piece.Position);
+            if (node is null)
+            {
+                viewState.AddOrUpdate(CreatePieceNode(piece, targetPosition));
+                continue;
+            }
+
+            node.IsVisible = true;
+            node.Position = targetPosition;
+            node.LogicalCell = piece.Position;
+            node.Tint = piece.Tint;
+            node.Rotation = piece.Rotation;
+            viewState.AddOrUpdate(node);
         }
     }
 
@@ -582,6 +610,27 @@ public static class GameplayAnimationRuntime
         return before.Shape == after.Shape &&
             before.Tint == after.Tint &&
             before.Position.Row <= after.Position.Row;
+    }
+
+    private static HashSet<GridPosition> GetSpawnTargets(IReadOnlyList<RenderPiece> beforeColumn, IReadOnlyList<RenderPiece> afterColumn)
+    {
+        var spawnCount = Math.Max(0, afterColumn.Count - beforeColumn.Count);
+        if (spawnCount > 0)
+        {
+            return afterColumn
+                .Take(spawnCount)
+                .Select(piece => piece.Position)
+                .ToHashSet();
+        }
+
+        var survivorTargets = MatchColumnSurvivors(beforeColumn, afterColumn)
+            .Keys
+            .ToHashSet();
+
+        return afterColumn
+            .Where(piece => !survivorTargets.Contains(piece.Position))
+            .Select(piece => piece.Position)
+            .ToHashSet();
     }
 
     private static SequenceAnimation AppendDelayIfNeeded(this SequenceAnimation animation, float delaySeconds)

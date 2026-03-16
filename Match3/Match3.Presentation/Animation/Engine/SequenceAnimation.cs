@@ -9,11 +9,24 @@ public sealed class SequenceAnimation : ITimedAnimation
 
     public bool BlocksInput => GetCurrentStep().Any(animation => animation.BlocksInput);
 
-    public IReadOnlyCollection<AnimationBinding> ActiveBindings => GetCurrentStep()
-        .Where(animation => !animation.IsCompleted)
-        .SelectMany(animation => animation.ActiveBindings)
-        .Distinct()
-        .ToArray();
+    public IReadOnlyCollection<AnimationBinding> ActiveBindings
+    {
+        get
+        {
+            var bindings = new List<AnimationBinding>();
+            foreach (var animation in GetCurrentStep())
+            {
+                if (animation.IsCompleted)
+                {
+                    continue;
+                }
+
+                bindings.AddRange(animation.ActiveBindings);
+            }
+
+            return bindings;
+        }
+    }
 
     public SequenceAnimation Append(IAnimation animation)
     {

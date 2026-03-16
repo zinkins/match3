@@ -155,4 +155,9 @@ public sealed class BoardViewState
     {
         return hiddenCellCounts.ContainsKey(position);
     }
+
+    public void ClearHiddenCells()
+    {
+        hiddenCellCounts.Clear();
+    }
 }
