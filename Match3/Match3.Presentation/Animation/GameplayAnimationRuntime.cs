@@ -270,7 +270,7 @@ public static class GameplayAnimationRuntime
 
         var selectedNodeIdBeforeSettle = visualState?.GetSelectedNodeId(viewState);
         var retainedNodeIds = new HashSet<NodeId>();
-        for (var column = 0; column < 8; column++)
+        foreach (var column in BoardSnapshotAnalysis.GetTrackedColumns(beforeSnapshot, afterSnapshot))
         {
             var beforeColumn = beforeSnapshot.Pieces
                 .Where(piece => piece.Position.Column == column)
@@ -361,7 +361,7 @@ public static class GameplayAnimationRuntime
         ArgumentNullException.ThrowIfNull(viewState);
         ArgumentNullException.ThrowIfNull(animationPlayer);
 
-        for (var column = 0; column < 8; column++)
+        foreach (var column in BoardSnapshotAnalysis.GetTrackedColumns(beforeSnapshot, afterSnapshot))
         {
             var beforeColumn = beforeSnapshot.Pieces
                 .Where(piece => piece.Position.Column == column)

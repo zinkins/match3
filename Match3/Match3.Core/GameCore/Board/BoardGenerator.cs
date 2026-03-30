@@ -6,16 +6,23 @@ namespace Match3.Core.GameCore.Board;
 
 public sealed class BoardGenerator
 {
+    private readonly PieceFillPolicy fillPolicy;
     private readonly IRandomSource randomSource;
 
     public BoardGenerator()
-        : this(new SystemRandomSource())
+        : this(new SystemRandomSource(), new PieceFillPolicy())
     {
     }
 
     public BoardGenerator(IRandomSource randomSource)
+        : this(randomSource, new PieceFillPolicy())
+    {
+    }
+
+    public BoardGenerator(IRandomSource randomSource, PieceFillPolicy fillPolicy)
     {
         this.randomSource = randomSource ?? throw new ArgumentNullException(nameof(randomSource));
+        this.fillPolicy = fillPolicy ?? throw new ArgumentNullException(nameof(fillPolicy));
     }
 
     public BoardState Generate()
@@ -26,58 +33,11 @@ public sealed class BoardGenerator
         {
             for (var column = 0; column < board.Width; column++)
             {
-                var type = NextPieceTypeAvoidingImmediateMatch(board, row, column);
+                var type = fillPolicy.ChoosePiece(board, new GridPosition(row, column), randomSource);
                 board.SetContent(new GridPosition(row, column), new CellContent(type));
             }
         }
 
         return board;
-    }
-
-    private PieceType NextPieceTypeAvoidingImmediateMatch(BoardState board, int row, int column)
-    {
-        for (var attempt = 0; attempt < PieceCatalog.All.Count * 2; attempt++)
-        {
-            var candidate = NextPieceType();
-            if (!CreatesImmediateMatch(board, row, column, candidate))
-            {
-                return candidate;
-            }
-        }
-
-        foreach (var candidate in PieceCatalog.All)
-        {
-            if (!CreatesImmediateMatch(board, row, column, candidate))
-            {
-                return candidate;
-            }
-        }
-
-        return NextPieceType();
-    }
-
-    private static bool CreatesImmediateMatch(BoardState board, int row, int column, PieceType candidate)
-    {
-        if (column >= 2 &&
-            board.GetContent(new GridPosition(row, column - 1))?.PieceType == candidate &&
-            board.GetContent(new GridPosition(row, column - 2))?.PieceType == candidate)
-        {
-            return true;
-        }
-
-        if (row >= 2 &&
-            board.GetContent(new GridPosition(row - 1, column))?.PieceType == candidate &&
-            board.GetContent(new GridPosition(row - 2, column))?.PieceType == candidate)
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    private PieceType NextPieceType()
-    {
-        var index = randomSource.Next(0, PieceCatalog.All.Count);
-        return PieceCatalog.All[index];
     }
 }

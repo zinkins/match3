@@ -8,7 +8,7 @@ namespace Match3.Core.Localization
     /// <summary>
     /// Manages localization settings for the game, including retrieving supported cultures and setting the current culture for localization.
     /// </summary>
-    internal class LocalizationManager
+    public static class LocalizationManager
     {
         /// <summary>
         /// the culture code we default to

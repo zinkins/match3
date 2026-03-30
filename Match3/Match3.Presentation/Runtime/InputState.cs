@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace Match3.Core.Runtime;
+namespace Match3.Presentation.Runtime;
 
 public readonly record struct InputState(
     bool HasPointer,

@@ -22,8 +22,11 @@
                            Exclude="$(MonoGameContentRoot)\bin\**\*.*;$(MonoGameContentRoot)\obj\**\*.*" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Match3.Core\Match3.Core.csproj" />
     <ProjectReference Include="..\Match3.Presentation\Match3.Presentation.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\Shared\Hosting\Match3Game.cs" Link="Hosting\Match3Game.cs" />
+    <Compile Include="..\Shared\Hosting\MonoGameCanvas.cs" Link="Hosting\MonoGameCanvas.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="MonoGame.Framework.Android" Version="3.8.4.1" />

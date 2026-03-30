@@ -69,7 +69,6 @@ public sealed class TurnProcessor
         Move move,
         GameSession session,
         GameplayStateMachine stateMachine,
-        int currentScore = 0,
         Action<GameplayState, GameSession> onPhaseCompleted = null)
     {
         var events = new List<IDomainEvent>();
@@ -97,7 +96,7 @@ public sealed class TurnProcessor
         stateMachine.TransitionToResolving();
         onPhaseCompleted?.Invoke(stateMachine.State, session);
 
-        var resolvedScore = currentScore;
+        var resolvedScore = session.Score;
         while (matches.Count > 0)
         {
             var stepEvents = new List<IDomainEvent>();
@@ -145,8 +144,10 @@ public sealed class TurnProcessor
 
             stepEvents.Add(new MatchResolved(destroyedPieces));
             var updatedScore = scoreCalculator.AddScore(resolvedScore, destroyedPieces);
-            stepEvents.Add(new ScoreAdded(updatedScore - resolvedScore));
-            resolvedScore = updatedScore;
+            var gainedScore = updatedScore - resolvedScore;
+            stepEvents.Add(new ScoreAdded(gainedScore));
+            session.AddScore(gainedScore);
+            resolvedScore = session.Score;
             var stepResolvedBoard = board.Clone();
 
             if (session.IsGameOver)

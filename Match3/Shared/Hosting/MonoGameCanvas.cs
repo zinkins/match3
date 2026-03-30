@@ -1,9 +1,10 @@
 using System;
+using Match3.Presentation.Runtime;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Match3.Core.Runtime;
+namespace Match3.Platform.Hosting;
 
 public sealed class MonoGameCanvas : IGameCanvas, IDisposable
 {

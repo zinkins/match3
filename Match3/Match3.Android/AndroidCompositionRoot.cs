@@ -1,6 +1,6 @@
-using Match3.Core;
-using Match3.Core.Runtime;
+using Match3.Platform.Hosting;
 using Match3.Presentation.Composition;
+using Match3.Presentation.Runtime;
 using Match3.Presentation.Screens;
 
 namespace Match3.Android;

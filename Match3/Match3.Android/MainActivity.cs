@@ -2,7 +2,7 @@ using Android.App;
 using Android.Content.PM;
 using Android.OS;
 using Android.Views;
-using Match3.Core;
+using Match3.Platform.Hosting;
 using Microsoft.Xna.Framework;
 
 namespace Match3.Android

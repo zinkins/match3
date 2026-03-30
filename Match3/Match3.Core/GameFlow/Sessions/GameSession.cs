@@ -4,6 +4,8 @@ namespace Match3.Core.GameFlow.Sessions;
 
 public sealed class GameSession
 {
+    public int Score { get; private set; }
+
     public TimeSpan RemainingTime { get; private set; } = TimeSpan.FromSeconds(60);
 
     public bool IsGameOver => RemainingTime <= TimeSpan.Zero;
@@ -19,5 +21,15 @@ public sealed class GameSession
 
         var updated = RemainingTime - elapsed;
         RemainingTime = updated > TimeSpan.Zero ? updated : TimeSpan.Zero;
+    }
+
+    public void AddScore(int points)
+    {
+        if (points <= 0)
+        {
+            return;
+        }
+
+        Score += points;
     }
 }

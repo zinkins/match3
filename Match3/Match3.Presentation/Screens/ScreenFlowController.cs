@@ -1,12 +1,6 @@
 using System;
-using Match3.Core.GameCore.Board;
-using Match3.Core.GameFlow.Pipeline;
 using Match3.Core.GameFlow.Sessions;
-using Match3.Core.GameFlow.StateMachine;
 using Match3.Presentation.Animation;
-using Match3.Presentation.Animation.Engine;
-using Match3.Presentation.Input;
-using Match3.Presentation.Rendering;
 using Match3.Presentation.UI;
 
 namespace Match3.Presentation.Screens;
@@ -14,16 +8,16 @@ namespace Match3.Presentation.Screens;
 public sealed class ScreenFlowController
 {
     private readonly LayoutCalculator layoutCalculator = new();
+    private readonly GameplayScreenFactory gameplayScreenFactory;
     private readonly Func<GameSession> sessionFactory;
-    private readonly Func<ITurnAnimationBuilder> turnAnimationBuilderFactory;
 
     public ScreenFlowController(Func<GameSession>? sessionFactory = null, Func<ITurnAnimationBuilder>? turnAnimationBuilderFactory = null)
     {
         this.sessionFactory = sessionFactory ?? (() => new GameSession());
-        this.turnAnimationBuilderFactory = turnAnimationBuilderFactory ?? (() => new TurnAnimationBuilder());
+        gameplayScreenFactory = new GameplayScreenFactory(turnAnimationBuilderFactory: turnAnimationBuilderFactory);
 
         MainMenu = new MainMenuScreen();
-        Gameplay = CreateGameplayScreen(this.sessionFactory(), ShowMainMenu);
+        Gameplay = gameplayScreenFactory.Create(this.sessionFactory(), ShowMainMenu);
         CurrentScreen = MainMenu;
 
         MainMenu.PlayRequested += StartGame;
@@ -69,37 +63,12 @@ public sealed class ScreenFlowController
 
     private void StartGame()
     {
-        Gameplay = CreateGameplayScreen(sessionFactory(), ShowMainMenu);
+        Gameplay = gameplayScreenFactory.Create(sessionFactory(), ShowMainMenu);
         CurrentScreen = Gameplay;
     }
 
     private void ShowMainMenu()
     {
         CurrentScreen = MainMenu;
-    }
-
-    private GameplayScreen CreateGameplayScreen(GameSession session, Action onOk)
-    {
-        var board = new BoardGenerator().Generate();
-        var boardTransform = new BoardTransform(
-            LayoutMetrics.InitialBoardCellSize,
-            new System.Numerics.Vector2(LayoutMetrics.InitialBoardOriginX, LayoutMetrics.InitialBoardOriginY),
-            board.Height,
-            board.Width);
-        var presenter = new GameplayPresenter(
-            new TurnProcessor(),
-            new GameplayStateMachine(),
-            session);
-
-        return new GameplayScreen(
-            presenter,
-            board,
-            new BoardInputHandler(boardTransform, new SelectionController()),
-            new AnimationPlayer(),
-            turnAnimationBuilderFactory(),
-            new BoardRenderer(),
-            new HudRenderer(),
-            boardTransform,
-            onOk);
     }
 }

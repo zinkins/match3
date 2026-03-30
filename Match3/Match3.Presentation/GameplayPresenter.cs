@@ -22,7 +22,7 @@ public sealed class GameplayPresenter
         this.session = session ?? throw new ArgumentNullException(nameof(session));
     }
 
-    public int Score { get; private set; }
+    public int Score => session.Score;
 
     public TimeSpan RemainingTime => session.RemainingTime;
 
@@ -47,21 +47,6 @@ public sealed class GameplayPresenter
     /// <returns>The pipeline result for the processed move.</returns>
     public TurnPipelineResult ProcessMove(BoardState board, Move move)
     {
-        var result = turnProcessor.ProcessTurnPipelineWithEvents(
-            board,
-            move,
-            session,
-            stateMachine,
-            currentScore: Score);
-
-        foreach (var domainEvent in result.Events)
-        {
-            if (domainEvent is Core.GameFlow.Events.ScoreAdded scoreAdded)
-            {
-                Score += scoreAdded.Points;
-            }
-        }
-
-        return result;
+        return turnProcessor.ProcessTurnPipelineWithEvents(board, move, session, stateMachine);
     }
 }

@@ -1,4 +1,4 @@
-namespace Match3.Core.Runtime;
+namespace Match3.Presentation.Runtime;
 
 public interface IGameCanvas
 {

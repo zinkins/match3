@@ -1,5 +1,5 @@
 ﻿using Foundation;
-using Match3.Core;
+using Match3.Platform.Hosting;
 using UIKit;
 
 namespace Match3.iOS
