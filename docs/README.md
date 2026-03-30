@@ -5,6 +5,8 @@
 ## Актуальные заметки по рантайму
 
 - `Match3.Presentation` использует фазовый animation runtime, построенный вокруг `TurnAnimationBuilder`, `GameplayAnimationRuntime`, `GameplayVisualEffectsTimeline` и `Animation.Engine`
+- runtime-контракты `IGameCanvas`, `IGameScreenHost` и `InputState` находятся в `Match3/Match3.Presentation/Runtime/`
+- MonoGame host code (`Match3Game`, `MonoGameCanvas`) вынесен в `Match3/Shared/Hosting/` и линкуется в launcher-проекты
 - общие длительности анимаций находятся в `Match3/Match3.Presentation/Animation/GameplayEffectTimings.cs`
 - общие визуальные коэффициенты анимаций находятся в `Match3/Match3.Presentation/Animation/GameplayEffectStyle.cs`
 - общие константы рендера поля и UI находятся в `Match3/Match3.Presentation/Rendering/BoardRenderStyle.cs`, `Match3/Match3.Presentation/Rendering/UiRenderStyle.cs` и `Match3/Match3.Presentation/UI/LayoutMetrics.cs`

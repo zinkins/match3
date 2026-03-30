@@ -44,6 +44,7 @@ Match3.sln
 - HUD;
 - runtime-анимации и visual effects;
 - input mapping;
+- runtime-контракты для platform host layer;
 - преобразование `Domain Events` в визуальные сценарии.
 
 Этот проект нужен, чтобы не дублировать общую UI-логику в `DesktopGL`, `Android` и `iOS`.
@@ -55,12 +56,15 @@ Match3.sln
 - entrypoint;
 - composition root;
 - platform lifecycle;
+- linked host sources из `Match3/Shared/Hosting/`;
 - платформенные адаптеры;
 - platform-specific services.
 
+Дополнительно в репозитории есть `Match3/Shared/Hosting/` - это не отдельный project, а source-shared host layer с `Match3Game` и `MonoGameCanvas`, который компилируется внутрь launcher-проектов.
+
 ### 2.4 Match3.Tests
 
-Содержит unit tests для `Game Core` и `Game Flow`.
+Содержит unit tests для `Game Core`, `Game Flow`, architecture guards и selected presentation/runtime behavior.
 
 Минимальная цель:
 
@@ -78,6 +82,7 @@ Match3.sln
 Match3.DesktopGL  -> Match3.Presentation -> Match3.Core
 Match3.Android    -> Match3.Presentation -> Match3.Core
 Match3.iOS        -> Match3.Presentation -> Match3.Core
+Match3.Tests      -> Match3.Presentation
 Match3.Tests      -> Match3.Core
 ```
 
@@ -133,14 +138,14 @@ Match3.Core/
 
 ```text
 Match3.Presentation/
+  Runtime/
+  Composition/
   Screens/
   Rendering/
   Animation/
     Engine/
   Input/
   UI/
-  ViewModels/
-  Composition/
 ```
 
 Примеры классов:
@@ -154,6 +159,10 @@ Match3.Presentation/
 - `TurnAnimationBuilder`
 - `GameplayAnimationRuntime`
 - `GameplayVisualEffectsTimeline`
+- `GameplayScreenFactory`
+- `GameplayRuntimeUpdater`
+- `GameplayInteractionController`
+- `GameplayTurnAnimationCoordinator`
 - `BoardViewState`
 - `PieceNodeRenderer`
 - `BoardTransform`

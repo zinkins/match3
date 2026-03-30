@@ -1,6 +1,6 @@
 # Project Class Diagram
 
-This diagram captures the main runtime classes and the most important dependencies between `Core`, `GameFlow`, `Presentation`, and platform composition.
+This diagram captures the current runtime split between shared platform hosting, presentation orchestration, and gameplay core.
 
 ```mermaid
 classDiagram
@@ -12,20 +12,53 @@ namespace Match3.DesktopGL {
     }
 }
 
-namespace Match3.Core {
+namespace Match3.Android {
+    class AndroidCompositionRoot {
+        +CreateGame() Match3Game
+    }
+}
+
+namespace Match3.iOS {
+    class IosCompositionRoot {
+        +CreateGame() Match3Game
+    }
+}
+
+namespace Match3.Platform.Hosting {
     class Match3Game {
         -graphicsDeviceManager
         -canvas
         +Update(gameTime)
         +Draw(gameTime)
     }
+
+    class MonoGameCanvas {
+        +Begin()
+        +End()
+        +DrawFilledRectangle(x, y, width, height, tint)
+        +DrawShape(shape, x, y, width, height, tint)
+        +DrawText(text, x, y, tint)
+    }
 }
 
-namespace Match3.Core.Runtime {
+namespace Match3.Presentation.Runtime {
     class IGameScreenHost {
         <<interface>>
         +Update(elapsed, inputState)
         +Draw(canvas)
+    }
+
+    class IGameCanvas {
+        <<interface>>
+        +ViewportWidth
+        +ViewportHeight
+    }
+
+    class InputState {
+        +PointerPosition
+        +IsPrimaryClick
+        +ViewportWidth
+        +ViewportHeight
     }
 }
 
@@ -39,6 +72,8 @@ namespace Match3.Presentation.Composition {
 namespace Match3.Presentation.Screens {
     class PresentationScreenHost {
         -flowController
+        -gameplayInteractionController
+        -gameplayRuntimeUpdater
         -renderer
         +Update(elapsed, inputState)
         +Draw(canvas)
@@ -46,10 +81,34 @@ namespace Match3.Presentation.Screens {
 
     class ScreenFlowController {
         -layoutCalculator
+        -gameplayScreenFactory
         +MainMenu
         +Gameplay
         +CurrentScreen
+        +Tick()
     }
+
+    class GameplayScreenFactory {
+        -boardGenerator
+        +Create(session, onOk) GameplayScreen
+    }
+
+    class GameplayRuntimeUpdater {
+        +Update(gameplay, elapsed)
+    }
+
+    class GameplayInteractionController {
+        -mouseInputRouter
+        -touchInputRouter
+        -turnAnimationCoordinator
+        +HandleClick(inputState, gameplay)
+    }
+
+    class GameplayTurnAnimationCoordinator {
+        +PlayTurn(gameplay, move)
+    }
+
+    class MainMenuScreen
 
     class GameplayScreen {
         +Presenter
@@ -81,14 +140,25 @@ namespace Match3.Presentation.Input {
         -selectionController
         +HandleClick(worldPosition) Move?
     }
+
+    class MouseInputRouter {
+        +ShouldHandleBoardSelection(inputState) bool
+    }
+
+    class TouchInputRouter {
+        +ShouldHandleBoardSelection(inputState) bool
+    }
 }
 
 namespace Match3.Presentation.Rendering {
     class SpriteBatchRenderer
+
     class BoardRenderer {
         +BuildSnapshot(board, transform) BoardRenderSnapshot
     }
+
     class HudRenderer
+
     class BoardTransform {
         +CellSize
         +Origin
@@ -105,6 +175,14 @@ namespace Match3.Presentation.Animation {
 
     class TurnAnimationBuilder {
         +Build(context) IAnimation
+    }
+
+    class GameplayAnimationRuntime {
+        <<static>>
+    }
+
+    class GameplayVisualEffectsTimeline {
+        <<static>>
     }
 }
 
@@ -140,7 +218,7 @@ namespace Match3.Core.GameFlow.Pipeline {
         -scoreCalculator
         -bonusFactory
         -bonusActivationResolver
-        +ProcessTurnPipelineWithEvents(board, move, session, stateMachine, currentScore) TurnPipelineResult
+        +ProcessTurnPipelineWithEvents(board, move, session, stateMachine) TurnPipelineResult
     }
 
     class TurnPipelineResult {
@@ -152,9 +230,11 @@ namespace Match3.Core.GameFlow.Pipeline {
 
 namespace Match3.Core.GameFlow.Sessions {
     class GameSession {
+        +Score
         +RemainingTime
         +IsGameOver
         +CanAcceptInput
+        +AddScore(points)
         +UpdateTimer(elapsed)
     }
 
@@ -209,6 +289,10 @@ namespace Match3.Core.GameCore.Board {
         +Generate() BoardState
     }
 
+    class PieceFillPolicy {
+        +ChoosePiece(board, position, randomSource) PieceType
+    }
+
     class MatchGroup {
         +PieceType
         +Positions
@@ -247,34 +331,41 @@ namespace Match3.Core.GameCore.Bonuses {
         +Position
         +Color
     }
-
-    class LineBonus {
-        +Orientation
-    }
-
-    class BombBonus {
-        +Radius
-    }
-
-    class LineBonusBehavior {
-        +Activate(bonus, board) Destroyer
-    }
-
-    class BombBonusBehavior {
-        +Activate(bonus, board) ExplosionResult
-    }
 }
 
 DesktopCompositionRoot ..> GameFlowCompositionRoot : uses
+AndroidCompositionRoot ..> GameFlowCompositionRoot : uses
+IosCompositionRoot ..> GameFlowCompositionRoot : uses
 DesktopCompositionRoot ..> Match3Game : creates
+AndroidCompositionRoot ..> Match3Game : creates
+IosCompositionRoot ..> Match3Game : creates
+Match3Game *-- MonoGameCanvas
+Match3Game ..> IGameScreenHost : uses service
+MonoGameCanvas ..|> IGameCanvas
 GameFlowCompositionRoot ..> ScreenFlowController : creates
 GameFlowCompositionRoot ..> PresentationScreenHost : creates
-Match3Game ..> IGameScreenHost : uses service
 PresentationScreenHost ..|> IGameScreenHost
 PresentationScreenHost *-- ScreenFlowController
+PresentationScreenHost *-- GameplayInteractionController
+PresentationScreenHost *-- GameplayRuntimeUpdater
 PresentationScreenHost *-- SpriteBatchRenderer
+PresentationScreenHost ..> InputState : consumes
+PresentationScreenHost ..> IGameCanvas : draws on
+ScreenFlowController *-- GameplayScreenFactory
+ScreenFlowController *-- MainMenuScreen
 ScreenFlowController *-- GameplayScreen
-ScreenFlowController ..> BoardGenerator : creates board
+GameplayScreenFactory ..> BoardGenerator : uses
+GameplayScreenFactory ..> TurnProcessor : creates presenter graph
+GameplayScreenFactory ..> GameplayStateMachine : creates presenter graph
+GameplayScreenFactory ..> GameplayScreen : creates
+GameplayRuntimeUpdater ..> GameplayScreen : updates frame state
+GameplayInteractionController *-- MouseInputRouter
+GameplayInteractionController *-- TouchInputRouter
+GameplayInteractionController ..> GameplayTurnAnimationCoordinator : delegates move flow
+GameplayInteractionController ..> GameplayScreen : handles input for
+GameplayTurnAnimationCoordinator ..> GameplayPresenter : executes move through
+GameplayTurnAnimationCoordinator ..> GameplayAnimationRuntime : queues piece animations
+GameplayTurnAnimationCoordinator ..> GameplayVisualEffectsTimeline : queues event effects
 GameplayScreen *-- GameplayPresenter
 GameplayScreen *-- BoardState
 GameplayScreen *-- BoardInputHandler
@@ -307,9 +398,11 @@ TurnProcessor *-- BonusFactory
 TurnProcessor *-- BonusActivationResolver
 TurnProcessor ..> BoardState : mutates
 TurnProcessor ..> Move : applies
-TurnProcessor ..> GameSession : checks timer
+TurnProcessor ..> GameSession : updates score and timer
 TurnProcessor ..> GameplayStateMachine : drives phases
 TurnProcessor ..> TurnPipelineResult : returns
+BoardGenerator *-- PieceFillPolicy
+RefillResolver *-- PieceFillPolicy
 BoardState *-- CellContent
 BoardState ..> GridPosition : indexes by
 CellContent o-- BonusToken
@@ -318,16 +411,6 @@ MatchFinder ..> MatchGroup : returns
 MatchGroup o-- GridPosition
 BonusFactory ..> MatchGroup : analyzes
 BonusFactory ..> BonusToken : creates
-BonusActivationResolver *-- LineBonusBehavior
-BonusActivationResolver *-- BombBonusBehavior
-BonusActivationResolver ..> BonusToken : resolves
-BonusActivationResolver ..> BoardState : mutates
-BonusToken <|-- LineBonus
-BonusToken <|-- BombBonus
-LineBonusBehavior ..> LineBonus : activates
-LineBonusBehavior ..> BoardState : mutates
-BombBonusBehavior ..> BombBonus : activates
-BombBonusBehavior ..> BoardState : mutates
 Move o-- GridPosition
 BonusToken o-- GridPosition
 ```

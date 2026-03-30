@@ -1,6 +1,6 @@
 # Presentation Class Diagram
 
-This diagram focuses on the `Match3.Presentation` layer: screen flow, rendering, input, and animation runtime.
+This diagram focuses on the current `Match3.Presentation` layer: screen flow, runtime contracts, rendering, input, and animation orchestration.
 
 ```mermaid
 classDiagram
@@ -13,6 +13,27 @@ namespace Match3.Presentation.Composition {
     }
 }
 
+namespace Match3.Presentation.Runtime {
+    class IGameScreenHost {
+        <<interface>>
+        +Update(elapsed, inputState)
+        +Draw(canvas)
+    }
+
+    class IGameCanvas {
+        <<interface>>
+        +ViewportWidth
+        +ViewportHeight
+    }
+
+    class InputState {
+        +PointerPosition
+        +IsPrimaryClick
+        +ViewportWidth
+        +ViewportHeight
+    }
+}
+
 namespace Match3.Presentation.Screens {
     class IScreen {
         <<interface>>
@@ -21,23 +42,45 @@ namespace Match3.Presentation.Screens {
 
     class PresentationScreenHost {
         -flowController
+        -gameplayInteractionController
+        -gameplayRuntimeUpdater
         -renderer
-        -mouseInputRouter
-        -touchInputRouter
         +Update(elapsed, inputState)
         +Draw(canvas)
     }
 
     class ScreenFlowController {
         -layoutCalculator
+        -gameplayScreenFactory
         +MainMenu
         +Gameplay
         +CurrentScreen
+        +Tick()
+        +UpdateLayout(viewportWidth, viewportHeight)
     }
 
     class MainMenuScreen {
         +PlayButton
         +PlayRequested
+    }
+
+    class GameplayScreenFactory {
+        +Create(session, onOk) GameplayScreen
+    }
+
+    class GameplayRuntimeUpdater {
+        +Update(gameplay, elapsed)
+    }
+
+    class GameplayInteractionController {
+        -mouseInputRouter
+        -touchInputRouter
+        -turnAnimationCoordinator
+        +HandleClick(inputState, gameplay)
+    }
+
+    class GameplayTurnAnimationCoordinator {
+        +PlayTurn(gameplay, move)
     }
 
     class GameplayScreen {
@@ -113,6 +156,11 @@ namespace Match3.Presentation.Rendering {
         +GridToWorld(gridPosition) Vector2
         +TryWorldToGrid(worldPosition, gridPosition) bool
     }
+
+    class BoardSnapshotAnalysis {
+        <<static>>
+        +GetTrackedColumns(snapshots) IReadOnlyList~int~
+    }
 }
 
 namespace Match3.Presentation.UI {
@@ -158,8 +206,6 @@ namespace Match3.Presentation.Animation {
         +QueueGravity(viewState, animationPlayer, beforeSnapshot, afterSnapshot, initialDelaySeconds, excludedTargets, visualState)
         +QueueSpawn(viewState, animationPlayer, beforeSnapshot, afterSnapshot, cellSize, initialDelaySeconds, excludedTargets)
         +QueueCreatedBonuses(viewState, animationPlayer, afterSnapshot, cellSize, initialDelaySeconds, createdBonusOrigins)
-        +QueueDestroyer(viewState, animationPlayer, origin, path, transform, initialDelaySeconds)
-        +QueueExplosion(viewState, animationPlayer, area, transform, initialDelaySeconds)
     }
 
     class GameplayVisualEffectsTimeline {
@@ -198,13 +244,17 @@ namespace Match3.Presentation.Animation.Engine {
 
 GameFlowCompositionRoot ..> ScreenFlowController : creates
 GameFlowCompositionRoot ..> PresentationScreenHost : creates
+PresentationScreenHost ..|> IGameScreenHost
 PresentationScreenHost *-- ScreenFlowController
+PresentationScreenHost *-- GameplayRuntimeUpdater
+PresentationScreenHost *-- GameplayInteractionController
 PresentationScreenHost *-- SpriteBatchRenderer
-PresentationScreenHost *-- MouseInputRouter
-PresentationScreenHost *-- TouchInputRouter
+PresentationScreenHost ..> InputState : consumes
+PresentationScreenHost ..> IGameCanvas : draws on
 ScreenFlowController *-- LayoutCalculator
 ScreenFlowController *-- MainMenuScreen
 ScreenFlowController *-- GameplayScreen
+ScreenFlowController *-- GameplayScreenFactory
 MainMenuScreen ..|> IScreen
 GameplayScreen ..|> IScreen
 MainMenuScreen *-- UiButton
@@ -219,10 +269,19 @@ GameplayScreen *-- BoardViewState
 GameplayScreen *-- PieceNodeRenderer
 GameplayScreen *-- GameplayVisualState
 GameplayScreen *-- UiButton
+GameplayScreenFactory ..> GameplayScreen : creates
+GameplayRuntimeUpdater ..> GameplayScreen : updates frame state
+GameplayInteractionController *-- MouseInputRouter
+GameplayInteractionController *-- TouchInputRouter
+GameplayInteractionController ..> GameplayTurnAnimationCoordinator : delegates move flow
+GameplayInteractionController ..> GameplayScreen : handles input for
+GameplayTurnAnimationCoordinator ..> GameplayPresenter : executes move through
+GameplayTurnAnimationCoordinator ..> GameplayAnimationRuntime : queues piece animations
+GameplayTurnAnimationCoordinator ..> GameplayVisualEffectsTimeline : queues event effects
 GameplayPresenter ..> TurnPipelineResult : returns
 BoardInputHandler *-- BoardTransform
-SpriteBatchRenderer ..> IScreen : draws
-SpriteBatchRenderer ..> GameplayScreen : renders gameplay
+SpriteBatchRenderer ..> IGameCanvas : draws to
+SpriteBatchRenderer ..> IScreen : renders screen
 BoardRenderer ..> BoardTransform : projects board
 PieceNodeRenderer ..> BoardViewState : applies node transforms
 HudRenderer ..> LayoutCalculator : uses safe bounds
@@ -238,9 +297,7 @@ GameplayAnimationRuntime ..> BoardViewState : mutates nodes
 GameplayAnimationRuntime ..> AnimationPlayer : queues animations
 GameplayAnimationRuntime ..> BoardTransform : projects effects
 GameplayAnimationRuntime ..> GameplayVisualState : syncs selection
+GameplayAnimationRuntime ..> BoardSnapshotAnalysis : inspects snapshots
 GameplayVisualEffectsTimeline ..> GameplayAnimationRuntime : schedules effects
 GameplayVisualEffectsTimeline ..> BoardTransform : uses coordinates
-PresentationScreenHost ..> GameplayAnimationRuntime : queues turn visuals
-PresentationScreenHost ..> GameplayVisualEffectsTimeline : queues event effects
-PresentationScreenHost ..> GameplayScreen : orchestrates interaction
 ```

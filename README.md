@@ -71,12 +71,13 @@ Desktop-разработка является самым быстрым спос
 ## Структура репозитория
 - `Match3/`: solution и platform projects
 - `Match3/Match3.Core/`: shared gameplay logic, localization и assets content pipeline
-- `Match3/Match3.Presentation/`: общий presentation layer, включая screens, rendering, HUD и новую runtime animation system
+- `Match3/Match3.Presentation/`: общий presentation layer, включая screens, rendering, HUD, runtime contracts и animation system
+- `Match3/Shared/`: source-shared host code, который линкуется в platform launchers
 - `docs/`: проектная документация, включая `docs/GameDesignDocument.md`
 
 ## Архитектурные документы
 - `docs/README.md`: индекс диаграмм и связанных архитектурных документов
-- `docs/Architecture.md`: целевой architectural approach (`Game Core + Game Flow + Presentation`)
+- `docs/Architecture.md`: целевой architectural approach (`Game Core + Game Flow + Presentation + Platform`)
 - `docs/ADR-001-architecture.md`: architecture decision record для выбранного подхода
 - `docs/SolutionStructure.md`: рекомендуемая будущая структура solution/project split
 - `docs/ImplementationPlan.md`: пошаговый implementation plan

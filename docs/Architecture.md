@@ -86,7 +86,8 @@
 - хранение runtime-состояния визуальных узлов поля и transient-эффектов;
 - проигрывание анимаций обмена, падения, взрыва и движения Разрушителей через общий animation runtime;
 - преобразование координат поля в экранные координаты;
-- обработка пользовательского ввода с учётом blocking animation scenarios.
+- обработка пользовательского ввода с учётом blocking animation scenarios;
+- предоставление runtime-контрактов (`IGameCanvas`, `IGameScreenHost`, `InputState`) для platform host layer.
 
 Типы:
 
@@ -98,6 +99,10 @@
 - `TurnAnimationBuilder`
 - `GameplayAnimationRuntime`
 - `GameplayVisualEffectsTimeline`
+- `GameplayScreenFactory`
+- `GameplayRuntimeUpdater`
+- `GameplayInteractionController`
+- `GameplayTurnAnimationCoordinator`
 - `BoardViewState`
 - `PieceNode`
 - `EffectNode`
@@ -135,11 +140,12 @@ Presentation animation layer разделён на три уровня:
 
 ### 2.4 Platform
 
-Платформенные проекты `DesktopGL`, `Android`, `iOS` являются composition root:
+Платформенные проекты `DesktopGL`, `Android`, `iOS` являются composition root и остаются тонкими launcher-проектами:
 
 - запускают игру;
 - подключают ресурсы;
-- создают реализацию сервисов;
+- создают реализацию сервисов и регистрируют `IGameScreenHost`;
+- компилируют shared host sources из `Match3/Shared/Hosting/`;
 - не содержат логики `Game Core`.
 
 ---
@@ -159,15 +165,24 @@ Match3.Core/
     StateMachine/
     Commands/
     Pipeline/
-  Presentation/
-    Screens/
-    Rendering/
-    Animation/
-      Engine/
-    Input/
   Localization/
   Content/
+
+Match3.Presentation/
+  Composition/
+  Screens/
+  Rendering/
+  Animation/
+    Engine/
+  Input/
+  Runtime/
+  UI/
+
+Shared/
+  Hosting/
 ```
+
+`Shared/Hosting/` не является отдельным assembly: это source-shared host layer, который линкуется в platform launchers.
 
 ---
 
@@ -197,10 +212,10 @@ Match3.Core/
 Пример:
 
 ```csharp
-public readonly record struct GridPosition(int X, int Y)
+public readonly record struct GridPosition(int Row, int Column)
 {
     public bool IsAdjacentTo(GridPosition other) =>
-        Math.Abs(X - other.X) + Math.Abs(Y - other.Y) == 1;
+        Math.Abs(Row - other.Row) + Math.Abs(Column - other.Column) == 1;
 }
 ```
 
@@ -208,7 +223,8 @@ public readonly record struct GridPosition(int X, int Y)
 
 - `Piece` - игровой элемент с идентификатором, цветом и типом бонуса;
 - `BoardState` - состояние поля 8x8;
-- `GameSessionState` - счёт, таймер, фаза, состояние выбора.
+- `GameSession` - состояние игровой сессии (счёт, таймер, input gating);
+- `GameplayStateMachine` - текущая игровая фаза.
 
 В текущей реализации вместо отдельной сущности `Piece` используется `CellContent`, которое хранит `PieceType` и optional bonus token.
 

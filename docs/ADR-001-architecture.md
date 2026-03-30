@@ -18,7 +18,7 @@
 
 ## Решение
 
-Выбрана архитектура `Game Core + Game Flow + Presentation` с добавлением:
+Выбрана архитектура `Game Core + Game Flow + Presentation + Platform` с добавлением:
 
 - `State Machine` для явного управления фазами gameplay flow;
 - `Domain Events` для передачи результатов симуляции в визуальный слой.
@@ -83,7 +83,9 @@
 ### Размещение в solution
 
 - `Match3/Match3.Core/` содержит `Game Core` и `Game Flow` (платформо-независимый код).
-- `Match3/Match3.DesktopGL/`, `Match3/Match3.Android/`, `Match3/Match3.iOS/` содержат `Presentation` и платформенные адаптеры (ввод, аудио, файлы, жизненный цикл).
+- `Match3/Match3.Presentation/` содержит общий presentation layer, runtime-контракты и composition helpers.
+- `Match3/Match3.DesktopGL/`, `Match3/Match3.Android/`, `Match3/Match3.iOS/` содержат platform entrypoints и composition root.
+- `Match3/Shared/Hosting/` содержит source-shared MonoGame host code, который линкуется в launcher-проекты.
 
 Правило именования:
 
@@ -94,7 +96,7 @@
 
 ### Где находится Composition Root
 
-Composition Root находится в entrypoint-проекте конкретной платформы (в `Presentation`):
+Composition Root находится в entrypoint-проекте конкретной платформы:
 
 - Desktop: `Match3/Match3.DesktopGL/` (в месте создания `Game`/`Game1`).
 - Android: `Match3/Match3.Android/`.
