@@ -7,6 +7,7 @@
     <ApplicationVersion>1</ApplicationVersion>
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
     <AssemblyName>Match3</AssemblyName>
+    <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
     <MonoGameContentRoot>$(MSBuildThisFileDirectory)..\Match3.Core\Content</MonoGameContentRoot>
     <MonoGameContentDefinition>$(MonoGameContentRoot)\Match3.mgcb</MonoGameContentDefinition>
     <MonoGameContentOutputDir>$(MonoGameContentRoot)\bin\Android\Match3.Android</MonoGameContentOutputDir>

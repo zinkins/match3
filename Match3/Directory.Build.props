@@ -1,0 +1,10 @@
+<Project>
+  <Import Project="Directory.Build.local.props" Condition="Exists('Directory.Build.local.props')" />
+
+  <PropertyGroup Condition="'$(AndroidSdkDirectory)' == ''">
+    <_AndroidSdkRoot>$([System.Environment]::GetEnvironmentVariable('ANDROID_SDK_ROOT'))</_AndroidSdkRoot>
+    <_AndroidHome>$([System.Environment]::GetEnvironmentVariable('ANDROID_HOME'))</_AndroidHome>
+    <AndroidSdkDirectory Condition="'$(_AndroidSdkRoot)' != ''">$(_AndroidSdkRoot)</AndroidSdkDirectory>
+    <AndroidSdkDirectory Condition="'$(AndroidSdkDirectory)' == '' and '$(_AndroidHome)' != ''">$(_AndroidHome)</AndroidSdkDirectory>
+  </PropertyGroup>
+</Project>

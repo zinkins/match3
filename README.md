@@ -30,6 +30,8 @@
 - собрать Android-проект: `dotnet build Match3/Match3.Android/Match3.Android.csproj`
 - прогнать smoke-test на подключенном устройстве: `powershell -ExecutionPolicy Bypass -File .\scripts\android-smoke.ps1`
 
+Путь к Android SDK рекомендуется задавать через `ANDROID_SDK_ROOT` или `ANDROID_HOME`; также поддерживаются `Match3/Directory.Build.local.props` и `-p:AndroidSdkDirectory=...`. Короткая памятка: `docs/AndroidSetup.md`.
+
 ### iOS
 
 Для сборки и запуска iOS-версии нужны:
@@ -79,6 +81,7 @@ Desktop-разработка является самым быстрым спос
 - `docs/SolutionStructure.md`: рекомендуемая будущая структура solution/project split
 - `docs/ImplementationPlan.md`: пошаговый implementation plan
 - `docs/TestStrategy.md`: test-first strategy и порядок добавления tests
+- `docs/AndroidSetup.md`: способы локальной настройки Android SDK без hard-coded path в репозитории
 
 ## Анимационная система
 - runtime-анимации живут в `Match3/Match3.Presentation/Animation/` и `Match3/Match3.Presentation/Animation/Engine/`

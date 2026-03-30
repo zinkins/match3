@@ -24,3 +24,4 @@
 - [Game Design Document](./GameDesignDocument.md)
 - [Implementation Plan](./ImplementationPlan.md)
 - [Test Strategy](./TestStrategy.md)
+- [Android Setup](./AndroidSetup.md)
